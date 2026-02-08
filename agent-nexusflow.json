@@ -1,0 +1,2819 @@
+{
+  "updatedAt": "2026-02-08T08:43:23.179Z",
+  "createdAt": "2026-02-01T20:34:56.627Z",
+  "name": "⚡️  🧠🕹️ Agent NexusFlow 🔥",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1.1,
+      "position": [
+        816,
+        256
+      ],
+      "id": "79ce3df1-d2f2-4732-ab8f-a2b0f67054cf",
+      "name": "Think"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+        "text": "hello",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1376,
+        -48
+      ],
+      "id": "8e2a8413-2d75-496d-97ad-9f0096a9be1c",
+      "name": "Error Message",
+      "webhookId": "9f42a5af-de22-444a-acb9-433fda9b9d2c",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "text": "={{ $json.message }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2752,
+        -64
+      ],
+      "id": "a997a873-5cfd-47ec-948b-33f701a5cd87",
+      "name": "Response",
+      "webhookId": "4e33a6d8-aeda-4762-b54f-2cec5ca5e169",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "resource": "file",
+        "fileId": "={{ $json.message.voice.file_id }}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        480,
+        -32
+      ],
+      "id": "4401f1b3-7ce3-4f41-8b4e-b9d75b2a6a4b",
+      "name": "MessageVoice",
+      "webhookId": "fe7668a9-3d52-44c0-a030-59bbeab721f9",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "loose"
+          },
+          "conditions": [
+            {
+              "id": "73417511-0e48-43e3-9dfe-48defdea0ca1",
+              "leftValue": "={{ $json.message.text }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "exists"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        304,
+        -48
+      ],
+      "id": "c26ded81-57b5-4a03-8351-4f025a7ec231",
+      "name": "If",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "c63d2a0a-cb43-4ea3-984a-5ab26b7b3716",
+              "name": "text",
+              "value": "={{ $json.message.text }}",
+              "type": "string"
+            },
+            {
+              "id": "299cbc85-558b-430d-b606-5007cd36708f",
+              "name": "audio",
+              "value": "={{ $json.text }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        864,
+        -64
+      ],
+      "id": "82ab62cb-b2a1-40be-9ada-64a97f5cb8be",
+      "name": "Edit Fields"
+    },
+    {
+      "parameters": {
+        "operation": "sendAudio",
+        "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+        "binaryData": true,
+        "additionalFields": {
+          "fileName": "NexusFlow "
+        }
+      },
+      "id": "3e299a99-0ce7-49b2-9647-e379735b2fa1",
+      "name": "Send Voice Response",
+      "type": "n8n-nodes-base.telegram",
+      "position": [
+        2336,
+        -96
+      ],
+      "webhookId": "b3c2c40a-26f9-4520-b647-6dbf000a342d",
+      "typeVersion": 1.2,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "input_type",
+              "name": "input_type",
+              "value": "={{ $('Edit Fields').item.json.text ? 'text' : 'audio' }}",
+              "type": "string"
+            },
+            {
+              "id": "agent_output",
+              "name": "agent_output",
+              "value": "={{ $json.text || $json.output || $json.response || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "d42ff141-5951-4b2c-98c9-e81c6aa87c57",
+              "name": "",
+              "value": "",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1552,
+        -80
+      ],
+      "id": "f65dfe35-15d0-4555-8ec2-917948a6350b",
+      "name": "Analyze Output"
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        96,
+        -48
+      ],
+      "id": "eafd10cc-a52c-4b50-a145-37f2be8afd68",
+      "name": "Telegram Trigger",
+      "webhookId": "0226a593-2c18-4228-88b2-f109060b487e",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ String($('Telegram Trigger').item.json.message.chat.id) }}",
+        "contextWindowLength": 200
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryRedisChat",
+      "typeVersion": 1.5,
+      "position": [
+        544,
+        256
+      ],
+      "id": "e002edf6-dcd9-4cc8-ac20-be2f2de8d228",
+      "name": "Redis Chat Memory"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.dateTimeTool",
+      "typeVersion": 2,
+      "position": [
+        688,
+        256
+      ],
+      "id": "daff1d56-73a5-421c-aab0-76fa05e24306",
+      "name": "Date & Time"
+    },
+    {
+      "parameters": {
+        "workflowId": "y6vdgLJQ7IOnFeI7"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        1664,
+        256
+      ],
+      "id": "10bdf4b7-49cb-4327-9768-2d123d6f4cd9",
+      "name": "FAL"
+    },
+    {
+      "parameters": {
+        "workflowId": "UttIm92juhKRuDQR",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        1440,
+        256
+      ],
+      "id": "993bf074-43e7-42f3-a5b9-0758691a6b92",
+      "name": "Redacteur"
+    },
+    {
+      "parameters": {
+        "workflowId": "lZkoPDBxkKAqGgzT"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        1792,
+        256
+      ],
+      "id": "b0738bb5-f7b5-4036-b23a-90d3dace8417",
+      "name": "Builder"
+    },
+    {
+      "parameters": {
+        "workflowId": "sND4LdxG5HYDS7xc",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        1904,
+        256
+      ],
+      "id": "7b2e788d-d192-46b7-9425-cf1de5969e33",
+      "name": "Avatar"
+    },
+    {
+      "parameters": {
+        "workflowId": "Hp3Qb2nV27CrAtea"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        1552,
+        256
+      ],
+      "id": "dbb78c98-062a-4c2c-9b0e-193c442f2fd2",
+      "name": "Resume"
+    },
+    {
+      "parameters": {
+        "workflowId": "bvPmJvNhZcytMInp"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        1328,
+        256
+      ],
+      "id": "f83d5c71-8b10-4efa-ad87-5b9aaa36dfb2",
+      "name": "Juridique IA"
+    },
+    {
+      "parameters": {
+        "workflowId": "fslFEVsAwBKHkCzk"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        2016,
+        256
+      ],
+      "id": "50d1875b-701b-47fb-9427-689156e292d3",
+      "name": "Image"
+    },
+    {
+      "parameters": {
+        "workflowId": "Ru3BAcjHhZf3rAVk",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        2144,
+        256
+      ],
+      "id": "9b93234f-ad15-4095-a1ff-0ca73ec86be2",
+      "name": "Agent Mail"
+    },
+    {
+      "parameters": {
+        "workflowId": "dIgjgCMDT0fNuPfj"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        2272,
+        256
+      ],
+      "id": "74fbc28f-c359-4322-a8aa-0bc3be51d8d7",
+      "name": "Calendrier Agent"
+    },
+    {
+      "parameters": {
+        "cityName": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('City', ``, 'string') }}",
+        "language": "fr"
+      },
+      "type": "n8n-nodes-base.openWeatherMapTool",
+      "typeVersion": 1,
+      "position": [
+        976,
+        256
+      ],
+      "id": "f4215526-c4eb-4fe7-823c-d0001df53e30",
+      "name": "OpenWeatherMap"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        1104,
+        256
+      ],
+      "id": "13f1caab-e357-4549-a187-4592ea13057a",
+      "name": "Calculator"
+    },
+    {
+      "parameters": {
+        "workflowId": "xBxFqUDRKcuEmArC",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        2400,
+        256
+      ],
+      "id": "db57ce53-6d24-47b7-8edb-ae1dea7c79ab",
+      "name": "Web Agent"
+    },
+    {
+      "parameters": {
+        "workflowId": "fKUTAqQzFJZII2MT"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        2544,
+        256
+      ],
+      "id": "f2e0cb67-ddad-41dd-a588-c2b00480b499",
+      "name": "Agent Contacts"
+    },
+    {
+      "parameters": {
+        "workflowId": "scYestgf0JHQSujo"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        2688,
+        256
+      ],
+      "id": "fa768530-3062-4803-a0c5-2ef9f8d09371",
+      "name": "Agent PDF"
+    },
+    {
+      "parameters": {
+        "content": "## ✅ Résumé des améliorations\n\n### 🎯 Corrections effectuées\n\n1. **Élimination des doublons** entre les prompts\n2. **Descriptions claires** pour chaque node\n3. **Structure cohérente** entre tous les agents\n4. **Processus détaillés** pour actions complexes\n5. **Exemples concrets** pour chaque agent\n6. **Règles claires** de routage et délégation\n7. **Format uniforme** pour tous les prompts\n\n### 🔧 Points clés\n\n- **AI Agent (Principal)** : Orchestrateur central avec vue d'ensemble\n- **Agents spécialisés** : Chacun focalisé sur son domaine\n- **AI Agent Tool** : Accès aux outils internes n8n\n- **AI Agent Relais** : Routage vers agents externes\n\n### 📌 Recommandations\n\n1. Copier chaque prompt dans le node correspondant\n2. Vérifier les variables {{ $now }} et {{ $json }}\n3. Tester chaque agent individuellement\n4. Valider les workflows bout-en-bout",
+        "height": 688,
+        "width": 704,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -736,
+        -288
+      ],
+      "id": "b5be4d20-31a1-4e21-866d-2020c9a5a3c6",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "workflowId": "5VtYqzJz1SP2IB2g"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        2800,
+        256
+      ],
+      "id": "139d1f7f-c708-4358-8484-324bea545507",
+      "name": "Agent RAG"
+    },
+    {
+      "parameters": {
+        "workflowId": "VAnO7RbXIAGLPMhE"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        2912,
+        256
+      ],
+      "id": "3ce70c3c-4ee9-47a1-9635-2149c2c11e2c",
+      "name": "DJ"
+    },
+    {
+      "parameters": {
+        "workflowId": "lZAcsbSxbwTilSQ4",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        3040,
+        256
+      ],
+      "id": "4e0c36ac-2264-44e4-b158-b7d9aeb012f8",
+      "name": "Agent Codeur"
+    },
+    {
+      "parameters": {
+        "workflowId": "ILdwgmDHZOzLOpKK"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        3184,
+        256
+      ],
+      "id": "4b93d46b-cebe-49a7-8cf6-5dda5384a344",
+      "name": "Agent Youtube"
+    },
+    {
+      "parameters": {
+        "workflowId": "qYG3MHI5mwIQhCxX",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        1216,
+        256
+      ],
+      "id": "b80c021f-41fd-4766-92ba-64bfe5da2463",
+      "name": "Photoshop"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-5.2",
+        "options": {
+          "maxTokens": 4096,
+          "temperature": 0.5
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        240,
+        256
+      ],
+      "id": "041e3b2d-9156-425a-93b7-e6ef0c394c23",
+      "name": "GPT 5.1"
+    },
+    {
+      "parameters": {
+        "workflowId": "L9wm4ow5P1uunxtO",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        3344,
+        256
+      ],
+      "id": "a4c19b9e-2125-48ec-bbab-b372859483b2",
+      "name": "Agent shopping"
+    },
+    {
+      "parameters": {
+        "workflowId": "YlfB3NLVzmlcDB3m",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        3488,
+        256
+      ],
+      "id": "acb1462c-7f1b-4934-8547-c14a6bbe8117",
+      "name": "Agent_podcast"
+    },
+    {
+      "parameters": {
+        "workflowId": "rgkW5nPXnnOBDJva",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        3632,
+        256
+      ],
+      "id": "7d88c1bf-f623-45e6-b468-1f98f53204cf",
+      "name": "Agent_Regisseur"
+    },
+    {
+      "parameters": {
+        "workflowId": "J9rPnVKTWbh8hUk8",
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        3760,
+        256
+      ],
+      "id": "902f32f4-b150-434f-90ec-384bc2670761",
+      "name": "Docteur"
+    },
+    {
+      "parameters": {
+        "resource": "speech",
+        "voice": {
+          "__rl": true,
+          "value": "7Pm7442WzqlfkW9vjmO9",
+          "mode": "list",
+          "cachedResultName": "Maxime - Dynamic and Natural"
+        },
+        "text": "={{ $json.agent_output }}",
+        "additionalOptions": {},
+        "requestOptions": {}
+      },
+      "type": "@elevenlabs/n8n-nodes-elevenlabs.elevenLabs",
+      "typeVersion": 1,
+      "position": [
+        1952,
+        -96
+      ],
+      "id": "e29d6c4f-9d87-428a-a3d2-c9ffdf054334",
+      "name": "Convert text to speech"
+    },
+    {
+      "parameters": {
+        "resource": "speech",
+        "operation": "speechToText",
+        "additionalOptions": {},
+        "requestOptions": {}
+      },
+      "type": "@elevenlabs/n8n-nodes-elevenlabs.elevenLabs",
+      "typeVersion": 1,
+      "position": [
+        640,
+        -32
+      ],
+      "id": "653df85b-e6e8-46ba-b9d7-3f04055e8695",
+      "name": "Transcribe audio"
+    },
+    {
+      "parameters": {
+        "content": "## Voix\nSi la voix semble trop plate → augmentez style à 0.4\nSi elle varie trop → augmentez stability à 0.7\nSi elle parle trop vite → diminuez speed à 0.9\nSi elle manque de clarté → gardez similarity_boost entre 0.75-0.85",
+        "width": 336
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1856,
+        -304
+      ],
+      "typeVersion": 1,
+      "id": "fa1a8c46-d4c3-4929-9a8f-04e1fac383ee",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Log de qualité vocale\nconst audioSize = $binary.data.fileSize || 0;\nconst duration = audioSize / 3000; // estimation\n\nconsole.log(`Audio généré: ${(audioSize / 1024).toFixed(2)} KB, durée estimée: ${duration.toFixed(1)}s`);\n\nreturn $input.all();"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2160,
+        -96
+      ],
+      "id": "eecc54cf-6fdc-4d0a-81de-928ad1f181a3",
+      "name": "Validation vocale",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// ============================================\n// PRÉPARATION MESSAGE TELEGRAM (NETTOYAGE + FORMATAGE)\n// ============================================\n\nconst text = $json[\"agent_output\"] || $json[\"output\"] || $json[\"Output\"] || $json[\"message\"] || \"\";\n\nif (!text || text.length === 0) {\n  return [{ json: { error: \"Aucun texte à envoyer\" } }];\n}\n\nlet cleanText = text;\n\n// 1. SUPPRESSION MARKDOWN\ncleanText = cleanText.replace(/\\*\\*/g, '');  // **texte** → texte\ncleanText = cleanText.replace(/\\*/g, '');    // *texte* → texte\ncleanText = cleanText.replace(/___/g, '');   // ___texte___ → texte\ncleanText = cleanText.replace(/__/g, '');    // __texte__ → texte\ncleanText = cleanText.replace(/_/g, '');     // _texte_ → texte\ncleanText = cleanText.replace(/##/g, '');    // ## titre → titre\ncleanText = cleanText.replace(/#/g, '');     // # titre → titre\n\n// 2. NETTOYAGE DES GUILLEMETS SUPERFLUS\ncleanText = cleanText.replace(/^[\"\"]|[\"\"]$/g, ''); // Guillemets début/fin\n\n// 3. AMÉLIORATION DES PARAGRAPHES\n// Remplacer \\n\\n par vrai double saut (conserver structure)\ncleanText = cleanText.replace(/\\n\\n+/g, '\\n\\n');\n\n// 4. AMÉLIORATION DES LISTES\n// Garder les tirets pour les listes mais nettoyer\ncleanText = cleanText.replace(/^- /gm, '• ');  // - → •\n\n// 5. NETTOYAGE ESPACES EXCESSIFS\ncleanText = cleanText.replace(/ {2,}/g, ' ');  // Espaces multiples → 1 espace\ncleanText = cleanText.replace(/\\n /g, '\\n');   // Espace après \\n\n\n// 6. NETTOYAGE HTML NON SUPPORTÉ PAR TELEGRAM\ncleanText = cleanText.replace(/<(?!\\/?(?:b|strong|i|em|u|s|code|pre|a)(?:\\s|>))[^>]+>/g, '');\n\n// 7. TRIM GÉNÉRAL\ncleanText = cleanText.trim();\n\n// 8. DÉCOUPER EN CHUNKS DE 4000 CARACTÈRES\nconst chunkSize = 4000;\nlet messages = [];\n\nfor (let i = 0; i < cleanText.length; i += chunkSize) {\n  messages.push({\n    json: {\n      message: cleanText.slice(i, i + chunkSize)\n    }\n  });\n}\n\nconsole.log(`📤 Message nettoyé: ${messages.length} chunk(s), ${cleanText.length} caractères`);\nreturn messages;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2576,
+        -64
+      ],
+      "id": "ba9195bd-426c-4430-9691-79c75300e5e4",
+      "name": "Prepare Telegram Message",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "audio_condition",
+              "leftValue": "={{ $json.input_type }}",
+              "rightValue": "audio",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        1744,
+        -80
+      ],
+      "id": "d56c84f3-6209-4f86-95f3-412bab405480",
+      "name": "Check Input Type",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1XDICFcOw3OTrMxy5NddWKjxw1Q2KWz08A2sMMIwLyZw",
+          "mode": "list",
+          "cachedResultName": "Agent Swarm Logs",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XDICFcOw3OTrMxy5NddWKjxw1Q2KWz08A2sMMIwLyZw/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Logs",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XDICFcOw3OTrMxy5NddWKjxw1Q2KWz08A2sMMIwLyZw/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Timestamp": "={{ $now.format('yyyy-MM-dd hh:m a') }}",
+            "Workflow": "={{ $workflow.name }}",
+            "Input": "={{ $('If').item.json.message.text }}",
+            "Output": "={{ $('Agent NexusFlow').item.json.output }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Timestamp",
+              "displayName": "Timestamp",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Workflow",
+              "displayName": "Workflow",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Input",
+              "displayName": "Input",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Output",
+              "displayName": "Output",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Actions",
+              "displayName": "Actions",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Tokens",
+              "displayName": "Tokens",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "Total Tokens",
+              "displayName": "Total Tokens",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2912,
+        -64
+      ],
+      "id": "8c145e09-b655-4008-8c26-55dd065e645b",
+      "name": "Append row in sheet",
+      "executeOnce": false,
+      "retryOnFail": false,
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "Tu es Agent NexusFlow, un assistant AI multi-talents sophistiqué avec accès à 22 outils spécialisés.\n\n🎯 TES CAPACITÉS:\n- Création de contenu (textes, images, vidéos, audio, podcasts)\n- Gestion administrative (emails, calendrier, contacts, PDF)\n- Assistance professionnelle (code, juridique, médical)\n- Services web (recherche, shopping, YouTube)\n- Orchestration complexe de tâches multi-agents\n\n💡 TON APPROCHE:\n1. Écoute attentivement les besoins de l'utilisateur\n2. Choisis le ou les outils les plus appropriés\n3. Coordonne plusieurs outils si nécessaire pour des tâches complexes\n4. Fournis des réponses claires, précises et utiles\n5. Demande des clarifications si la demande est ambiguë\n\n⚡ RÈGLES IMPORTANTES:\n- Utilise UNIQUEMENT les outils à ta disposition (ne simule jamais une capacité)\n- Pour les tâches complexes, décompose-les en étapes et utilise plusieurs outils\n- Sois transparent sur ce que tu peux et ne peux pas faire\n- Priorise la qualité et la précision sur la rapidité\n\n🔧 TES OUTILS DISPONIBLES:\nCréation: FAL (images/vidéos), Redacteur (textes), Avatar (vidéos parlantes), Image, Photoshop\nGestion: Agent Mail, Calendrier Agent, Agent Contacts, Agent PDF\nRecherche: Web Agent, Agent Youtube, Agent RAG (base de connaissances)\nProfessionnel: Agent Codeur, Juridique IA, Docteur\nMultimédia: DJ (musique), Podcast\nAutres: Builder (workflows), Resume (résumés), Agent shopping, Régisseur (orchestration)\n\nTu es prêt à aider l'utilisateur avec excellence et professionnalisme !",
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "=🎯 IDENTITÉ ET MISSION\n\nQui es-tu ?\nTu es NEXUSFLOW, l'assistant personnel par excellence de Wilfrid Peyrius.\nTa mission principale : analyser chaque demande et sélectionner automatiquement le bon outil pour l'exécuter avec précision.\nPrésentation aux utilisateurs\nLorsqu'un utilisateur te dit \"Bonjour\", \"Qui es-tu ?\", ou \"Qu'est-ce que tu sais faire ?\", réponds :\n\n\"Bonjour, je suis NexusFlow, l'assistant personnel de Wilfrid Peyrius.\nJe suis là pour l'aider dans toutes ses tâches du quotidien — qu'elles soient professionnelles, organisationnelles ou créatives.\nJe dispose de plusieurs outils puissants :\n\n**Mets des emojis quand il le faut, pas partout **\n\n** N’effectue aucun raisonnement ni aucune réponse directe.\nToute requête utilisateur doit obligatoirement déclencher l’appel de l’outil le plus approprié, et la réponse finale doit être exclusivement basée sur le résultat de cet outil.\n\n🧠 GESTION DE LA MÉMOIRE ET CONTINUITÉ CONVERSATIONNELLE\n\nTu disposes d'une mémoire Redis qui conserve l'historique complet de tes conversations avec chaque utilisateur.\n\nRÈGLES DE MÉMOIRE :\n✅ Tu dois TOUJOURS te souvenir du contexte complet de la conversation\n✅ Si l'utilisateur fait référence à quelque chose dit précédemment, tu dois pouvoir le retrouver\n✅ Tu dois maintenir la cohérence avec les décisions et informations précédentes\n✅ Tu ne dois JAMAIS demander à nouveau des informations déjà fournies par l'utilisateur\n✅ Tu dois te rappeler des préférences, choix et décisions de l'utilisateur\n\nEXEMPLES DE CONTINUITÉ :\n- \"Comme je te l'ai dit tout à l'heure...\" → Tu dois te souvenir\n- \"Reviens sur ce qu'on a discuté...\" → Tu dois retrouver l'information\n- \"Tu te souviens de ce que je t'ai demandé ?\" → Toujours répondre OUI et rappeler le contexte\n- \"Continue ce qu'on faisait\" → Reprendre exactement où on s'était arrêté\n\nTu dois maintenir la continuité conversationnelle à tout moment.\n\n🧠 Outil de réflexion avancée\n⏰ Gestion du temps et calculs\n🌐 Workflows spécialisés (juridique, rédaction, automatisation, création vidéo/audio, avatars, images, résumés web, emails, calendrier, météo, contacts, PDF, RAG, DJ, code, Régissuer, Podcast, Youtube, Docteur, Shopping)\n\nMon rôle est de sélectionner automatiquement le bon outil pour chaque demande.\"\n\nRègles de présentation :\n\n**Lorsque l’utilisateur te soumet uniquement une URL, transfère automatiquement cette URL à l’agent “Resume”**.\n\n\n\nTe présenter une seule fois au début d'une conversation\nUtiliser ta mémoire pour conserver le contexte\nNe jamais oublier les instructions ou décisions précédentes\n\n**Si l'utilisateur fournit uniquement un lien ou une URL, envoie automatiquement cette URL à l’agent Résumé sans demander d’informations supplémentaires. **\n\n\nLorsque tu identifies qu’un ou plusieurs agents spécialisés doivent traiter une demande, tu dois décomposer la phrase de l’utilisateur en tâches distinctes, puis router chaque tâche vers l’agent approprié, dans le bon ordre d’exécution.\n\n🔧 RÈGLE : Gestion des demandes multi-instructions\n\nSi le message de l’utilisateur contient plusieurs actions à effectuer, alors :\n\n1. Analyser et découper chaque instruction indépendamment (ex : “trouve l’email de X”, “envoie-lui 5 vidéos”, “résume ça”, etc.).\n\n2. Router chaque instruction au bon agent, dans la séquence logique nécessaire.\n\n3. Rassembler la sortie de chaque agent puis transmettre l’étape suivante à l’agent suivant.\n\n4. Ne jamais confondre ni fusionner des actions différentes, toujours les traiter avec leur agent dédié.\n\n🧩 Exemple multi-agents (Cas réel)\n\n🔵 Message utilisateur :\n\n“Trouve l’email de X et envoie-lui 5 vidéos qui parlent de n8n par mail.”\n\n\n🧰 INVENTAIRE DES OUTILS\n🧠 Outils Internes (Natifs)\n🔹 Think : Raisonnement approfondi, analyse logique, décisions complexes. Utiliser avant toute action importante ou complexe.\n🔹 Date & Time : Date/heure actuelles, calculs de durées, planifications temporelles.\n🔹 Calculator : Calculs mathématiques, opérations arithmétiques complexes.\n\n🌐 AGENTS SPÉCIALISÉS (Workflows)\n\n📝 AGENTS DE CONTENU TEXTUEL & ANALYSE\n🔷 JURIDIQUE IA\n\nFonction : Questions juridiques, administratives, réglementaires, rédaction de contrats, conformité RGPD, droit du travail\nDéclencheurs : \"Que dit la loi\", \"légalement\", \"juridiquement\", questions de droit\n\n🔷 REDACTEUR\n\nFonction : Rapports détaillés, études de marché, business plans, rédaction professionnelle de haute qualité\nDéclencheurs : \"Rédige-moi\", \"écris-moi\", \"rédaction de\", documents professionnels\n\n🔷 RESUME\n\nFonction : Résumé de contenu web\nDéclencheurs : \"Résume-moi ceci\", \"résumé de cette cette page \"\n\n\n🔷 AGENT PDF 🖨️📄\n\nFonction : Conversion de recherches et contenus en documents PDF professionnels\nDéclencheurs : Création de PDF, documents formels\n\n\n🔷 AGENT RAG 🧠📚🔍 ⭐ PRIORITAIRE\n\nFonction : Recherche et analyse de documents internes, base de connaissances personnelle, récupération d'informations contextuelles sur Wilfrid\nDéclencheurs : \"RAG\", \"dans mes documents\", \"recherche interne\", \"Qui est Wilfrid ?\"\n⚠️ IMPORTANT : Toujours consulter en premier pour les questions personnelles\n\n***Ne jamais declencher l'agent RAG avec: **resume moi ceci**, **résumé de cette cette page** \n\n\n🌐 AGENT DE RECHERCHE & NAVIGATION\n🔷 WEB AGENT 💻🌐\n\nFonction : Navigation web, recherche d'informations externes, analyse de sites internet\nDéclencheurs : \"Web\", \"recherche sur internet\", \"cherche en ligne\", informations publiques\n\n\n🎨 AGENTS DE CONTENU VISUEL & CRÉATIF\n🔷 FAL 🎬🤖🎨\n\nFonction : Création d'histoires vidéo immersives et narratives, décors, personnages, ambiance cinématographique\nDéclencheurs : \"Demande à FAL\", \"crée une vidéo\", \"génère une vidéo\", \"scénario vidéo\"\n\n🔷 AVATAR 🧍‍♂️💬\n\nFonction : Création d'avatars vidéo personnalisés et réalistes\nDéclencheurs : \"Crée un avatar\", \"avatar vidéo\", personnage virtuel\n\n🔷 IMAGE 🤖🎨📲 ⚠️ SUR DEMANDE EXPLICITE UNIQUEMENT\n\nFonction : Génération d'images créatives via DALL-E 3\nDéclencheurs : \"Crée une image\", \"génère une image\", \"image de\"\n⚠️ RÈGLE STRICTE : N'utiliser QUE si l'utilisateur demande explicitement une image\n\n\n🎵 AGENT DE CONTENU MUSICAL\n🔷 DJ 🎧🎵⭐\n\nFonction : Création de playlists DJ professionnelles de 20 morceaux parfaitement mixables, cohérence BPM et harmonie tonale\nDéclencheurs : \"Crée une playlist\", \"playlist DJ\", \"mix musical\", sélection musicale\n\n\n💻 AGENT DE DÉVELOPPEMENT & PROGRAMMATION\n🔷 AGENT CODEUR 💻👨‍💻🔧 ⭐ EXPERT TECHNIQUE\n\nFonction : Expert développement multi-langages (Python, PowerShell, Bash, JavaScript, SQL, Go, Rust), création de scripts optimisés avec gestion d'erreurs, commentaires détaillés, sauvegarde du code avec historique, modifications de code précédent, envoi par email\nDéclencheurs : \"Code\", \"script\", \"programme\", \"développe\", \"écris du code\", \"écris un script\", \"crée un script\", \"python\", \"javascript\", \"bash\", \"powershell\", \"sql\", \"golang\", \"rust\", \"modifie le code\", \"corrige le code\", \"améliore le code\", \"historique de code\"\n🚨 RÈGLE CRITIQUE : TU NE DOIS JAMAIS CRÉER DE CODE TOI-MÊME. Toute demande de programmation, même mineure, doit être OBLIGATOIREMENT transférée à l'AGENT CODEUR\n\n\n⚙️ AGENT D'AUTOMATISATION & TECHNIQUE\n🔷 BUILDER 🧩⚙️🚀\n\nFonction : Création de workflows n8n automatisés, intégration d'APIs et processus inter-outils, retour d'un lien cliquable\nDéclencheurs : \"Build-moi\", \"crée-moi un blueprint\", \"automatise\", \"workflow\", processus automatisés\n\n\n📧 AGENTS DE COMMUNICATION & ORGANISATION\n🔷 AGENT MAIL 🤖📨\n\nFonction : Gestion des emails, envoi, lecture, organisation de la boîte mail\nDéclencheurs : Gestion d'emails, envoi de messages, consultation de la boîte mail\n\nRègle :\n\nLorsqu’un message utilisateur contient une instruction du type “envoie un mail à [personne]” :\n\nInterroger l’outil Contacts pour rechercher l’adresse e-mail associée à la personne mentionnée.\n\nExtraire l’adresse e-mail trouvée (recipient_email).\n\nTransmettre le message et recipient_email à l’outil Mail, qui se chargera de l’envoi.\n\n##Exemple :\n\nMessage utilisateur :\n\n- \"Peux-tu envoyer un mail à Jean Dupont pour lui transmettre le rapport ?\"\n\n##Processus attendu :\n\n1. L’agent cherche Jean Dupont dans l’outil Contacts.\n\n2. L’outil retourne : jean.dupont@example.com.\n\n3. L’agent envoie au service Mail :\n\n - recipient = \"jean.dupont@example.com\"\n\n - message = \"transmettre le rapport\"\n\n→ Le mail est envoyé automatiquement.\n\n\n🔷 CALENDRIER AGENT\n\nFonction : Gestion de l'agenda, création d'événements, planification\nDéclencheurs : Agenda, événements, rendez-vous, planification temporelle\n\n🔷 AGENT CONTACTS 👥📇\n\nFonction : Gestion des contacts, recherche, ajout, modification d'informations de contact\nDéclencheurs : Contacts, coordonnées, carnet d'adresses, informations de contact\n\n\n🌤️ AGENT D'INFORMATIONS PRATIQUES\n🔷 OPENWEATHERMAP 🌤️🌡️\n\nFonction : Informations météorologiques actuelles et prévisions pour n'importe quelle ville\nDéclencheurs : Météo, prévisions, température, climat\n\n🔷 AGENT YOUTUBE \n\nFonction : Recherche, analyse et résumé de vidéos YouTube.\nDéclencheurs : Youtube, Demande à Youtube, Trouve-moi x videos\n\n🔷 AGENT PHOTOSHOP \n\nFonction : Combine, edit les photos, cree des image IA.\nDéclencheurs : Combine,Photoshop, Image IA,  combine moi.\n\n🔷 AGENT SHOPPING\n\nFonction : Recherche des bons plans (Hotels, voyages, vêtements)\nDéclencheurs : Hotels, restaurants, chaussures, Ordinateur, TV, etc.\n\n🔷 AGENT DOCTEUR\nFonction : Assistant médical spécialisé (Drépanocytose, Fibromyalgie, TSA, Glaucome, Neurochirurgie, Hormones, Pharmacie)\nDéclencheurs : Docteur, Santé, maladie, symptômes, médicament, traitement, douleur, diagnostic, médecin, hôpital, ordonnance, dosage, etc.\n\n🔷 AGENT PODCAST\n\nFonction : Créer des podcasts de qualité sur différents sujts\nDéclencheurs : Podcast, émission.\n\n🔷 AGENT REGISSEUR\n\nFonction : Générateur Dialogue Podcast Multi-Speaker.\nDéclencheurs : Dialogue, Sujet: , Voice ID\n\n\n🧭 SYSTÈME D'AIGUILLAGE INTELLIGENT\n📋 Méthodologie de Travail (6 Étapes)\n1. ANALYSER la requête utilisateur en profondeur\n2. IDENTIFIER l'outil approprié en détectant les déclencheurs spécifiques\n3. UTILISER THINK systématiquement avant toute action importante ou complexe\n4. TRANSMETTRE la demande EXACTEMENT telle quelle à l'agent (RÈGLE PRIORITAIRE)\n5. RECEVOIR la réponse de l'agent INTÉGRALEMENT\n6. FORWARDER la réponse EXACTEMENT telle quelle à l'utilisateur (RÈGLE PRIORITAIRE)\n🎯 Principes Généraux\n\nMission principale : Choisir le(s) bon(s) outil(s) pour chaque requête et router les communications\nRôle de routeur : Tu es un routeur transparent, pas un filtre ou un modérateur de contenu\nToujours confirmer les actions effectuées\nPour les tâches multiples : déléguer dans le bon ordre\nMentionner l'outil utilisé uniquement si cela apporte de la clarté\nPour les workflows : toujours inclure un lien cliquable si fourni\nUtiliser Think avant toute décision complexe ou action importante\n\n\n📚 RÈGLES SPÉCIALES : AGENT RAG (PRIORITAIRE)\n⭐ Utilisation Prioritaire - TOUJOURS CONSULTER EN PREMIER\n🚨 TOUJOURS consulter l'AGENT RAG dans les cas suivants :\n\nQuestions sur \"Qui est Wilfrid ?\" ou toute information personnelle concernant Wilfrid Peyrius\nToutes les questions personnelles (préférences, historique, projets personnels, contexte personnel)\nAvant de répondre à toute question, vérifier d'abord si l'AGENT RAG contient des informations pertinentes dans la base de connaissances\nSi l'agent RAG n'a pas de reponse, Ensuite demande à l'agent Web\n\n\n\n🔄 Stratégie de Recherche Combinée\nPour les recherches générales, combiner SYSTÉMATIQUEMENT les deux sources :\nOrdre de consultation recommandé :\n1️⃣ AGENT RAG - Base de connaissances interne (informations personnelles, documents privés)\n2️⃣ WEB AGENT - Informations externes (données publiques, actualités, recherche web)\n3️⃣ SYNTHÈSE - Fusion intelligente des deux sources pour une réponse complète\nCette approche garantit d'obtenir à la fois les informations internes personnalisées et les données externes actualisées.\n\n📧 GESTION DES ENVOIS PAR EMAIL\n📬 Identification des Destinataires\n➤ À Wilfrid Peyrius : utiliser directement l'adresse assisperso@gmail.com\n➤ À un contact spécifique : utiliser AGENT CONTACTS pour trouver l'adresse email du destinataire\nToujours formatter le résultat de manière claire et professionnelle avant l'envoi.\n🚨 Transfert de l'Instruction Complète aux Agents - IMPORTANT\nRÈGLE CRITIQUE : Si l'utilisateur demande à un agent de faire quelque chose ET d'envoyer le résultat par mail :\n✅ PROCÉDURE CORRECTE :\n\nTransférer l'instruction COMPLÈTE à l'agent concerné, incluant la demande d'envoi par mail\nInclure dans la requête à l'agent : la tâche principale (EXACTEMENT telle quelle) + \"et envoie le résultat par email à [destinataire]\"\nL'agent sera responsable de générer le contenu ET de l'envoyer par email EN UNE SEULE OPÉRATION\n\n📋 Exemple 1 :\n\nUtilisateur : \"Rédige-moi un rapport sur le marché de l'IA et envoie-le par mail\"\nAction : Appeler REDACTEUR avec : \"Rédige-moi un rapport sur le marché de l'IA et envoie le résultat par email à assisperso@gmail.com\"\n\n📋 Exemple 2 :\n\nUtilisateur : \"Crée-moi un script Python pour scraper un site web et envoie-le par mail\"\nAction : Appeler AGENT CODEUR avec : \"Crée-moi un script Python pour scraper un site web et envoie le résultat par email à assisperso@gmail.com\"\n\n❌ NE JAMAIS : Séparer la tâche en deux étapes distinctes (génération puis envoi). L'agent doit gérer les deux actions en une seule fois.\n\n⚠️ RÈGLES STRICTES & INTERDICTIONS\n🚫 Interdictions Absolues\n❌ IMAGE : Ne JAMAIS créer d'image sauf si l'utilisateur l'a EXPLICITEMENT DEMANDÉ\n\n❌ CODE : Ne JAMAIS créer de code directement - TOUJOURS utiliser l'AGENT CODEUR\n\n❌ MODIFICATION DEMANDE : Ne JAMAIS modifier, résumer, reformuler, paraphraser ou ajouter quoi que ce soit à la demande de l'utilisateur avant de la transmettre à un agent\n\n❌ MÉMOIRE : Ne JAMAIS oublier le contexte ou les décisions précédentes d'une conversation\n\n❌ AGENT WEB : Ne JAMAIS faire de recherche shooping, d'hôtels de voyage ou des bon plans vêtements, TV, Hi-Tech ...\n\n❌ NE JAMAIS : Générer des dialogue pour les podcast directement, toujour envoyer à Régisseur.\n\n✅ Obligations Strictes\n✅ PRÉSENTATION : Te présenter une seule fois par conversation, puis ne plus le refaire jusqu'à la prochaine\n✅ MÉMOIRE : Toujours utiliser ta mémoire pour conserver le contexte et ne jamais oublier les instructions ou décisions précédentes\n\n✅ LIENS : Pour les workflows, toujours inclure un lien cliquable si fourni par l'agent\n✅ ORDRE : Pour les tâches multiples, déléguer dans le bon ordre et de manière logique\n✅ PRÉSENTATION COMPLÈTE : Si l'utilisateur demande \"Qui es-tu ?\" ou \"Que sais-tu faire ?\" → se présenter complètement comme l'assistant de Wilfrid Peyrius et énumérer tous les outils disponibles, sans utiliser d'image\n\n🕓 CONTEXTE D'EXÉCUTION\nDate et heure actuelles : {{ $now }}\nInput utilisateur : {{ $json.text || \"\" }} {{ $json.audio || \"\" }}\n\n##Consigne stricte sur les chiffres pour les messages audio Telegram\nCONSIGNE STRICTE : **Tu dois toujours prononcer explicitement les nombres, les virgules et les points dans les chiffres pour les messages audio Telegram.**\n– Pour les nombres avec une virgule :\n« 1,5 % » doit être prononcé « un virgule cinq pour cent ».\n« 3,2 » doit être prononcé « trois virgule deux ».\n– Pour les nombres avec un point :\n« 25.30 degrés » doit être prononcé « vingt-cinq point trente degrés ».\n« 4.01 » doit être prononcé « quatre point zéro un ».\nTu ne dois JAMAIS interpréter, arrondir ou reformuler les chiffres.\nTu dois TOUJOURS les lire exactement tels qu'ils apparaissent.\nCette règle est IMPÉRATIVE et ne souffre AUCUNE exception.\n\n##Consigne pour les messages texte\n**Pour les messages texte écrits (non audio), tu dois écrire les chiffres normalement.**\nExemples :\n\n« 1,5 % » s'écrit « 1,5 % »\n« 25.30 degrés » s'écrit « 25.30 degrés »\n« 3,2 » s'écrit « 3,2 »\n\n📝 GESTION DE LA MÉMOIRE\n\nTu dois TOUJOURS te souvenir du contexte complet de la conversation.\nSi l'utilisateur fait référence à quelque chose dit précédemment, tu dois pouvoir le retrouver.\n\nExemples :\n- \"Comme je te l'ai dit tout à l'heure...\"\n- \"Reviens sur ce qu'on a discuté...\"\n- \"Tu te souviens de ce que je t'ai demandé ?\"\n\nTu dois maintenir la continuité conversationnelle à tout moment.",
+          "returnIntermediateSteps": false,
+          "enableStreaming": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        1024,
+        -64
+      ],
+      "id": "8f072244-9394-4ebc-b3af-aef74f809a09",
+      "name": "Agent NexusFlow",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "claude-sonnet-4-5-20250929",
+          "cachedResultName": "Claude Sonnet 4.5"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        384,
+        256
+      ],
+      "id": "0d6ad942-843a-47e2-b76c-aeb0cce135c8",
+      "name": "Anthropic Chat Model"
+    }
+  ],
+  "connections": {
+    "Think": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent NexusFlow",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "MessageVoice": {
+      "main": [
+        [
+          {
+            "node": "Transcribe audio",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "MessageVoice",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Fields": {
+      "main": [
+        [
+          {
+            "node": "Agent NexusFlow",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Analyze Output": {
+      "main": [
+        [
+          {
+            "node": "Check Input Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Agent NexusFlow",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent NexusFlow",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "FAL": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent NexusFlow",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redacteur": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent NexusFlow",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Builder": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent NexusFlow",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Avatar": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent NexusFlow",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Resume": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent NexusFlow",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Juridique IA": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent NexusFlow",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Image": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent NexusFlow",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent Mail": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent NexusFlow",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calendrier Agent": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent NexusFlow",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenWeatherMap": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent NexusFlow",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculator": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent NexusFlow",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Web Agent": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent NexusFlow",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent Contacts": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent NexusFlow",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent PDF": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent NexusFlow",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent RAG": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent NexusFlow",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DJ": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent NexusFlow",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent Codeur": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent NexusFlow",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent Youtube": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent NexusFlow",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Photoshop": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent NexusFlow",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GPT 5.1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agent NexusFlow",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent shopping": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent NexusFlow",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent_podcast": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent NexusFlow",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent_Regisseur": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent NexusFlow",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Docteur": {
+      "ai_tool": [
+        [
+          {
+            "node": "Agent NexusFlow",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convert text to speech": {
+      "main": [
+        [
+          {
+            "node": "Validation vocale",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcribe audio": {
+      "main": [
+        [
+          {
+            "node": "Edit Fields",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validation vocale": {
+      "main": [
+        [
+          {
+            "node": "Send Voice Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Telegram Message": {
+      "main": [
+        [
+          {
+            "node": "Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Check Input Type": {
+      "main": [
+        [
+          {
+            "node": "Convert text to speech",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare Telegram Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Response": {
+      "main": [
+        [
+          {
+            "node": "Append row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent NexusFlow": {
+      "main": [
+        [
+          {
+            "node": "Analyze Output",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Error Message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Anthropic Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agent NexusFlow",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "timezone": "Europe/Paris",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "versionId": "909c648e-448f-490d-8947-83e420517c25",
+  "activeVersionId": "0aee55a0-8098-4806-8936-b8af4b10e7a1",
+  "versionCounter": 192,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-02-01T20:34:56.627Z",
+      "createdAt": "2026-02-01T20:34:56.627Z",
+      "role": "workflow:owner",
+      "workflowId": "ldbOBqQIXC1SIM3O",
+      "projectId": "oYt1GPNUBpK2eWHS",
+      "project": {
+        "updatedAt": "2026-02-01T17:02:13.492Z",
+        "createdAt": "2026-02-01T15:39:19.158Z",
+        "id": "oYt1GPNUBpK2eWHS",
+        "name": "Wilfrid Peyrius <willbys@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c",
+        "projectRelations": [
+          {
+            "updatedAt": "2026-02-01T15:39:19.158Z",
+            "createdAt": "2026-02-01T15:39:19.158Z",
+            "userId": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c",
+            "projectId": "oYt1GPNUBpK2eWHS",
+            "user": {
+              "updatedAt": "2026-02-08T00:33:37.904Z",
+              "createdAt": "2026-02-01T15:39:18.127Z",
+              "id": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c",
+              "email": "willbys@gmail.com",
+              "firstName": "Wilfrid",
+              "lastName": "Peyrius",
+              "personalizationAnswers": null,
+              "settings": {
+                "userActivated": true,
+                "easyAIWorkflowOnboarded": true,
+                "firstSuccessfulWorkflowId": "ldbOBqQIXC1SIM3O",
+                "userActivatedAt": 1769981079850
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2026-02-08",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-02-08T08:43:06.822Z",
+    "createdAt": "2026-02-08T08:42:47.082Z",
+    "versionId": "0aee55a0-8098-4806-8936-b8af4b10e7a1",
+    "workflowId": "ldbOBqQIXC1SIM3O",
+    "nodes": [
+      {
+        "parameters": {},
+        "type": "@n8n/n8n-nodes-langchain.toolThink",
+        "typeVersion": 1.1,
+        "position": [
+          816,
+          256
+        ],
+        "id": "79ce3df1-d2f2-4732-ab8f-a2b0f67054cf",
+        "name": "Think"
+      },
+      {
+        "parameters": {
+          "chatId": "={{ $('Telegram Trigger').item.json.message.chat.id }}",
+          "text": "hello",
+          "additionalFields": {}
+        },
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          1376,
+          -48
+        ],
+        "id": "8e2a8413-2d75-496d-97ad-9f0096a9be1c",
+        "name": "Error Message",
+        "webhookId": "9f42a5af-de22-444a-acb9-433fda9b9d2c",
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+          "text": "={{ $json.message }}",
+          "additionalFields": {}
+        },
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          2752,
+          -64
+        ],
+        "id": "a997a873-5cfd-47ec-948b-33f701a5cd87",
+        "name": "Response",
+        "webhookId": "4e33a6d8-aeda-4762-b54f-2cec5ca5e169",
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "resource": "file",
+          "fileId": "={{ $json.message.voice.file_id }}",
+          "additionalFields": {}
+        },
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          480,
+          -32
+        ],
+        "id": "4401f1b3-7ce3-4f41-8b4e-b9d75b2a6a4b",
+        "name": "MessageVoice",
+        "webhookId": "fe7668a9-3d52-44c0-a030-59bbeab721f9",
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "version": 2,
+              "leftValue": "",
+              "caseSensitive": true,
+              "typeValidation": "loose"
+            },
+            "conditions": [
+              {
+                "id": "73417511-0e48-43e3-9dfe-48defdea0ca1",
+                "leftValue": "={{ $json.message.text }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "string",
+                  "operation": "exists"
+                }
+              }
+            ],
+            "combinator": "or"
+          },
+          "looseTypeValidation": true,
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          304,
+          -48
+        ],
+        "id": "c26ded81-57b5-4a03-8351-4f025a7ec231",
+        "name": "If",
+        "onError": "continueErrorOutput"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "c63d2a0a-cb43-4ea3-984a-5ab26b7b3716",
+                "name": "text",
+                "value": "={{ $json.message.text }}",
+                "type": "string"
+              },
+              {
+                "id": "299cbc85-558b-430d-b606-5007cd36708f",
+                "name": "audio",
+                "value": "={{ $json.text }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          864,
+          -64
+        ],
+        "id": "82ab62cb-b2a1-40be-9ada-64a97f5cb8be",
+        "name": "Edit Fields"
+      },
+      {
+        "parameters": {
+          "operation": "sendAudio",
+          "chatId": "={{ $('Telegram Trigger').item.json.message.from.id }}",
+          "binaryData": true,
+          "additionalFields": {
+            "fileName": "NexusFlow "
+          }
+        },
+        "id": "3e299a99-0ce7-49b2-9647-e379735b2fa1",
+        "name": "Send Voice Response",
+        "type": "n8n-nodes-base.telegram",
+        "position": [
+          2336,
+          -96
+        ],
+        "webhookId": "b3c2c40a-26f9-4520-b647-6dbf000a342d",
+        "typeVersion": 1.2,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "input_type",
+                "name": "input_type",
+                "value": "={{ $('Edit Fields').item.json.text ? 'text' : 'audio' }}",
+                "type": "string"
+              },
+              {
+                "id": "agent_output",
+                "name": "agent_output",
+                "value": "={{ $json.text || $json.output || $json.response || '' }}",
+                "type": "string"
+              },
+              {
+                "id": "d42ff141-5951-4b2c-98c9-e81c6aa87c57",
+                "name": "",
+                "value": "",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          1552,
+          -80
+        ],
+        "id": "f65dfe35-15d0-4555-8ec2-917948a6350b",
+        "name": "Analyze Output"
+      },
+      {
+        "parameters": {
+          "updates": [
+            "message"
+          ],
+          "additionalFields": {}
+        },
+        "type": "n8n-nodes-base.telegramTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          96,
+          -48
+        ],
+        "id": "eafd10cc-a52c-4b50-a145-37f2be8afd68",
+        "name": "Telegram Trigger",
+        "webhookId": "0226a593-2c18-4228-88b2-f109060b487e",
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "sessionIdType": "customKey",
+          "sessionKey": "={{ String($('Telegram Trigger').item.json.message.chat.id) }}",
+          "contextWindowLength": 200
+        },
+        "type": "@n8n/n8n-nodes-langchain.memoryRedisChat",
+        "typeVersion": 1.5,
+        "position": [
+          544,
+          256
+        ],
+        "id": "e002edf6-dcd9-4cc8-ac20-be2f2de8d228",
+        "name": "Redis Chat Memory"
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "n8n-nodes-base.dateTimeTool",
+        "typeVersion": 2,
+        "position": [
+          688,
+          256
+        ],
+        "id": "daff1d56-73a5-421c-aab0-76fa05e24306",
+        "name": "Date & Time"
+      },
+      {
+        "parameters": {
+          "workflowId": "y6vdgLJQ7IOnFeI7"
+        },
+        "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+        "typeVersion": 2.2,
+        "position": [
+          1664,
+          256
+        ],
+        "id": "10bdf4b7-49cb-4327-9768-2d123d6f4cd9",
+        "name": "FAL"
+      },
+      {
+        "parameters": {
+          "workflowId": "UttIm92juhKRuDQR",
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {},
+            "matchingColumns": [],
+            "schema": [],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+        "typeVersion": 2.2,
+        "position": [
+          1440,
+          256
+        ],
+        "id": "993bf074-43e7-42f3-a5b9-0758691a6b92",
+        "name": "Redacteur"
+      },
+      {
+        "parameters": {
+          "workflowId": "lZkoPDBxkKAqGgzT"
+        },
+        "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+        "typeVersion": 2.2,
+        "position": [
+          1792,
+          256
+        ],
+        "id": "b0738bb5-f7b5-4036-b23a-90d3dace8417",
+        "name": "Builder"
+      },
+      {
+        "parameters": {
+          "workflowId": "sND4LdxG5HYDS7xc",
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {},
+            "matchingColumns": [],
+            "schema": [],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+        "typeVersion": 2.2,
+        "position": [
+          1904,
+          256
+        ],
+        "id": "7b2e788d-d192-46b7-9425-cf1de5969e33",
+        "name": "Avatar"
+      },
+      {
+        "parameters": {
+          "workflowId": "Hp3Qb2nV27CrAtea"
+        },
+        "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+        "typeVersion": 2.2,
+        "position": [
+          1552,
+          256
+        ],
+        "id": "dbb78c98-062a-4c2c-9b0e-193c442f2fd2",
+        "name": "Resume"
+      },
+      {
+        "parameters": {
+          "workflowId": "bvPmJvNhZcytMInp"
+        },
+        "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+        "typeVersion": 2.2,
+        "position": [
+          1328,
+          256
+        ],
+        "id": "f83d5c71-8b10-4efa-ad87-5b9aaa36dfb2",
+        "name": "Juridique IA"
+      },
+      {
+        "parameters": {
+          "workflowId": "fslFEVsAwBKHkCzk"
+        },
+        "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+        "typeVersion": 2.2,
+        "position": [
+          2016,
+          256
+        ],
+        "id": "50d1875b-701b-47fb-9427-689156e292d3",
+        "name": "Image"
+      },
+      {
+        "parameters": {
+          "workflowId": "Ru3BAcjHhZf3rAVk"
+        },
+        "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+        "typeVersion": 2.2,
+        "position": [
+          2144,
+          256
+        ],
+        "id": "9b93234f-ad15-4095-a1ff-0ca73ec86be2",
+        "name": "Agent Mail"
+      },
+      {
+        "parameters": {
+          "workflowId": "dIgjgCMDT0fNuPfj"
+        },
+        "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+        "typeVersion": 2.2,
+        "position": [
+          2272,
+          256
+        ],
+        "id": "74fbc28f-c359-4322-a8aa-0bc3be51d8d7",
+        "name": "Calendrier Agent"
+      },
+      {
+        "parameters": {
+          "cityName": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('City', ``, 'string') }}",
+          "language": "fr"
+        },
+        "type": "n8n-nodes-base.openWeatherMapTool",
+        "typeVersion": 1,
+        "position": [
+          976,
+          256
+        ],
+        "id": "f4215526-c4eb-4fe7-823c-d0001df53e30",
+        "name": "OpenWeatherMap"
+      },
+      {
+        "parameters": {},
+        "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+        "typeVersion": 1,
+        "position": [
+          1104,
+          256
+        ],
+        "id": "13f1caab-e357-4549-a187-4592ea13057a",
+        "name": "Calculator"
+      },
+      {
+        "parameters": {
+          "workflowId": "xBxFqUDRKcuEmArC",
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {},
+            "matchingColumns": [],
+            "schema": [],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+        "typeVersion": 2.2,
+        "position": [
+          2400,
+          256
+        ],
+        "id": "db57ce53-6d24-47b7-8edb-ae1dea7c79ab",
+        "name": "Web Agent"
+      },
+      {
+        "parameters": {
+          "workflowId": "fKUTAqQzFJZII2MT"
+        },
+        "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+        "typeVersion": 2.2,
+        "position": [
+          2544,
+          256
+        ],
+        "id": "f2e0cb67-ddad-41dd-a588-c2b00480b499",
+        "name": "Agent Contacts"
+      },
+      {
+        "parameters": {
+          "workflowId": "scYestgf0JHQSujo"
+        },
+        "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+        "typeVersion": 2.2,
+        "position": [
+          2688,
+          256
+        ],
+        "id": "fa768530-3062-4803-a0c5-2ef9f8d09371",
+        "name": "Agent PDF"
+      },
+      {
+        "parameters": {
+          "content": "## ✅ Résumé des améliorations\n\n### 🎯 Corrections effectuées\n\n1. **Élimination des doublons** entre les prompts\n2. **Descriptions claires** pour chaque node\n3. **Structure cohérente** entre tous les agents\n4. **Processus détaillés** pour actions complexes\n5. **Exemples concrets** pour chaque agent\n6. **Règles claires** de routage et délégation\n7. **Format uniforme** pour tous les prompts\n\n### 🔧 Points clés\n\n- **AI Agent (Principal)** : Orchestrateur central avec vue d'ensemble\n- **Agents spécialisés** : Chacun focalisé sur son domaine\n- **AI Agent Tool** : Accès aux outils internes n8n\n- **AI Agent Relais** : Routage vers agents externes\n\n### 📌 Recommandations\n\n1. Copier chaque prompt dans le node correspondant\n2. Vérifier les variables {{ $now }} et {{ $json }}\n3. Tester chaque agent individuellement\n4. Valider les workflows bout-en-bout",
+          "height": 688,
+          "width": 704,
+          "color": 4
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -736,
+          -288
+        ],
+        "id": "b5be4d20-31a1-4e21-866d-2020c9a5a3c6",
+        "name": "Sticky Note1"
+      },
+      {
+        "parameters": {
+          "workflowId": "5VtYqzJz1SP2IB2g"
+        },
+        "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+        "typeVersion": 2.2,
+        "position": [
+          2800,
+          256
+        ],
+        "id": "139d1f7f-c708-4358-8484-324bea545507",
+        "name": "Agent RAG"
+      },
+      {
+        "parameters": {
+          "workflowId": "VAnO7RbXIAGLPMhE"
+        },
+        "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+        "typeVersion": 2.2,
+        "position": [
+          2912,
+          256
+        ],
+        "id": "3ce70c3c-4ee9-47a1-9635-2149c2c11e2c",
+        "name": "DJ"
+      },
+      {
+        "parameters": {
+          "workflowId": "lZAcsbSxbwTilSQ4",
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {},
+            "matchingColumns": [],
+            "schema": [],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+        "typeVersion": 2.2,
+        "position": [
+          3040,
+          256
+        ],
+        "id": "4e0c36ac-2264-44e4-b158-b7d9aeb012f8",
+        "name": "Agent Codeur"
+      },
+      {
+        "parameters": {
+          "workflowId": "ILdwgmDHZOzLOpKK"
+        },
+        "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+        "typeVersion": 2.2,
+        "position": [
+          3184,
+          256
+        ],
+        "id": "4b93d46b-cebe-49a7-8cf6-5dda5384a344",
+        "name": "Agent Youtube"
+      },
+      {
+        "parameters": {
+          "workflowId": "qYG3MHI5mwIQhCxX",
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {},
+            "matchingColumns": [],
+            "schema": [],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+        "typeVersion": 2.2,
+        "position": [
+          1216,
+          256
+        ],
+        "id": "b80c021f-41fd-4766-92ba-64bfe5da2463",
+        "name": "Photoshop"
+      },
+      {
+        "parameters": {
+          "model": "openai/gpt-5.2",
+          "options": {
+            "maxTokens": 4096,
+            "temperature": 0.5
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+        "typeVersion": 1,
+        "position": [
+          240,
+          256
+        ],
+        "id": "041e3b2d-9156-425a-93b7-e6ef0c394c23",
+        "name": "GPT 5.1"
+      },
+      {
+        "parameters": {
+          "workflowId": "L9wm4ow5P1uunxtO",
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {},
+            "matchingColumns": [],
+            "schema": [],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+        "typeVersion": 2.2,
+        "position": [
+          3344,
+          256
+        ],
+        "id": "a4c19b9e-2125-48ec-bbab-b372859483b2",
+        "name": "Agent shopping"
+      },
+      {
+        "parameters": {
+          "workflowId": "YlfB3NLVzmlcDB3m",
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {},
+            "matchingColumns": [],
+            "schema": [],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+        "typeVersion": 2.2,
+        "position": [
+          3488,
+          256
+        ],
+        "id": "acb1462c-7f1b-4934-8547-c14a6bbe8117",
+        "name": "Agent_podcast"
+      },
+      {
+        "parameters": {
+          "workflowId": "rgkW5nPXnnOBDJva",
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {},
+            "matchingColumns": [],
+            "schema": [],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+        "typeVersion": 2.2,
+        "position": [
+          3632,
+          256
+        ],
+        "id": "7d88c1bf-f623-45e6-b468-1f98f53204cf",
+        "name": "Agent_Regisseur"
+      },
+      {
+        "parameters": {
+          "workflowId": "J9rPnVKTWbh8hUk8",
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {},
+            "matchingColumns": [],
+            "schema": [],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+        "typeVersion": 2.2,
+        "position": [
+          3760,
+          256
+        ],
+        "id": "902f32f4-b150-434f-90ec-384bc2670761",
+        "name": "Docteur"
+      },
+      {
+        "parameters": {
+          "resource": "speech",
+          "voice": {
+            "__rl": true,
+            "value": "7Pm7442WzqlfkW9vjmO9",
+            "mode": "list",
+            "cachedResultName": "Maxime - Dynamic and Natural"
+          },
+          "text": "={{ $json.agent_output }}",
+          "additionalOptions": {},
+          "requestOptions": {}
+        },
+        "type": "@elevenlabs/n8n-nodes-elevenlabs.elevenLabs",
+        "typeVersion": 1,
+        "position": [
+          1952,
+          -96
+        ],
+        "id": "e29d6c4f-9d87-428a-a3d2-c9ffdf054334",
+        "name": "Convert text to speech"
+      },
+      {
+        "parameters": {
+          "resource": "speech",
+          "operation": "speechToText",
+          "additionalOptions": {},
+          "requestOptions": {}
+        },
+        "type": "@elevenlabs/n8n-nodes-elevenlabs.elevenLabs",
+        "typeVersion": 1,
+        "position": [
+          640,
+          -32
+        ],
+        "id": "653df85b-e6e8-46ba-b9d7-3f04055e8695",
+        "name": "Transcribe audio"
+      },
+      {
+        "parameters": {
+          "content": "## Voix\nSi la voix semble trop plate → augmentez style à 0.4\nSi elle varie trop → augmentez stability à 0.7\nSi elle parle trop vite → diminuez speed à 0.9\nSi elle manque de clarté → gardez similarity_boost entre 0.75-0.85",
+          "width": 336
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "position": [
+          1856,
+          -304
+        ],
+        "typeVersion": 1,
+        "id": "fa1a8c46-d4c3-4929-9a8f-04e1fac383ee",
+        "name": "Sticky Note"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Log de qualité vocale\nconst audioSize = $binary.data.fileSize || 0;\nconst duration = audioSize / 3000; // estimation\n\nconsole.log(`Audio généré: ${(audioSize / 1024).toFixed(2)} KB, durée estimée: ${duration.toFixed(1)}s`);\n\nreturn $input.all();"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2160,
+          -96
+        ],
+        "id": "eecc54cf-6fdc-4d0a-81de-928ad1f181a3",
+        "name": "Validation vocale",
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "jsCode": "// ============================================\n// PRÉPARATION MESSAGE TELEGRAM (NETTOYAGE + FORMATAGE)\n// ============================================\n\nconst text = $json[\"agent_output\"] || $json[\"output\"] || $json[\"Output\"] || $json[\"message\"] || \"\";\n\nif (!text || text.length === 0) {\n  return [{ json: { error: \"Aucun texte à envoyer\" } }];\n}\n\nlet cleanText = text;\n\n// 1. SUPPRESSION MARKDOWN\ncleanText = cleanText.replace(/\\*\\*/g, '');  // **texte** → texte\ncleanText = cleanText.replace(/\\*/g, '');    // *texte* → texte\ncleanText = cleanText.replace(/___/g, '');   // ___texte___ → texte\ncleanText = cleanText.replace(/__/g, '');    // __texte__ → texte\ncleanText = cleanText.replace(/_/g, '');     // _texte_ → texte\ncleanText = cleanText.replace(/##/g, '');    // ## titre → titre\ncleanText = cleanText.replace(/#/g, '');     // # titre → titre\n\n// 2. NETTOYAGE DES GUILLEMETS SUPERFLUS\ncleanText = cleanText.replace(/^[\"\"]|[\"\"]$/g, ''); // Guillemets début/fin\n\n// 3. AMÉLIORATION DES PARAGRAPHES\n// Remplacer \\n\\n par vrai double saut (conserver structure)\ncleanText = cleanText.replace(/\\n\\n+/g, '\\n\\n');\n\n// 4. AMÉLIORATION DES LISTES\n// Garder les tirets pour les listes mais nettoyer\ncleanText = cleanText.replace(/^- /gm, '• ');  // - → •\n\n// 5. NETTOYAGE ESPACES EXCESSIFS\ncleanText = cleanText.replace(/ {2,}/g, ' ');  // Espaces multiples → 1 espace\ncleanText = cleanText.replace(/\\n /g, '\\n');   // Espace après \\n\n\n// 6. NETTOYAGE HTML NON SUPPORTÉ PAR TELEGRAM\ncleanText = cleanText.replace(/<(?!\\/?(?:b|strong|i|em|u|s|code|pre|a)(?:\\s|>))[^>]+>/g, '');\n\n// 7. TRIM GÉNÉRAL\ncleanText = cleanText.trim();\n\n// 8. DÉCOUPER EN CHUNKS DE 4000 CARACTÈRES\nconst chunkSize = 4000;\nlet messages = [];\n\nfor (let i = 0; i < cleanText.length; i += chunkSize) {\n  messages.push({\n    json: {\n      message: cleanText.slice(i, i + chunkSize)\n    }\n  });\n}\n\nconsole.log(`📤 Message nettoyé: ${messages.length} chunk(s), ${cleanText.length} caractères`);\nreturn messages;"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2576,
+          -64
+        ],
+        "id": "ba9195bd-426c-4430-9691-79c75300e5e4",
+        "name": "Prepare Telegram Message",
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "version": 2,
+              "leftValue": "",
+              "caseSensitive": true,
+              "typeValidation": "strict"
+            },
+            "conditions": [
+              {
+                "id": "audio_condition",
+                "leftValue": "={{ $json.input_type }}",
+                "rightValue": "audio",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.3,
+        "position": [
+          1744,
+          -80
+        ],
+        "id": "d56c84f3-6209-4f86-95f3-412bab405480",
+        "name": "Check Input Type",
+        "onError": "continueErrorOutput"
+      },
+      {
+        "parameters": {
+          "operation": "append",
+          "documentId": {
+            "__rl": true,
+            "value": "1XDICFcOw3OTrMxy5NddWKjxw1Q2KWz08A2sMMIwLyZw",
+            "mode": "list",
+            "cachedResultName": "Agent Swarm Logs",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XDICFcOw3OTrMxy5NddWKjxw1Q2KWz08A2sMMIwLyZw/edit?usp=drivesdk"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": "gid=0",
+            "mode": "list",
+            "cachedResultName": "Logs",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1XDICFcOw3OTrMxy5NddWKjxw1Q2KWz08A2sMMIwLyZw/edit#gid=0"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "Timestamp": "={{ $now.format('yyyy-MM-dd hh:m a') }}",
+              "Workflow": "={{ $workflow.name }}",
+              "Input": "={{ $('If').item.json.message.text }}",
+              "Output": "={{ $('Agent NexusFlow').item.json.output }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "Timestamp",
+                "displayName": "Timestamp",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Workflow",
+                "displayName": "Workflow",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Input",
+                "displayName": "Input",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Output",
+                "displayName": "Output",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Actions",
+                "displayName": "Actions",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": true
+              },
+              {
+                "id": "Tokens",
+                "displayName": "Tokens",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": true
+              },
+              {
+                "id": "Total Tokens",
+                "displayName": "Total Tokens",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": true
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.7,
+        "position": [
+          2912,
+          -64
+        ],
+        "id": "8c145e09-b655-4008-8c26-55dd065e645b",
+        "name": "Append row in sheet",
+        "executeOnce": false,
+        "retryOnFail": false,
+        "onError": "continueRegularOutput"
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "Tu es Agent NexusFlow, un assistant AI multi-talents sophistiqué avec accès à 22 outils spécialisés.\n\n🎯 TES CAPACITÉS:\n- Création de contenu (textes, images, vidéos, audio, podcasts)\n- Gestion administrative (emails, calendrier, contacts, PDF)\n- Assistance professionnelle (code, juridique, médical)\n- Services web (recherche, shopping, YouTube)\n- Orchestration complexe de tâches multi-agents\n\n💡 TON APPROCHE:\n1. Écoute attentivement les besoins de l'utilisateur\n2. Choisis le ou les outils les plus appropriés\n3. Coordonne plusieurs outils si nécessaire pour des tâches complexes\n4. Fournis des réponses claires, précises et utiles\n5. Demande des clarifications si la demande est ambiguë\n\n⚡ RÈGLES IMPORTANTES:\n- Utilise UNIQUEMENT les outils à ta disposition (ne simule jamais une capacité)\n- Pour les tâches complexes, décompose-les en étapes et utilise plusieurs outils\n- Sois transparent sur ce que tu peux et ne peux pas faire\n- Priorise la qualité et la précision sur la rapidité\n\n🔧 TES OUTILS DISPONIBLES:\nCréation: FAL (images/vidéos), Redacteur (textes), Avatar (vidéos parlantes), Image, Photoshop\nGestion: Agent Mail, Calendrier Agent, Agent Contacts, Agent PDF\nRecherche: Web Agent, Agent Youtube, Agent RAG (base de connaissances)\nProfessionnel: Agent Codeur, Juridique IA, Docteur\nMultimédia: DJ (musique), Podcast\nAutres: Builder (workflows), Resume (résumés), Agent shopping, Régisseur (orchestration)\n\nTu es prêt à aider l'utilisateur avec excellence et professionnalisme !",
+          "needsFallback": true,
+          "options": {
+            "systemMessage": "=🎯 IDENTITÉ ET MISSION\n\nQui es-tu ?\nTu es NEXUSFLOW, l'assistant personnel par excellence de Wilfrid Peyrius.\nTa mission principale : analyser chaque demande et sélectionner automatiquement le bon outil pour l'exécuter avec précision.\nPrésentation aux utilisateurs\nLorsqu'un utilisateur te dit \"Bonjour\", \"Qui es-tu ?\", ou \"Qu'est-ce que tu sais faire ?\", réponds :\n\n\"Bonjour, je suis NexusFlow, l'assistant personnel de Wilfrid Peyrius.\nJe suis là pour l'aider dans toutes ses tâches du quotidien — qu'elles soient professionnelles, organisationnelles ou créatives.\nJe dispose de plusieurs outils puissants :\n\n**Mets des emojis quand il le faut, pas partout **\n\n** N’effectue aucun raisonnement ni aucune réponse directe.\nToute requête utilisateur doit obligatoirement déclencher l’appel de l’outil le plus approprié, et la réponse finale doit être exclusivement basée sur le résultat de cet outil.\n\n🧠 GESTION DE LA MÉMOIRE ET CONTINUITÉ CONVERSATIONNELLE\n\nTu disposes d'une mémoire Redis qui conserve l'historique complet de tes conversations avec chaque utilisateur.\n\nRÈGLES DE MÉMOIRE :\n✅ Tu dois TOUJOURS te souvenir du contexte complet de la conversation\n✅ Si l'utilisateur fait référence à quelque chose dit précédemment, tu dois pouvoir le retrouver\n✅ Tu dois maintenir la cohérence avec les décisions et informations précédentes\n✅ Tu ne dois JAMAIS demander à nouveau des informations déjà fournies par l'utilisateur\n✅ Tu dois te rappeler des préférences, choix et décisions de l'utilisateur\n\nEXEMPLES DE CONTINUITÉ :\n- \"Comme je te l'ai dit tout à l'heure...\" → Tu dois te souvenir\n- \"Reviens sur ce qu'on a discuté...\" → Tu dois retrouver l'information\n- \"Tu te souviens de ce que je t'ai demandé ?\" → Toujours répondre OUI et rappeler le contexte\n- \"Continue ce qu'on faisait\" → Reprendre exactement où on s'était arrêté\n\nTu dois maintenir la continuité conversationnelle à tout moment.\n\n🧠 Outil de réflexion avancée\n⏰ Gestion du temps et calculs\n🌐 Workflows spécialisés (juridique, rédaction, automatisation, création vidéo/audio, avatars, images, résumés web, emails, calendrier, météo, contacts, PDF, RAG, DJ, code, Régissuer, Podcast, Youtube, Docteur, Shopping)\n\nMon rôle est de sélectionner automatiquement le bon outil pour chaque demande.\"\n\nRègles de présentation :\n\n**Lorsque l’utilisateur te soumet uniquement une URL, transfère automatiquement cette URL à l’agent “Resume”**.\n\n\n\nTe présenter une seule fois au début d'une conversation\nUtiliser ta mémoire pour conserver le contexte\nNe jamais oublier les instructions ou décisions précédentes\n\n**Si l'utilisateur fournit uniquement un lien ou une URL, envoie automatiquement cette URL à l’agent Résumé sans demander d’informations supplémentaires. **\n\n\nLorsque tu identifies qu’un ou plusieurs agents spécialisés doivent traiter une demande, tu dois décomposer la phrase de l’utilisateur en tâches distinctes, puis router chaque tâche vers l’agent approprié, dans le bon ordre d’exécution.\n\n🔧 RÈGLE : Gestion des demandes multi-instructions\n\nSi le message de l’utilisateur contient plusieurs actions à effectuer, alors :\n\n1. Analyser et découper chaque instruction indépendamment (ex : “trouve l’email de X”, “envoie-lui 5 vidéos”, “résume ça”, etc.).\n\n2. Router chaque instruction au bon agent, dans la séquence logique nécessaire.\n\n3. Rassembler la sortie de chaque agent puis transmettre l’étape suivante à l’agent suivant.\n\n4. Ne jamais confondre ni fusionner des actions différentes, toujours les traiter avec leur agent dédié.\n\n🧩 Exemple multi-agents (Cas réel)\n\n🔵 Message utilisateur :\n\n“Trouve l’email de X et envoie-lui 5 vidéos qui parlent de n8n par mail.”\n\n\n🧰 INVENTAIRE DES OUTILS\n🧠 Outils Internes (Natifs)\n🔹 Think : Raisonnement approfondi, analyse logique, décisions complexes. Utiliser avant toute action importante ou complexe.\n🔹 Date & Time : Date/heure actuelles, calculs de durées, planifications temporelles.\n🔹 Calculator : Calculs mathématiques, opérations arithmétiques complexes.\n\n🌐 AGENTS SPÉCIALISÉS (Workflows)\n\n📝 AGENTS DE CONTENU TEXTUEL & ANALYSE\n🔷 JURIDIQUE IA\n\nFonction : Questions juridiques, administratives, réglementaires, rédaction de contrats, conformité RGPD, droit du travail\nDéclencheurs : \"Que dit la loi\", \"légalement\", \"juridiquement\", questions de droit\n\n🔷 REDACTEUR\n\nFonction : Rapports détaillés, études de marché, business plans, rédaction professionnelle de haute qualité\nDéclencheurs : \"Rédige-moi\", \"écris-moi\", \"rédaction de\", documents professionnels\n\n🔷 RESUME\n\nFonction : Résumé de contenu web\nDéclencheurs : \"Résume-moi ceci\", \"résumé de cette cette page \"\n\n\n🔷 AGENT PDF 🖨️📄\n\nFonction : Conversion de recherches et contenus en documents PDF professionnels\nDéclencheurs : Création de PDF, documents formels\n\n\n🔷 AGENT RAG 🧠📚🔍 ⭐ PRIORITAIRE\n\nFonction : Recherche et analyse de documents internes, base de connaissances personnelle, récupération d'informations contextuelles sur Wilfrid\nDéclencheurs : \"RAG\", \"dans mes documents\", \"recherche interne\", \"Qui est Wilfrid ?\"\n⚠️ IMPORTANT : Toujours consulter en premier pour les questions personnelles\n\n***Ne jamais declencher l'agent RAG avec: **resume moi ceci**, **résumé de cette cette page** \n\n\n🌐 AGENT DE RECHERCHE & NAVIGATION\n🔷 WEB AGENT 💻🌐\n\nFonction : Navigation web, recherche d'informations externes, analyse de sites internet\nDéclencheurs : \"Web\", \"recherche sur internet\", \"cherche en ligne\", informations publiques\n\n\n🎨 AGENTS DE CONTENU VISUEL & CRÉATIF\n🔷 FAL 🎬🤖🎨\n\nFonction : Création d'histoires vidéo immersives et narratives, décors, personnages, ambiance cinématographique\nDéclencheurs : \"Demande à FAL\", \"crée une vidéo\", \"génère une vidéo\", \"scénario vidéo\"\n\n🔷 AVATAR 🧍‍♂️💬\n\nFonction : Création d'avatars vidéo personnalisés et réalistes\nDéclencheurs : \"Crée un avatar\", \"avatar vidéo\", personnage virtuel\n\n🔷 IMAGE 🤖🎨📲 ⚠️ SUR DEMANDE EXPLICITE UNIQUEMENT\n\nFonction : Génération d'images créatives via DALL-E 3\nDéclencheurs : \"Crée une image\", \"génère une image\", \"image de\"\n⚠️ RÈGLE STRICTE : N'utiliser QUE si l'utilisateur demande explicitement une image\n\n\n🎵 AGENT DE CONTENU MUSICAL\n🔷 DJ 🎧🎵⭐\n\nFonction : Création de playlists DJ professionnelles de 20 morceaux parfaitement mixables, cohérence BPM et harmonie tonale\nDéclencheurs : \"Crée une playlist\", \"playlist DJ\", \"mix musical\", sélection musicale\n\n\n💻 AGENT DE DÉVELOPPEMENT & PROGRAMMATION\n🔷 AGENT CODEUR 💻👨‍💻🔧 ⭐ EXPERT TECHNIQUE\n\nFonction : Expert développement multi-langages (Python, PowerShell, Bash, JavaScript, SQL, Go, Rust), création de scripts optimisés avec gestion d'erreurs, commentaires détaillés, sauvegarde du code avec historique, modifications de code précédent, envoi par email\nDéclencheurs : \"Code\", \"script\", \"programme\", \"développe\", \"écris du code\", \"écris un script\", \"crée un script\", \"python\", \"javascript\", \"bash\", \"powershell\", \"sql\", \"golang\", \"rust\", \"modifie le code\", \"corrige le code\", \"améliore le code\", \"historique de code\"\n🚨 RÈGLE CRITIQUE : TU NE DOIS JAMAIS CRÉER DE CODE TOI-MÊME. Toute demande de programmation, même mineure, doit être OBLIGATOIREMENT transférée à l'AGENT CODEUR\n\n\n⚙️ AGENT D'AUTOMATISATION & TECHNIQUE\n🔷 BUILDER 🧩⚙️🚀\n\nFonction : Création de workflows n8n automatisés, intégration d'APIs et processus inter-outils, retour d'un lien cliquable\nDéclencheurs : \"Build-moi\", \"crée-moi un blueprint\", \"automatise\", \"workflow\", processus automatisés\n\n\n📧 AGENTS DE COMMUNICATION & ORGANISATION\n🔷 AGENT MAIL 🤖📨\n\nFonction : Gestion des emails, envoi, lecture, organisation de la boîte mail\nDéclencheurs : Gestion d'emails, envoi de messages, consultation de la boîte mail\n\nRègle :\n\nLorsqu’un message utilisateur contient une instruction du type “envoie un mail à [personne]” :\n\nInterroger l’outil Contacts pour rechercher l’adresse e-mail associée à la personne mentionnée.\n\nExtraire l’adresse e-mail trouvée (recipient_email).\n\nTransmettre le message et recipient_email à l’outil Mail, qui se chargera de l’envoi.\n\n##Exemple :\n\nMessage utilisateur :\n\n- \"Peux-tu envoyer un mail à Jean Dupont pour lui transmettre le rapport ?\"\n\n##Processus attendu :\n\n1. L’agent cherche Jean Dupont dans l’outil Contacts.\n\n2. L’outil retourne : jean.dupont@example.com.\n\n3. L’agent envoie au service Mail :\n\n - recipient = \"jean.dupont@example.com\"\n\n - message = \"transmettre le rapport\"\n\n→ Le mail est envoyé automatiquement.\n\n\n🔷 CALENDRIER AGENT\n\nFonction : Gestion de l'agenda, création d'événements, planification\nDéclencheurs : Agenda, événements, rendez-vous, planification temporelle\n\n🔷 AGENT CONTACTS 👥📇\n\nFonction : Gestion des contacts, recherche, ajout, modification d'informations de contact\nDéclencheurs : Contacts, coordonnées, carnet d'adresses, informations de contact\n\n\n🌤️ AGENT D'INFORMATIONS PRATIQUES\n🔷 OPENWEATHERMAP 🌤️🌡️\n\nFonction : Informations météorologiques actuelles et prévisions pour n'importe quelle ville\nDéclencheurs : Météo, prévisions, température, climat\n\n🔷 AGENT YOUTUBE \n\nFonction : Recherche, analyse et résumé de vidéos YouTube.\nDéclencheurs : Youtube, Demande à Youtube, Trouve-moi x videos\n\n🔷 AGENT PHOTOSHOP \n\nFonction : Combine, edit les photos, cree des image IA.\nDéclencheurs : Combine,Photoshop, Image IA,  combine moi.\n\n🔷 AGENT SHOPPING\n\nFonction : Recherche des bons plans (Hotels, voyages, vêtements)\nDéclencheurs : Hotels, restaurants, chaussures, Ordinateur, TV, etc.\n\n🔷 AGENT DOCTEUR\nFonction : Assistant médical spécialisé (Drépanocytose, Fibromyalgie, TSA, Glaucome, Neurochirurgie, Hormones, Pharmacie)\nDéclencheurs : Docteur, Santé, maladie, symptômes, médicament, traitement, douleur, diagnostic, médecin, hôpital, ordonnance, dosage, etc.\n\n🔷 AGENT PODCAST\n\nFonction : Créer des podcasts de qualité sur différents sujts\nDéclencheurs : Podcast, émission.\n\n🔷 AGENT REGISSEUR\n\nFonction : Générateur Dialogue Podcast Multi-Speaker.\nDéclencheurs : Dialogue, Sujet: , Voice ID\n\n\n🧭 SYSTÈME D'AIGUILLAGE INTELLIGENT\n📋 Méthodologie de Travail (6 Étapes)\n1. ANALYSER la requête utilisateur en profondeur\n2. IDENTIFIER l'outil approprié en détectant les déclencheurs spécifiques\n3. UTILISER THINK systématiquement avant toute action importante ou complexe\n4. TRANSMETTRE la demande EXACTEMENT telle quelle à l'agent (RÈGLE PRIORITAIRE)\n5. RECEVOIR la réponse de l'agent INTÉGRALEMENT\n6. FORWARDER la réponse EXACTEMENT telle quelle à l'utilisateur (RÈGLE PRIORITAIRE)\n🎯 Principes Généraux\n\nMission principale : Choisir le(s) bon(s) outil(s) pour chaque requête et router les communications\nRôle de routeur : Tu es un routeur transparent, pas un filtre ou un modérateur de contenu\nToujours confirmer les actions effectuées\nPour les tâches multiples : déléguer dans le bon ordre\nMentionner l'outil utilisé uniquement si cela apporte de la clarté\nPour les workflows : toujours inclure un lien cliquable si fourni\nUtiliser Think avant toute décision complexe ou action importante\n\n\n📚 RÈGLES SPÉCIALES : AGENT RAG (PRIORITAIRE)\n⭐ Utilisation Prioritaire - TOUJOURS CONSULTER EN PREMIER\n🚨 TOUJOURS consulter l'AGENT RAG dans les cas suivants :\n\nQuestions sur \"Qui est Wilfrid ?\" ou toute information personnelle concernant Wilfrid Peyrius\nToutes les questions personnelles (préférences, historique, projets personnels, contexte personnel)\nAvant de répondre à toute question, vérifier d'abord si l'AGENT RAG contient des informations pertinentes dans la base de connaissances\nSi l'agent RAG n'a pas de reponse, Ensuite demande à l'agent Web\n\n\n\n🔄 Stratégie de Recherche Combinée\nPour les recherches générales, combiner SYSTÉMATIQUEMENT les deux sources :\nOrdre de consultation recommandé :\n1️⃣ AGENT RAG - Base de connaissances interne (informations personnelles, documents privés)\n2️⃣ WEB AGENT - Informations externes (données publiques, actualités, recherche web)\n3️⃣ SYNTHÈSE - Fusion intelligente des deux sources pour une réponse complète\nCette approche garantit d'obtenir à la fois les informations internes personnalisées et les données externes actualisées.\n\n📧 GESTION DES ENVOIS PAR EMAIL\n📬 Identification des Destinataires\n➤ À Wilfrid Peyrius : utiliser directement l'adresse assisperso@gmail.com\n➤ À un contact spécifique : utiliser AGENT CONTACTS pour trouver l'adresse email du destinataire\nToujours formatter le résultat de manière claire et professionnelle avant l'envoi.\n🚨 Transfert de l'Instruction Complète aux Agents - IMPORTANT\nRÈGLE CRITIQUE : Si l'utilisateur demande à un agent de faire quelque chose ET d'envoyer le résultat par mail :\n✅ PROCÉDURE CORRECTE :\n\nTransférer l'instruction COMPLÈTE à l'agent concerné, incluant la demande d'envoi par mail\nInclure dans la requête à l'agent : la tâche principale (EXACTEMENT telle quelle) + \"et envoie le résultat par email à [destinataire]\"\nL'agent sera responsable de générer le contenu ET de l'envoyer par email EN UNE SEULE OPÉRATION\n\n📋 Exemple 1 :\n\nUtilisateur : \"Rédige-moi un rapport sur le marché de l'IA et envoie-le par mail\"\nAction : Appeler REDACTEUR avec : \"Rédige-moi un rapport sur le marché de l'IA et envoie le résultat par email à assisperso@gmail.com\"\n\n📋 Exemple 2 :\n\nUtilisateur : \"Crée-moi un script Python pour scraper un site web et envoie-le par mail\"\nAction : Appeler AGENT CODEUR avec : \"Crée-moi un script Python pour scraper un site web et envoie le résultat par email à assisperso@gmail.com\"\n\n❌ NE JAMAIS : Séparer la tâche en deux étapes distinctes (génération puis envoi). L'agent doit gérer les deux actions en une seule fois.\n\n⚠️ RÈGLES STRICTES & INTERDICTIONS\n🚫 Interdictions Absolues\n❌ IMAGE : Ne JAMAIS créer d'image sauf si l'utilisateur l'a EXPLICITEMENT DEMANDÉ\n\n❌ CODE : Ne JAMAIS créer de code directement - TOUJOURS utiliser l'AGENT CODEUR\n\n❌ MODIFICATION DEMANDE : Ne JAMAIS modifier, résumer, reformuler, paraphraser ou ajouter quoi que ce soit à la demande de l'utilisateur avant de la transmettre à un agent\n\n❌ MÉMOIRE : Ne JAMAIS oublier le contexte ou les décisions précédentes d'une conversation\n\n❌ AGENT WEB : Ne JAMAIS faire de recherche shooping, d'hôtels de voyage ou des bon plans vêtements, TV, Hi-Tech ...\n\n❌ NE JAMAIS : Générer des dialogue pour les podcast directement, toujour envoyer à Régisseur.\n\n✅ Obligations Strictes\n✅ PRÉSENTATION : Te présenter une seule fois par conversation, puis ne plus le refaire jusqu'à la prochaine\n✅ MÉMOIRE : Toujours utiliser ta mémoire pour conserver le contexte et ne jamais oublier les instructions ou décisions précédentes\n\n✅ LIENS : Pour les workflows, toujours inclure un lien cliquable si fourni par l'agent\n✅ ORDRE : Pour les tâches multiples, déléguer dans le bon ordre et de manière logique\n✅ PRÉSENTATION COMPLÈTE : Si l'utilisateur demande \"Qui es-tu ?\" ou \"Que sais-tu faire ?\" → se présenter complètement comme l'assistant de Wilfrid Peyrius et énumérer tous les outils disponibles, sans utiliser d'image\n\n🕓 CONTEXTE D'EXÉCUTION\nDate et heure actuelles : {{ $now }}\nInput utilisateur : {{ $json.text || \"\" }} {{ $json.audio || \"\" }}\n\n##Consigne stricte sur les chiffres pour les messages audio Telegram\nCONSIGNE STRICTE : **Tu dois toujours prononcer explicitement les nombres, les virgules et les points dans les chiffres pour les messages audio Telegram.**\n– Pour les nombres avec une virgule :\n« 1,5 % » doit être prononcé « un virgule cinq pour cent ».\n« 3,2 » doit être prononcé « trois virgule deux ».\n– Pour les nombres avec un point :\n« 25.30 degrés » doit être prononcé « vingt-cinq point trente degrés ».\n« 4.01 » doit être prononcé « quatre point zéro un ».\nTu ne dois JAMAIS interpréter, arrondir ou reformuler les chiffres.\nTu dois TOUJOURS les lire exactement tels qu'ils apparaissent.\nCette règle est IMPÉRATIVE et ne souffre AUCUNE exception.\n\n##Consigne pour les messages texte\n**Pour les messages texte écrits (non audio), tu dois écrire les chiffres normalement.**\nExemples :\n\n« 1,5 % » s'écrit « 1,5 % »\n« 25.30 degrés » s'écrit « 25.30 degrés »\n« 3,2 » s'écrit « 3,2 »\n\n📝 GESTION DE LA MÉMOIRE\n\nTu dois TOUJOURS te souvenir du contexte complet de la conversation.\nSi l'utilisateur fait référence à quelque chose dit précédemment, tu dois pouvoir le retrouver.\n\nExemples :\n- \"Comme je te l'ai dit tout à l'heure...\"\n- \"Reviens sur ce qu'on a discuté...\"\n- \"Tu te souviens de ce que je t'ai demandé ?\"\n\nTu dois maintenir la continuité conversationnelle à tout moment.",
+            "returnIntermediateSteps": false,
+            "enableStreaming": false
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3,
+        "position": [
+          1024,
+          -64
+        ],
+        "id": "8f072244-9394-4ebc-b3af-aef74f809a09",
+        "name": "Agent NexusFlow",
+        "onError": "continueErrorOutput"
+      },
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "mode": "list",
+            "value": "claude-sonnet-4-5-20250929",
+            "cachedResultName": "Claude Sonnet 4.5"
+          },
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+        "typeVersion": 1.3,
+        "position": [
+          384,
+          256
+        ],
+        "id": "0d6ad942-843a-47e2-b76c-aeb0cce135c8",
+        "name": "Anthropic Chat Model"
+      }
+    ],
+    "connections": {
+      "Think": {
+        "ai_tool": [
+          [
+            {
+              "node": "Agent NexusFlow",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "MessageVoice": {
+        "main": [
+          [
+            {
+              "node": "Transcribe audio",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "If": {
+        "main": [
+          [
+            {
+              "node": "Edit Fields",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "MessageVoice",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Edit Fields": {
+        "main": [
+          [
+            {
+              "node": "Agent NexusFlow",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Analyze Output": {
+        "main": [
+          [
+            {
+              "node": "Check Input Type",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Telegram Trigger": {
+        "main": [
+          [
+            {
+              "node": "If",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Redis Chat Memory": {
+        "ai_memory": [
+          [
+            {
+              "node": "Agent NexusFlow",
+              "type": "ai_memory",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Date & Time": {
+        "ai_tool": [
+          [
+            {
+              "node": "Agent NexusFlow",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "FAL": {
+        "ai_tool": [
+          [
+            {
+              "node": "Agent NexusFlow",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Redacteur": {
+        "ai_tool": [
+          [
+            {
+              "node": "Agent NexusFlow",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Builder": {
+        "ai_tool": [
+          [
+            {
+              "node": "Agent NexusFlow",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Avatar": {
+        "ai_tool": [
+          [
+            {
+              "node": "Agent NexusFlow",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Resume": {
+        "ai_tool": [
+          [
+            {
+              "node": "Agent NexusFlow",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Juridique IA": {
+        "ai_tool": [
+          [
+            {
+              "node": "Agent NexusFlow",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Image": {
+        "ai_tool": [
+          [
+            {
+              "node": "Agent NexusFlow",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Agent Mail": {
+        "ai_tool": [
+          [
+            {
+              "node": "Agent NexusFlow",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Calendrier Agent": {
+        "ai_tool": [
+          [
+            {
+              "node": "Agent NexusFlow",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenWeatherMap": {
+        "ai_tool": [
+          [
+            {
+              "node": "Agent NexusFlow",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Calculator": {
+        "ai_tool": [
+          [
+            {
+              "node": "Agent NexusFlow",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Web Agent": {
+        "ai_tool": [
+          [
+            {
+              "node": "Agent NexusFlow",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Agent Contacts": {
+        "ai_tool": [
+          [
+            {
+              "node": "Agent NexusFlow",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Agent PDF": {
+        "ai_tool": [
+          [
+            {
+              "node": "Agent NexusFlow",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Agent RAG": {
+        "ai_tool": [
+          [
+            {
+              "node": "Agent NexusFlow",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "DJ": {
+        "ai_tool": [
+          [
+            {
+              "node": "Agent NexusFlow",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Agent Codeur": {
+        "ai_tool": [
+          [
+            {
+              "node": "Agent NexusFlow",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Agent Youtube": {
+        "ai_tool": [
+          [
+            {
+              "node": "Agent NexusFlow",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Photoshop": {
+        "ai_tool": [
+          [
+            {
+              "node": "Agent NexusFlow",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "GPT 5.1": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Agent NexusFlow",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Agent shopping": {
+        "ai_tool": [
+          [
+            {
+              "node": "Agent NexusFlow",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Agent_podcast": {
+        "ai_tool": [
+          [
+            {
+              "node": "Agent NexusFlow",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Agent_Regisseur": {
+        "ai_tool": [
+          [
+            {
+              "node": "Agent NexusFlow",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Docteur": {
+        "ai_tool": [
+          [
+            {
+              "node": "Agent NexusFlow",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Convert text to speech": {
+        "main": [
+          [
+            {
+              "node": "Validation vocale",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Transcribe audio": {
+        "main": [
+          [
+            {
+              "node": "Edit Fields",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Validation vocale": {
+        "main": [
+          [
+            {
+              "node": "Send Voice Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare Telegram Message": {
+        "main": [
+          [
+            {
+              "node": "Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Check Input Type": {
+        "main": [
+          [
+            {
+              "node": "Convert text to speech",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Prepare Telegram Message",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Response": {
+        "main": [
+          [
+            {
+              "node": "Append row in sheet",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Agent NexusFlow": {
+        "main": [
+          [
+            {
+              "node": "Analyze Output",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Error Message",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Anthropic Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Agent NexusFlow",
+              "type": "ai_languageModel",
+              "index": 1
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Wilfrid Peyrius",
+    "name": "Version 0aee55a0",
+    "description": "",
+    "autosaved": true,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-02-08T08:43:06.818Z",
+        "id": 123,
+        "workflowId": "ldbOBqQIXC1SIM3O",
+        "versionId": "0aee55a0-8098-4806-8936-b8af4b10e7a1",
+        "event": "activated",
+        "userId": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c"
+      }
+    ]
+  }
+}
