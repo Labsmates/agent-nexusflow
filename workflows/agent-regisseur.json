@@ -1,0 +1,1066 @@
+{
+  "updatedAt": "2026-02-08T09:34:20.091Z",
+  "createdAt": "2026-02-01T20:36:14.220Z",
+  "id": "rgkW5nPXnnOBDJva",
+  "name": "🎧🗣️ Agent Régisseur 🎛️🎙️🧠",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## 📋 Ce que fait le workflow :\n\nTelegram → Reçoit le message formaté\nParse Input Code → Extrait sujet, noms et Voice IDs\nClear Sheet → Efface les données précédentes\nAI Agent → Génère 30-32 répliques structurées\nParse Response → Valide et nettoie le JSON\nWrite to Sheet → Remplit Speaker / Voice ID / Input\nSuccess Message → Confirmation avec statistiques",
+        "height": 560,
+        "width": 320
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -464,
+        -48
+      ],
+      "typeVersion": 1,
+      "id": "f9bb6f7c-5040-492f-a2c5-a2fcc3c68c4c",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## I'm a note \nSujet: débat sur la laïcité\nVoice ID 1: tLK6fPv15M0oKv4V3ACR\nInvité 2: Marc\nVoice ID 2: 9n4yxbpqfRC67vbUotfV",
+        "height": 224,
+        "width": 384,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        112,
+        256
+      ],
+      "typeVersion": 1,
+      "id": "439f9a2d-26cd-43a7-ac7e-27d130709648",
+      "name": "Sticky Note1",
+      "disabled": true
+    },
+    {
+      "parameters": {
+        "jsCode": "// Remplacer les placeholders par les vraies valeurs\nconst response = $input.item.json.output || $input.item.json.text || $input.item.json.response;\nconst invite1 = $('Parse Input Code').item.json.invite1;\nconst voiceId1 = $('Parse Input Code').item.json.voiceId1;\nconst invite2 = $('Parse Input Code').item.json.invite2;\nconst voiceId2 = $('Parse Input Code').item.json.voiceId2;\n\n// Remplacer les placeholders\nlet processed = response\n  .replace(/NOM_INVITE_1/g, invite1)\n  .replace(/VOICE_ID_1/g, voiceId1)\n  .replace(/NOM_INVITE_2/g, invite2)\n  .replace(/VOICE_ID_2/g, voiceId2);\n\nreturn { response: processed };"
+      },
+      "id": "81a6cbb3-00f3-4798-9236-38ebd910465c",
+      "name": "Replace Placeholders",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1168,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "model": "anthropic/claude-sonnet-4.5",
+        "options": {
+          "maxTokens": 8000,
+          "temperature": 0.7
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        720,
+        256
+      ],
+      "id": "f635a4d7-dd5c-415a-9d2a-e407d575caa2",
+      "name": "OpenRouter Chat Model2",
+      "credentials": {
+        "openRouterApi": {
+          "id": "REPLACE_ME",
+          "name": "OPENROUTER API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -80,
+        48
+      ],
+      "id": "ae1fdb00-bdf9-40d6-aba9-f94498c090dc",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "response1",
+              "name": "success",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "response2",
+              "name": "response",
+              "value": "={{ $json.input }}",
+              "type": "string"
+            },
+            {
+              "id": "response3",
+              "name": "agent",
+              "value": "dialogue",
+              "type": "string"
+            },
+            {
+              "id": "response4",
+              "name": "executedAt",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "response5",
+              "name": "query",
+              "value": "={{ $('When Executed by Another Workflow') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1792,
+        48
+      ],
+      "id": "68a35e81-fecf-4e9c-86cd-4ec98c567ef5",
+      "name": "Prepare Response"
+    },
+    {
+      "parameters": {
+        "mode": "raw",
+        "jsonOutput": "={{ JSON.stringify({\n  query: String($json.query || $json.text || '')\n}) }}",
+        "options": {}
+      },
+      "id": "468596b2-3c2f-478b-83b6-b0da38652423",
+      "name": "Extract Telegram Data",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.3,
+      "position": [
+        144,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "parse-format",
+              "name": "parsedData",
+              "value": "={{ $json.query }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "e92d3e02-867c-4497-9d34-f060ee3b7d52",
+      "name": "Parse User Input",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.3,
+      "position": [
+        336,
+        48
+      ],
+      "notes": "Format attendu:\nSujet: [sujet du débat]\nInvité 1: [nom]\nVoice ID 1: [voice_id]\nInvité 2: [nom]\nVoice ID 2: [voice_id]"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Parser le message utilisateur pour extraire les informations\nconst messageText = $input.item.json.parsedData;\n\nconst lines = messageText.split('\\n').map(l => l.trim());\n\nlet sujet = '';\nlet invite1 = '';\nlet voiceId1 = '';\nlet invite2 = '';\nlet voiceId2 = '';\n\nfor (const line of lines) {\n  if (line.toLowerCase().startsWith('sujet:')) {\n    sujet = line.substring(line.indexOf(':') + 1).trim();\n  } else if (line.toLowerCase().startsWith('invité 1:') || line.toLowerCase().startsWith('invite 1:')) {\n    invite1 = line.substring(line.indexOf(':') + 1).trim();\n  } else if (line.toLowerCase().startsWith('voice id 1:') || line.toLowerCase().startsWith('voiceid 1:')) {\n    voiceId1 = line.substring(line.indexOf(':') + 1).trim();\n  } else if (line.toLowerCase().startsWith('invité 2:') || line.toLowerCase().startsWith('invite 2:')) {\n    invite2 = line.substring(line.indexOf(':') + 1).trim();\n  } else if (line.toLowerCase().startsWith('voice id 2:') || line.toLowerCase().startsWith('voiceid 2:')) {\n    voiceId2 = line.substring(line.indexOf(':') + 1).trim();\n  }\n}\n\nreturn {\n  sujet,\n  invite1,\n  voiceId1,\n  invite2,\n  voiceId2,\n  chatId: $input.item.json.chatId\n};"
+      },
+      "id": "4ee30258-8bef-43b0-b21a-fe0d4fb6e9e4",
+      "name": "Parse Input Code",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        544,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "clear",
+        "documentId": {
+          "__rl": true,
+          "value": "1WDTyor0vAohgyEcTD4rQ_BE1ytkuo7hQ5dqqYUosObA",
+          "mode": "list",
+          "cachedResultName": "Elevenlabs v3 Pocast Multispeaker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1WDTyor0vAohgyEcTD4rQ_BE1ytkuo7hQ5dqqYUosObA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sujet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1WDTyor0vAohgyEcTD4rQ_BE1ytkuo7hQ5dqqYUosObA/edit#gid=0"
+        },
+        "clear": "specificRange",
+        "range": "A2:C100"
+      },
+      "id": "557a7fdb-ca1a-4a3a-8c61-6658d5745394",
+      "name": "Clear Previous Data",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.4,
+      "position": [
+        704,
+        48
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "REPLACE_ME",
+          "name": "labsmates"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Génère un dialogue structuré de podcast sur le sujet suivant: \"{{ $('Parse Input Code').item.json.sujet }}\"\n\nLes participants sont:\n- Dany (Animateur) - Voice ID: 6aRkp7Pz4MBOSpUyJCTO (ne change JAMAIS)\n- {{ $('Parse Input Code').item.json.invite1 }} (Invité 1) - Voice ID: {{ $('Parse Input Code').item.json.voiceId1 }}\n- {{ $('Parse Input Code').item.json.invite2 }} (Invité 2) - Voice ID: {{ $('Parse Input Code').item.json.voiceId2 }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=Tu es un expert en création de dialogues pour podcasts.\n\nSTRUCTURE OBLIGATOIRE DU DIALOGUE:\n\n1. Introduction par Dany (1-2 répliques) - Dany présente le sujet et accueille les invités\n2. Présentation du sujet et première question à Invité 1\n3. Réponse détaillée de Invité 1 (2-4 phrases)\n4. Question de Dany à Invité 2 sur un aspect complémentaire\n5. Réponse détaillée de Invité 2 (2-4 phrases)\n6. Échange alterné entre Dany et les invités (environ 20-24 répliques):\n   - Dany pose des questions approfondies\n   - Les invités débattent et se complètent\n   - Alternance intelligente des tours de parole\n   - Questions sur les avantages, limites, risques du sujet\n7. Avant-dernière phase: Dany demande à chaque invité leur vision future (2 répliques)\n8. Conclusion par Dany (1 réplique de clôture)\n\nRÈGLES IMPORTANTES:\n- Génère EXACTEMENT 30 lignes de dialogue (pas plus, pas moins)\n- Alterne intelligemment entre les 3 speakers\n- Dany anime, pose des questions pertinentes et fait des transitions\n- Les invités apportent des perspectives différentes mais complémentaires\n- Chaque réplique doit être substantielle (2-4 phrases minimum)\n- Ton naturel, conversationnel et dynamique\n- Crée un vrai débat avec arguments, contre-arguments et nuances\n- Évite les réponses trop courtes ou superficielles\n\n⚠️ CRITIQUE: TU DOIS GÉNÉRER UN JSON COMPLET ET VALIDE!\n- Génère les 30 entrées complètes\n- Ferme correctement toutes les guillemets et accolades\n- Termine le JSON par le caractère ]\n- Ne tronque jamais le JSON au milieu\n\nFORMAT DE SORTIE STRICT (JSON uniquement):\nGénère un tableau JSON avec cette structure EXACTE:\n\n[\n  {\"speaker\": \"Dany\", \"voiceId\": \"6aRkp7Pz4MBOSpUyJCTO\", \"input\": \"texte de la réplique\"},\n  {\"speaker\": \"NOM_INVITE_1\", \"voiceId\": \"VOICE_ID_1\", \"input\": \"texte de la réplique\"},\n  {\"speaker\": \"NOM_INVITE_2\", \"voiceId\": \"VOICE_ID_2\", \"input\": \"texte de la réplique\"}\n]\n\nIMPORTANT POUR LES NOMS: \n- Pour speaker: utilise UNIQUEMENT le prénom simple (ex: \"Sophie\", \"Marc\", \"Dany\")\n- NE mets JAMAIS de Voice ID ou d'autres informations dans le champ speaker\n- Le champ speaker doit contenir SEULEMENT le prénom, rien d'autre\n\nIMPORTANT: \n- Réponds UNIQUEMENT avec le tableau JSON valide et COMPLET\n- AUCUN texte explicatif avant ou après le JSON\n- Pas de markdown (pas de backticks)\n- Le JSON doit commencer par [ et se terminer par ]\n- Toutes les 30 entrées doivent être présentes\n- Vérifie que ton JSON est syntaxiquement correct avant de répondre"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        848,
+        48
+      ],
+      "id": "13a45ab4-9484-4888-b41f-132a4f0acd0a",
+      "name": "Agent Redacteur",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extraire et parser la réponse JSON de Claude\nconst response = $input.item.json.response;\n\nlet dialogueArray;\n\ntry {\n  // Nettoyer la réponse si elle contient des markdown\n  let cleaned = response.replace(/```json\\n?/g, '').replace(/```\\n?/g, '').trim();\n  \n  // Tenter de réparer le JSON si incomplet\n  // Vérifier si le JSON est tronqué (ne se termine pas par ])\n  if (!cleaned.endsWith(']')) {\n    console.log('JSON incomplet détecté, tentative de réparation...');\n    \n    // Trouver la dernière entrée complète\n    const lastCompleteObject = cleaned.lastIndexOf('},');\n    if (lastCompleteObject > -1) {\n      // Couper après la dernière entrée complète et fermer le tableau\n      cleaned = cleaned.substring(0, lastCompleteObject + 1) + '\\n]';\n      console.log('JSON réparé: entrées incomplètes supprimées');\n    } else {\n      // Essayer de fermer l'objet et le tableau en cours\n      if (cleaned.includes('{') && !cleaned.endsWith('}')) {\n        cleaned = cleaned + '\"\\n  }\\n]';\n      } else {\n        cleaned = cleaned + '\\n]';\n      }\n    }\n  }\n  \n  // Parser le JSON\n  dialogueArray = JSON.parse(cleaned);\n  \n  // Vérifier que c'est bien un tableau\n  if (!Array.isArray(dialogueArray)) {\n    throw new Error('La réponse n\\'est pas un tableau');\n  }\n  \n  // Filtrer les entrées invalides (sans speaker, voiceId ou input)\n  dialogueArray = dialogueArray.filter(item => \n    item.speaker && item.voiceId && item.input && item.input.length > 10\n  );\n  \n  // Vérifier le nombre de lignes\n  const count = dialogueArray.length;\n  console.log(`${count} lignes valides générées`);\n  \n  if (count < 20) {\n    throw new Error(`Trop peu de lignes générées: ${count} (minimum 20 requis)`);\n  }\n  \n  if (count < 30) {\n    console.log(`Attention: ${count} lignes générées (attendu: 30-32)`);\n  }\n  \n  return dialogueArray;\n  \n} catch (error) {\n  const preview = response.substring(0, 800);\n  throw new Error(`Erreur de parsing JSON: ${error.message}\\n\\nRéponse reçue (début):\\n${preview}\\n\\n[...réponse tronquée]`);\n}"
+      },
+      "id": "ec7708ad-4a14-4026-bab9-7af2f6ba27a7",
+      "name": "Parse Claude Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1376,
+        48
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1WDTyor0vAohgyEcTD4rQ_BE1ytkuo7hQ5dqqYUosObA",
+          "mode": "list",
+          "cachedResultName": "Elevenlabs v3 Pocast Multispeaker",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1WDTyor0vAohgyEcTD4rQ_BE1ytkuo7hQ5dqqYUosObA/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Sujet",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1WDTyor0vAohgyEcTD4rQ_BE1ytkuo7hQ5dqqYUosObA/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "autoMapInputData",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "speaker",
+              "displayName": "speaker",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "voiceId",
+              "displayName": "voiceId",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "input",
+              "displayName": "input",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "0f5471b4-bfdb-49e2-89eb-af55e7b9cedf",
+      "name": "Write to Google Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.4,
+      "position": [
+        1584,
+        48
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "REPLACE_ME",
+          "name": "labsmates"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "response1",
+              "name": "success",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "response2",
+              "name": "response",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            },
+            {
+              "id": "response3",
+              "name": "agent",
+              "value": "dialogue",
+              "type": "string"
+            },
+            {
+              "id": "response4",
+              "name": "executedAt",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "response5",
+              "name": "query",
+              "value": "={{ $('When Executed by Another Workflow') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1440,
+        288
+      ],
+      "id": "e0b1c280-d794-45d8-b6f4-1e5b5eb6527f",
+      "name": "Prepare Response Error"
+    }
+  ],
+  "connections": {
+    "Replace Placeholders": {
+      "main": [
+        [
+          {
+            "node": "Parse Claude Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Agent Redacteur",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Extract Telegram Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Telegram Data": {
+      "main": [
+        [
+          {
+            "node": "Parse User Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse User Input": {
+      "main": [
+        [
+          {
+            "node": "Parse Input Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Input Code": {
+      "main": [
+        [
+          {
+            "node": "Clear Previous Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clear Previous Data": {
+      "main": [
+        [
+          {
+            "node": "Agent Redacteur",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Agent Redacteur": {
+      "main": [
+        [
+          {
+            "node": "Replace Placeholders",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare Response Error",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Parse Claude Response": {
+      "main": [
+        [
+          {
+            "node": "Write to Google Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Write to Google Sheet": {
+      "main": [
+        [
+          {
+            "node": "Prepare Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "activeVersionId": "2e7f0e99-49cb-4b8b-b301-0b9114b2da4c",
+  "versionCounter": 22,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-02-02T17:29:42.976Z",
+      "createdAt": "2026-02-02T17:29:42.976Z",
+      "role": "workflow:owner",
+      "workflowId": "rgkW5nPXnnOBDJva",
+      "projectId": "oYt1GPNUBpK2eWHS",
+      "project": {
+        "updatedAt": "2026-02-01T17:02:13.492Z",
+        "createdAt": "2026-02-01T15:39:19.158Z",
+        "id": "oYt1GPNUBpK2eWHS",
+        "name": "Wilfrid Peyrius <willbys@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c",
+        "projectRelations": [
+          {
+            "updatedAt": "2026-02-01T15:39:19.158Z",
+            "createdAt": "2026-02-01T15:39:19.158Z",
+            "userId": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c",
+            "projectId": "oYt1GPNUBpK2eWHS",
+            "user": {
+              "updatedAt": "2026-02-16T19:51:22.561Z",
+              "createdAt": "2026-02-01T15:39:18.127Z",
+              "id": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c",
+              "email": "willbys@gmail.com",
+              "firstName": "Wilfrid",
+              "lastName": "Peyrius",
+              "personalizationAnswers": null,
+              "settings": {
+                "userActivated": true,
+                "easyAIWorkflowOnboarded": true,
+                "firstSuccessfulWorkflowId": "ldbOBqQIXC1SIM3O",
+                "userActivatedAt": 1769981079850
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2026-02-16",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-02-08T09:34:23.251Z",
+    "createdAt": "2026-02-08T09:34:20.094Z",
+    "versionId": "2e7f0e99-49cb-4b8b-b301-0b9114b2da4c",
+    "workflowId": "rgkW5nPXnnOBDJva",
+    "nodes": [
+      {
+        "parameters": {
+          "content": "## 📋 Ce que fait le workflow :\n\nTelegram → Reçoit le message formaté\nParse Input Code → Extrait sujet, noms et Voice IDs\nClear Sheet → Efface les données précédentes\nAI Agent → Génère 30-32 répliques structurées\nParse Response → Valide et nettoie le JSON\nWrite to Sheet → Remplit Speaker / Voice ID / Input\nSuccess Message → Confirmation avec statistiques",
+          "height": 560,
+          "width": 320
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "position": [
+          -464,
+          -48
+        ],
+        "typeVersion": 1,
+        "id": "f9bb6f7c-5040-492f-a2c5-a2fcc3c68c4c",
+        "name": "Sticky Note"
+      },
+      {
+        "parameters": {
+          "content": "## I'm a note \nSujet: débat sur la laïcité\nVoice ID 1: tLK6fPv15M0oKv4V3ACR\nInvité 2: Marc\nVoice ID 2: 9n4yxbpqfRC67vbUotfV",
+          "height": 224,
+          "width": 384,
+          "color": 4
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "position": [
+          112,
+          256
+        ],
+        "typeVersion": 1,
+        "id": "439f9a2d-26cd-43a7-ac7e-27d130709648",
+        "name": "Sticky Note1",
+        "disabled": true
+      },
+      {
+        "parameters": {
+          "jsCode": "// Remplacer les placeholders par les vraies valeurs\nconst response = $input.item.json.output || $input.item.json.text || $input.item.json.response;\nconst invite1 = $('Parse Input Code').item.json.invite1;\nconst voiceId1 = $('Parse Input Code').item.json.voiceId1;\nconst invite2 = $('Parse Input Code').item.json.invite2;\nconst voiceId2 = $('Parse Input Code').item.json.voiceId2;\n\n// Remplacer les placeholders\nlet processed = response\n  .replace(/NOM_INVITE_1/g, invite1)\n  .replace(/VOICE_ID_1/g, voiceId1)\n  .replace(/NOM_INVITE_2/g, invite2)\n  .replace(/VOICE_ID_2/g, voiceId2);\n\nreturn { response: processed };"
+        },
+        "id": "81a6cbb3-00f3-4798-9236-38ebd910465c",
+        "name": "Replace Placeholders",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1168,
+          48
+        ]
+      },
+      {
+        "parameters": {
+          "model": "anthropic/claude-sonnet-4.5",
+          "options": {
+            "maxTokens": 8000,
+            "temperature": 0.7
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+        "typeVersion": 1,
+        "position": [
+          720,
+          256
+        ],
+        "id": "f635a4d7-dd5c-415a-9d2a-e407d575caa2",
+        "name": "OpenRouter Chat Model2",
+        "credentials": {
+          "openRouterApi": {
+            "id": "t4c7xzXnPxTlq9ZX",
+            "name": "OPENROUTER API"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "inputSource": "passthrough"
+        },
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.1,
+        "position": [
+          -80,
+          48
+        ],
+        "id": "ae1fdb00-bdf9-40d6-aba9-f94498c090dc",
+        "name": "When Executed by Another Workflow"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "response1",
+                "name": "success",
+                "value": true,
+                "type": "boolean"
+              },
+              {
+                "id": "response2",
+                "name": "response",
+                "value": "={{ $json.input }}",
+                "type": "string"
+              },
+              {
+                "id": "response3",
+                "name": "agent",
+                "value": "dialogue",
+                "type": "string"
+              },
+              {
+                "id": "response4",
+                "name": "executedAt",
+                "value": "={{ $now.toISO() }}",
+                "type": "string"
+              },
+              {
+                "id": "response5",
+                "name": "query",
+                "value": "={{ $('When Executed by Another Workflow') }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          1792,
+          48
+        ],
+        "id": "68a35e81-fecf-4e9c-86cd-4ec98c567ef5",
+        "name": "Prepare Response"
+      },
+      {
+        "parameters": {
+          "mode": "raw",
+          "jsonOutput": "={{ JSON.stringify({\n  query: String($json.query || $json.text || '')\n}) }}",
+          "options": {}
+        },
+        "id": "468596b2-3c2f-478b-83b6-b0da38652423",
+        "name": "Extract Telegram Data",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.3,
+        "position": [
+          144,
+          48
+        ]
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "parse-format",
+                "name": "parsedData",
+                "value": "={{ $json.query }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "id": "e92d3e02-867c-4497-9d34-f060ee3b7d52",
+        "name": "Parse User Input",
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.3,
+        "position": [
+          336,
+          48
+        ],
+        "notes": "Format attendu:\nSujet: [sujet du débat]\nInvité 1: [nom]\nVoice ID 1: [voice_id]\nInvité 2: [nom]\nVoice ID 2: [voice_id]"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Parser le message utilisateur pour extraire les informations\nconst messageText = $input.item.json.parsedData;\n\nconst lines = messageText.split('\\n').map(l => l.trim());\n\nlet sujet = '';\nlet invite1 = '';\nlet voiceId1 = '';\nlet invite2 = '';\nlet voiceId2 = '';\n\nfor (const line of lines) {\n  if (line.toLowerCase().startsWith('sujet:')) {\n    sujet = line.substring(line.indexOf(':') + 1).trim();\n  } else if (line.toLowerCase().startsWith('invité 1:') || line.toLowerCase().startsWith('invite 1:')) {\n    invite1 = line.substring(line.indexOf(':') + 1).trim();\n  } else if (line.toLowerCase().startsWith('voice id 1:') || line.toLowerCase().startsWith('voiceid 1:')) {\n    voiceId1 = line.substring(line.indexOf(':') + 1).trim();\n  } else if (line.toLowerCase().startsWith('invité 2:') || line.toLowerCase().startsWith('invite 2:')) {\n    invite2 = line.substring(line.indexOf(':') + 1).trim();\n  } else if (line.toLowerCase().startsWith('voice id 2:') || line.toLowerCase().startsWith('voiceid 2:')) {\n    voiceId2 = line.substring(line.indexOf(':') + 1).trim();\n  }\n}\n\nreturn {\n  sujet,\n  invite1,\n  voiceId1,\n  invite2,\n  voiceId2,\n  chatId: $input.item.json.chatId\n};"
+        },
+        "id": "4ee30258-8bef-43b0-b21a-fe0d4fb6e9e4",
+        "name": "Parse Input Code",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          544,
+          48
+        ]
+      },
+      {
+        "parameters": {
+          "operation": "clear",
+          "documentId": {
+            "__rl": true,
+            "value": "1WDTyor0vAohgyEcTD4rQ_BE1ytkuo7hQ5dqqYUosObA",
+            "mode": "list",
+            "cachedResultName": "Elevenlabs v3 Pocast Multispeaker",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1WDTyor0vAohgyEcTD4rQ_BE1ytkuo7hQ5dqqYUosObA/edit?usp=drivesdk"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": "gid=0",
+            "mode": "list",
+            "cachedResultName": "Sujet",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1WDTyor0vAohgyEcTD4rQ_BE1ytkuo7hQ5dqqYUosObA/edit#gid=0"
+          },
+          "clear": "specificRange",
+          "range": "A2:C100"
+        },
+        "id": "557a7fdb-ca1a-4a3a-8c61-6658d5745394",
+        "name": "Clear Previous Data",
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.4,
+        "position": [
+          704,
+          48
+        ],
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "ab54feb0-5ff5-4cdb-b299-be8d8773bddb",
+            "name": "labsmates"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "=Génère un dialogue structuré de podcast sur le sujet suivant: \"{{ $('Parse Input Code').item.json.sujet }}\"\n\nLes participants sont:\n- Dany (Animateur) - Voice ID: 6aRkp7Pz4MBOSpUyJCTO (ne change JAMAIS)\n- {{ $('Parse Input Code').item.json.invite1 }} (Invité 1) - Voice ID: {{ $('Parse Input Code').item.json.voiceId1 }}\n- {{ $('Parse Input Code').item.json.invite2 }} (Invité 2) - Voice ID: {{ $('Parse Input Code').item.json.voiceId2 }}",
+          "hasOutputParser": true,
+          "options": {
+            "systemMessage": "=Tu es un expert en création de dialogues pour podcasts.\n\nSTRUCTURE OBLIGATOIRE DU DIALOGUE:\n\n1. Introduction par Dany (1-2 répliques) - Dany présente le sujet et accueille les invités\n2. Présentation du sujet et première question à Invité 1\n3. Réponse détaillée de Invité 1 (2-4 phrases)\n4. Question de Dany à Invité 2 sur un aspect complémentaire\n5. Réponse détaillée de Invité 2 (2-4 phrases)\n6. Échange alterné entre Dany et les invités (environ 20-24 répliques):\n   - Dany pose des questions approfondies\n   - Les invités débattent et se complètent\n   - Alternance intelligente des tours de parole\n   - Questions sur les avantages, limites, risques du sujet\n7. Avant-dernière phase: Dany demande à chaque invité leur vision future (2 répliques)\n8. Conclusion par Dany (1 réplique de clôture)\n\nRÈGLES IMPORTANTES:\n- Génère EXACTEMENT 30 lignes de dialogue (pas plus, pas moins)\n- Alterne intelligemment entre les 3 speakers\n- Dany anime, pose des questions pertinentes et fait des transitions\n- Les invités apportent des perspectives différentes mais complémentaires\n- Chaque réplique doit être substantielle (2-4 phrases minimum)\n- Ton naturel, conversationnel et dynamique\n- Crée un vrai débat avec arguments, contre-arguments et nuances\n- Évite les réponses trop courtes ou superficielles\n\n⚠️ CRITIQUE: TU DOIS GÉNÉRER UN JSON COMPLET ET VALIDE!\n- Génère les 30 entrées complètes\n- Ferme correctement toutes les guillemets et accolades\n- Termine le JSON par le caractère ]\n- Ne tronque jamais le JSON au milieu\n\nFORMAT DE SORTIE STRICT (JSON uniquement):\nGénère un tableau JSON avec cette structure EXACTE:\n\n[\n  {\"speaker\": \"Dany\", \"voiceId\": \"6aRkp7Pz4MBOSpUyJCTO\", \"input\": \"texte de la réplique\"},\n  {\"speaker\": \"NOM_INVITE_1\", \"voiceId\": \"VOICE_ID_1\", \"input\": \"texte de la réplique\"},\n  {\"speaker\": \"NOM_INVITE_2\", \"voiceId\": \"VOICE_ID_2\", \"input\": \"texte de la réplique\"}\n]\n\nIMPORTANT POUR LES NOMS: \n- Pour speaker: utilise UNIQUEMENT le prénom simple (ex: \"Sophie\", \"Marc\", \"Dany\")\n- NE mets JAMAIS de Voice ID ou d'autres informations dans le champ speaker\n- Le champ speaker doit contenir SEULEMENT le prénom, rien d'autre\n\nIMPORTANT: \n- Réponds UNIQUEMENT avec le tableau JSON valide et COMPLET\n- AUCUN texte explicatif avant ou après le JSON\n- Pas de markdown (pas de backticks)\n- Le JSON doit commencer par [ et se terminer par ]\n- Toutes les 30 entrées doivent être présentes\n- Vérifie que ton JSON est syntaxiquement correct avant de répondre"
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3,
+        "position": [
+          848,
+          48
+        ],
+        "id": "13a45ab4-9484-4888-b41f-132a4f0acd0a",
+        "name": "Agent Redacteur",
+        "onError": "continueErrorOutput"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Extraire et parser la réponse JSON de Claude\nconst response = $input.item.json.response;\n\nlet dialogueArray;\n\ntry {\n  // Nettoyer la réponse si elle contient des markdown\n  let cleaned = response.replace(/```json\\n?/g, '').replace(/```\\n?/g, '').trim();\n  \n  // Tenter de réparer le JSON si incomplet\n  // Vérifier si le JSON est tronqué (ne se termine pas par ])\n  if (!cleaned.endsWith(']')) {\n    console.log('JSON incomplet détecté, tentative de réparation...');\n    \n    // Trouver la dernière entrée complète\n    const lastCompleteObject = cleaned.lastIndexOf('},');\n    if (lastCompleteObject > -1) {\n      // Couper après la dernière entrée complète et fermer le tableau\n      cleaned = cleaned.substring(0, lastCompleteObject + 1) + '\\n]';\n      console.log('JSON réparé: entrées incomplètes supprimées');\n    } else {\n      // Essayer de fermer l'objet et le tableau en cours\n      if (cleaned.includes('{') && !cleaned.endsWith('}')) {\n        cleaned = cleaned + '\"\\n  }\\n]';\n      } else {\n        cleaned = cleaned + '\\n]';\n      }\n    }\n  }\n  \n  // Parser le JSON\n  dialogueArray = JSON.parse(cleaned);\n  \n  // Vérifier que c'est bien un tableau\n  if (!Array.isArray(dialogueArray)) {\n    throw new Error('La réponse n\\'est pas un tableau');\n  }\n  \n  // Filtrer les entrées invalides (sans speaker, voiceId ou input)\n  dialogueArray = dialogueArray.filter(item => \n    item.speaker && item.voiceId && item.input && item.input.length > 10\n  );\n  \n  // Vérifier le nombre de lignes\n  const count = dialogueArray.length;\n  console.log(`${count} lignes valides générées`);\n  \n  if (count < 20) {\n    throw new Error(`Trop peu de lignes générées: ${count} (minimum 20 requis)`);\n  }\n  \n  if (count < 30) {\n    console.log(`Attention: ${count} lignes générées (attendu: 30-32)`);\n  }\n  \n  return dialogueArray;\n  \n} catch (error) {\n  const preview = response.substring(0, 800);\n  throw new Error(`Erreur de parsing JSON: ${error.message}\\n\\nRéponse reçue (début):\\n${preview}\\n\\n[...réponse tronquée]`);\n}"
+        },
+        "id": "ec7708ad-4a14-4026-bab9-7af2f6ba27a7",
+        "name": "Parse Claude Response",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1376,
+          48
+        ]
+      },
+      {
+        "parameters": {
+          "operation": "append",
+          "documentId": {
+            "__rl": true,
+            "value": "1WDTyor0vAohgyEcTD4rQ_BE1ytkuo7hQ5dqqYUosObA",
+            "mode": "list",
+            "cachedResultName": "Elevenlabs v3 Pocast Multispeaker",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1WDTyor0vAohgyEcTD4rQ_BE1ytkuo7hQ5dqqYUosObA/edit?usp=drivesdk"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": "gid=0",
+            "mode": "list",
+            "cachedResultName": "Sujet",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1WDTyor0vAohgyEcTD4rQ_BE1ytkuo7hQ5dqqYUosObA/edit#gid=0"
+          },
+          "columns": {
+            "mappingMode": "autoMapInputData",
+            "value": {},
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "speaker",
+                "displayName": "speaker",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": false
+              },
+              {
+                "id": "voiceId",
+                "displayName": "voiceId",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": false
+              },
+              {
+                "id": "input",
+                "displayName": "input",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true,
+                "removed": false
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {}
+        },
+        "id": "0f5471b4-bfdb-49e2-89eb-af55e7b9cedf",
+        "name": "Write to Google Sheet",
+        "type": "n8n-nodes-base.googleSheets",
+        "typeVersion": 4.4,
+        "position": [
+          1584,
+          48
+        ],
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "ab54feb0-5ff5-4cdb-b299-be8d8773bddb",
+            "name": "labsmates"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "response1",
+                "name": "success",
+                "value": true,
+                "type": "boolean"
+              },
+              {
+                "id": "response2",
+                "name": "response",
+                "value": "={{ $json.output }}",
+                "type": "string"
+              },
+              {
+                "id": "response3",
+                "name": "agent",
+                "value": "dialogue",
+                "type": "string"
+              },
+              {
+                "id": "response4",
+                "name": "executedAt",
+                "value": "={{ $now.toISO() }}",
+                "type": "string"
+              },
+              {
+                "id": "response5",
+                "name": "query",
+                "value": "={{ $('When Executed by Another Workflow') }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          1440,
+          288
+        ],
+        "id": "e0b1c280-d794-45d8-b6f4-1e5b5eb6527f",
+        "name": "Prepare Response Error"
+      }
+    ],
+    "connections": {
+      "Replace Placeholders": {
+        "main": [
+          [
+            {
+              "node": "Parse Claude Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenRouter Chat Model2": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Agent Redacteur",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "When Executed by Another Workflow": {
+        "main": [
+          [
+            {
+              "node": "Extract Telegram Data",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Extract Telegram Data": {
+        "main": [
+          [
+            {
+              "node": "Parse User Input",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse User Input": {
+        "main": [
+          [
+            {
+              "node": "Parse Input Code",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse Input Code": {
+        "main": [
+          [
+            {
+              "node": "Clear Previous Data",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Clear Previous Data": {
+        "main": [
+          [
+            {
+              "node": "Agent Redacteur",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Agent Redacteur": {
+        "main": [
+          [
+            {
+              "node": "Replace Placeholders",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Prepare Response Error",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Parse Claude Response": {
+        "main": [
+          [
+            {
+              "node": "Write to Google Sheet",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Write to Google Sheet": {
+        "main": [
+          [
+            {
+              "node": "Prepare Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Wilfrid Peyrius",
+    "name": "Version 2e7f0e99",
+    "description": "",
+    "autosaved": true,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-02-08T09:34:23.247Z",
+        "id": 142,
+        "workflowId": "rgkW5nPXnnOBDJva",
+        "versionId": "2e7f0e99-49cb-4b8b-b301-0b9114b2da4c",
+        "event": "activated",
+        "userId": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c"
+      }
+    ]
+  }
+}
