@@ -1,0 +1,1583 @@
+{
+  "updatedAt": "2026-02-03T16:36:48.209Z",
+  "createdAt": "2026-02-01T20:35:00.749Z",
+  "id": "lZAcsbSxbwTilSQ4",
+  "name": "💻🤖🌍 Agent Codeur Multi-Langages",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -144,
+        1264
+      ],
+      "id": "b3ab0c79-337c-4ed9-82ff-fbf2865a334c",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Récupérer les données depuis l'input (node précédent)\nconst extractCodeData = $input.first().json;\nconst explanation = extractCodeData.explanation;\nconst language = extractCodeData.language;\nconst fileName = extractCodeData.file_name;\n\nconsole.log('=== CLEAN TEXT FOR TELEGRAM ===');\n\n// Fonction pour échapper TOUS les caractères spéciaux de Telegram\nfunction escapeForTelegram(text) {\n  return text\n    // Supprimer d'abord tous les markdown\n    .replace(/```[\\w]*\\n?/g, '')\n    .replace(/```/g, '')\n    .replace(/#{1,6}\\s+/g, '')\n    .replace(/\\*\\*\\*/g, '')\n    .replace(/\\*\\*/g, '')\n    .replace(/\\*/g, '')\n    .replace(/___/g, '')\n    .replace(/__/g, '')\n    .replace(/_/g, ' ')  // Remplacer par espace\n    .replace(/~~~/g, '')\n    .replace(/~~/g, '')\n    .replace(/`/g, '')\n    .replace(/\\[([^\\]]+)\\]\\([^)]+\\)/g, '$1')\n    .replace(/<[^>]*>/g, '')\n    .replace(/\\\\/g, '')\n    \n    // Échapper les caractères qui causent des problèmes avec Markdown\n    .replace(/\\[/g, '(')\n    .replace(/\\]/g, ')')\n    .replace(/\\(/g, ' ')\n    .replace(/\\)/g, ' ')\n    \n    // Supprimer TOUS les emojis et symboles Unicode\n    .replace(/[\\u{1F000}-\\u{1F9FF}]/gu, '')\n    .replace(/[\\u{2600}-\\u{26FF}]/gu, '')\n    .replace(/[\\u{2700}-\\u{27BF}]/gu, '')\n    \n    // Remplacer les caractères spéciaux courants\n    .replace(/→/g, '->')\n    .replace(/←/g, '<-')\n    .replace(/✓/g, 'OK')\n    .replace(/✗/g, 'X')\n    .replace(/•/g, '-')\n    .replace(/–/g, '-')\n    .replace(/—/g, '-')\n    .replace(/[\"\"]/g, '\"')\n    .replace(/['']/g, \"'\")\n    \n    // Nettoyer les espaces\n    .replace(/\\s{3,}/g, '  ')\n    .replace(/\\n{4,}/g, '\\n\\n')\n    .trim();\n}\n\nconst cleanText = escapeForTelegram(explanation);\n\n// Limite Telegram : 4096 caractères\nconst MAX_LENGTH = 3500;\n\nlet finalText = cleanText;\n\n// Tronquer si nécessaire\nif (cleanText.length > MAX_LENGTH) {\n  console.log('Troncature necessaire');\n  \n  const truncated = cleanText.substring(0, MAX_LENGTH);\n  const lastPeriod = truncated.lastIndexOf('.');\n  const lastNewline = truncated.lastIndexOf('\\n');\n  \n  const cutPoint = Math.max(lastPeriod, lastNewline);\n  \n  if (cutPoint > MAX_LENGTH * 0.8) {\n    finalText = truncated.substring(0, cutPoint + 1) + '\\n\\nSuite dans le fichier';\n  } else {\n    finalText = truncated.substring(0, MAX_LENGTH - 25) + '\\n\\nSuite dans le fichier';\n  }\n}\n\n// Message ULTRA-SIMPLE sans AUCUN caractère spécial\nconst telegramMessage = `Code ${language} genere\\n\\nFichier ${fileName}\\n\\n${finalText}\\n\\nVoir fichier ci-joint`;\n\n// Dernière vérification\nconst finalMessage = telegramMessage.length > 4096 \n  ? telegramMessage.substring(0, 4090)\n  : telegramMessage;\n\nconsole.log('Message final length:', finalMessage.length);\n\nreturn {\n  json: {\n    telegram_text: finalMessage,\n    original_explanation: explanation,\n    language: language,\n    file_name: fileName,\n    text_truncated: cleanText.length > MAX_LENGTH,\n    original_length: explanation.length,\n    final_length: finalMessage.length\n  }\n};"
+      },
+      "id": "9f17a57c-5cc8-424c-a7a5-a3b2610439cd",
+      "name": "Clean Text for Telegram",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1344,
+        1024
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "key": "={{$json.user_id || $json.sessionId || 'default_user'}}_last_code",
+        "options": {}
+      },
+      "id": "92d72d58-db1e-42aa-a92b-1f37fab87908",
+      "name": "Redis - Récupérer Dernier Code",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        240,
+        1024
+      ],
+      "credentials": {
+        "redis": {
+          "id": "REPLACE_ME",
+          "name": "Redis Local"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Récupération rapide des données\nconst userMessage = $input.first().json.query || $input.first().json.message;\nconst userId = $input.first().json.user_id || $input.first().json.sessionId || 'default_user';\nconst lastCode = $input.first().json.value || null;\n\n// Détection rapide du type de requête\nconst isModification = /modif|change|corrige|améliore|ajuste|update|fix|bug|ajoute|supprime|remplace/i.test(userMessage);\n\nlet userPrompt = userMessage;\n\n// Modification de code (amélioré)\nif (isModification && lastCode) {\n  try {\n    const code = JSON.parse(lastCode);\n    userPrompt = `📌 MODIFICATION DU CODE PRÉCÉDENT\n\n**Code actuel (${code.language}):**\n\\`\\`\\`${code.language}\n${code.code}\n\\`\\`\\`\n\n**Requête originale:** ${code.original_request}\n\n**Date de création:** ${new Date(code.timestamp).toLocaleString('fr-FR')}\n\n---\n\n**🔄 MODIFICATION DEMANDÉE:** ${userMessage}\n\n⚠️ **IMPORTANT:** Fournis le code COMPLET modifié dans un bloc de code formaté avec \\`\\`\\`${code.language}.\nNe fournis PAS seulement les parties modifiées, mais tout le code complet et fonctionnel.`;\n  } catch (e) {\n    console.log('Erreur parsing last code:', e);\n  }\n}\n\nreturn {\n  json: {\n    user_id: userId,\n    user_message: userMessage,\n    user_prompt: userPrompt,\n    has_previous_code: lastCode !== null,\n    is_modification: isModification\n  }\n};"
+      },
+      "id": "2e7c63da-c917-4e27-b9e5-7bcae1ff63bb",
+      "name": "Préparer Contexte",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        400,
+        1024
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $('When Executed by Another Workflow').item.json.query }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=Tu es un expert en développement logiciel spécialisé dans la création de scripts de haute qualité.\n\n🎯 COMPÉTENCES : Python, PowerShell, Bash/Shell, JavaScript/Node.js, SQL, Go, Rust\n\n📋 MISSION :\n1. Analyser la demande\n2. Identifier le langage adapté\n3. Créer un code propre, commenté et optimisé\n4. Inclure gestion des erreurs\n5. Fournir exemples d'utilisation\n\n- **Serts-toi si possible des outils **Tavily** **Think** **Calculator** pour plus de precision si necessaire**\n\n✅ QUALITÉ : Code modulaire, commentaires clairs, sécurité, performance\n\n🛠️ OUTILS DISPONIBLES :\n- **Think** : Réflexion approfondie pour problèmes complexes, architecture, algorithmes\n- **Tavily** : Recherche web pour doc récente, syntaxe, librairies\n- **Calculator** : Calculs précis, validation de formules\n- **Email** : Envoi du code par email si demandé\n\n📝 MÉTHODOLOGIE :\n**Simple** : Analyser → Coder → Expliquer\n**Complexe** : Perplexity → Think → Tavily (si besoin) → Calculator (si besoin) → Coder → Valider\n\n📧 EMAIL : Si demandé, utiliser l'outil d'envoi email\n\n📝 FORMAT RÉPONSE OBLIGATOIRE :\n1. Explication brève (2-3 phrases)\n2. Prérequis si nécessaires\n3. **CODE COMPLET dans un bloc formaté :**\n\n```bash\n#!/bin/bash\n# Ton code complet ici\n```\n\n4. Exemples d'utilisation\n5. Notes importantes\n\n**⚠️ RÈGLES STRICTES :**\n- TU DOIS TOUJOURS mettre le code dans un bloc avec triple backticks\n- TU DOIS TOUJOURS spécifier le langage après les backticks (bash, python, javascript, etc.)\n- LE CODE COMPLET doit être dans le bloc, pas juste des extraits\n- Format obligatoire : ```langage\\n[code]\\n```\n\n🔄 MODIFICATIONS : Si code précédent fourni, applique les modifications et fournis le code COMPLET modifié dans un bloc formaté.\n\nCondition :\nSi le message utilisateur contient l’expression exacte \"Envoie-le moi\", alors déclenche l'action suivante :\n→ Router le script vers \"l'Outil Envoi Email\" avec comme paramètre recipient=\"assisperso@gmail.com\" afin d'envoyer le contenu automatiquement.",
+          "maxIterations": 5
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        576,
+        1024
+      ],
+      "id": "ee500f29-1042-48a4-8806-35508121e0e3",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Extraire le code de la réponse\nconst response = $input.first().json.output;\nconst prepareContext = $('Préparer Contexte').first().json;\nconst userId = prepareContext.user_id;\nconst userMessage = prepareContext.user_message;\n\nconsole.log('=== DEBUG EXTRAIRE CODE ===');\nconsole.log('User Message:', userMessage);\nconsole.log('Response length:', response.length);\n\n// Regex pour extraire le code et le langage\nconst codeBlockRegex = /```(\\w+)?\\n([\\s\\S]*?)```/g;\nlet matches = [...response.matchAll(codeBlockRegex)];\n\nlet extractedCode = '';\nlet language = 'bash'; // Défaut bash\nlet explanation = response;\n\nif (matches.length > 0) {\n  language = matches[0][1] || 'bash';\n  extractedCode = matches[0][2].trim();\n  \n  console.log('✅ Code trouvé - Language:', language);\n  console.log('Code length:', extractedCode.length);\n  \n  const splitResponse = response.split('```');\n  explanation = splitResponse[0].trim();\n  \n  if (splitResponse.length > 2) {\n    const afterCode = splitResponse.slice(2).join('').trim();\n    if (afterCode) {\n      explanation += '\\n\\n' + afterCode;\n    }\n  }\n} else {\n  console.log('⚠️ Aucun bloc de code trouvé');\n  // Deviner le langage depuis la requête\n  if (/python/i.test(userMessage)) language = 'python';\n  else if (/javascript|node/i.test(userMessage)) language = 'javascript';\n  else if (/powershell/i.test(userMessage)) language = 'powershell';\n  else if (/sql/i.test(userMessage)) language = 'sql';\n}\n\n// Fonction de génération du nom de fichier intelligent\nfunction generateFileName(query, lang) {\n  if (!query || typeof query !== 'string') query = 'script';\n  if (!lang || typeof lang !== 'string') lang = 'bash';\n  \n  // Stop words français\n  const stopWords = ['le', 'la', 'les', 'un', 'une', 'des', 'de', 'du', 'pour', 'avec', 'dans', 'sur', 'et', 'ou', 'mais', 'qui', 'que', 'quoi', 'comment', 'créer', 'faire', 'script', 'code', 'programme', 'écris', 'écrire', 'creer', 'bash', 'python', 'javascript', 'sql', 'powershell'];\n  \n  // Extraire les mots significatifs (max 5)\n  const words = query\n    .toLowerCase()\n    .normalize('NFD').replace(/[\\u0300-\\u036f]/g, '') // Enlever accents\n    .replace(/[^a-z0-9\\s]/g, '') // Garder lettres et chiffres\n    .split(/\\s+/)\n    .filter(word => word.length > 2 && !stopWords.includes(word))\n    .slice(0, 5);\n  \n  let keywords = words.length > 0 ? words.join('_') : 'script';\n  keywords = keywords.substring(0, 40); // Limiter longueur\n  \n  // Extensions par langage\n  const fileExtensions = {\n    'python': '.py',\n    'javascript': '.js',\n    'bash': '.sh',\n    'shell': '.sh',\n    'powershell': '.ps1',\n    'sql': '.sql',\n    'typescript': '.ts',\n    'php': '.php',\n    'ruby': '.rb',\n    'go': '.go',\n    'rust': '.rs'\n  };\n  \n  const fileExtension = fileExtensions[lang.toLowerCase()] || '.sh';\n  return `${lang.toLowerCase()}_${keywords}${fileExtension}`;\n}\n\nconst codeData = {\n  code: extractedCode,\n  language: language,\n  explanation: explanation,\n  timestamp: new Date().toISOString(),\n  original_request: userMessage,\n  version: 1\n};\n\nconst fileName = generateFileName(userMessage, language);\n\nreturn {\n  json: {\n    user_id: userId,\n    code: extractedCode,\n    language: language,\n    explanation: explanation,\n    full_response: response,\n    code_data_string: JSON.stringify(codeData),\n    formatted_response: `${explanation}\\n\\n\\`\\`\\`${language}\\n${extractedCode}\\n\\`\\`\\``,\n    file_name: fileName,\n    file_extension: fileName.split('.').pop(),\n    has_code: extractedCode.length > 0\n  }\n};"
+      },
+      "id": "5e5100f0-01ef-4770-9d4a-4857ab4240a6",
+      "name": "Extraire Code",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        1024
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "set",
+        "key": "={{$json.user_id}}_last_code",
+        "value": "={{$json.code_data_string}}",
+        "expire": true,
+        "ttl": 86400
+      },
+      "id": "fd829472-1dd8-4454-b99c-3a5298a6a8ae",
+      "name": "Redis - Sauvegarder Code",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        1184,
+        1024
+      ],
+      "credentials": {
+        "redis": {
+          "id": "REPLACE_ME",
+          "name": "Redis Local"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Récupérer les données du code depuis \"Extraire Code\"\nconst extractCodeData = $('Extraire Code').first().json;\nconst code = extractCodeData.code || '# Code vide';\nconst fileName = extractCodeData.file_name;\nconst language = extractCodeData.language || 'bash';\nconst explanation = extractCodeData.explanation || 'Code généré';\n\nconsole.log('=== CREATE TEXT FILE ===');\nconsole.log('File name:', fileName);\nconsole.log('Language:', language);\nconsole.log('Code length:', code.length);\n\n// Shebang et commentaire selon le langage\nlet shebang = '';\nlet commentChar = '#';\n\nswitch(language.toLowerCase()) {\n  case 'bash':\n  case 'shell':\n    shebang = '#!/usr/bin/env bash';\n    commentChar = '#';\n    break;\n  case 'python':\n    shebang = '#!/usr/bin/env python3';\n    commentChar = '#';\n    break;\n  case 'powershell':\n    shebang = '';\n    commentChar = '#';\n    break;\n  case 'javascript':\n  case 'typescript':\n    shebang = '#!/usr/bin/env node';\n    commentChar = '//';\n    break;\n  case 'php':\n    shebang = '#!/usr/bin/env php';\n    commentChar = '//';\n    break;\n  case 'ruby':\n    shebang = '#!/usr/bin/env ruby';\n    commentChar = '#';\n    break;\n  default:\n    shebang = '';\n    commentChar = '#';\n}\n\n// Construire le contenu du fichier\nconst fileContent = `${shebang ? shebang + '\\n' : ''}${commentChar} Fichier généré par AI Coder Agent\n${commentChar} Langage: ${language}\n${commentChar} Date: ${new Date().toISOString()}\n${commentChar} Nom: ${fileName}\n${commentChar}\n${commentChar} ${explanation.split('\\n')[0]}\n\n${code}`;\n\nconsole.log('File content length:', fileContent.length);\n\n// Créer un objet binaire pour Telegram\nconst buffer = Buffer.from(fileContent, 'utf-8');\n\nreturn {\n  json: {\n    file_name: fileName,\n    language: language,\n    file_size: buffer.length\n  },\n  binary: {\n    file: {\n      data: buffer.toString('base64'),\n      mimeType: 'text/plain',\n      fileName: fileName,\n      fileExtension: fileName.split('.').pop()\n    }\n  }\n};"
+      },
+      "id": "585c0aa3-f5ef-4169-a17f-a91cb3ff57a1",
+      "name": "Create Text File",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1504,
+        1024
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "sendDocument",
+        "chatId": "=8481398125",
+        "binaryData": true,
+        "binaryPropertyName": "file",
+        "additionalFields": {
+          "caption": "=💻 Hello Voici le fichier de votre script est prêt.😎🖥️\n\n📄 Nom  : {{ $('Extraire Code').item.json.language.toUpperCase() }} - {{ $('Extraire Code').item.json.file_name }} \n✅ Language : {{ $json.language }}\nℹ️ Taille   : {{ $json.file_size }}\n"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1680,
+        1024
+      ],
+      "id": "b1270360-4fc8-4dbb-9410-265d5c16aed4",
+      "name": "Send Telegram File",
+      "webhookId": "4e198201-65c7-4da0-a12a-9b772d34b7c3",
+      "credentials": {
+        "telegramApi": {
+          "id": "REPLACE_ME",
+          "name": "NexusFlow75"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "set",
+        "key": "={{$json.user_id}}_history",
+        "value": "={{$json.history_string}}",
+        "expire": true,
+        "ttl": 604800
+      },
+      "id": "a9be16d3-bf5c-4e85-be83-58e90197ba49",
+      "name": "Redis - Sauvegarder Historique",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        1664,
+        1232
+      ],
+      "credentials": {
+        "redis": {
+          "id": "REPLACE_ME",
+          "name": "Redis Local"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Récupérer les données nécessaires\nconst extractCodeData = $('Extraire Code').first().json;\nconst currentData = extractCodeData.code_data_string;\nconst userId = extractCodeData.user_id;\n\n// Récupérer l'historique existant depuis Redis - Get History\nconst existingHistoryStr = $input.first().json.value || null;\n\nlet history = { codes: [], count: 0, last_updated: new Date().toISOString() };\n\n// Récupérer l'historique existant\nif (existingHistoryStr) {\n  try {\n    history = JSON.parse(existingHistoryStr);\n  } catch (e) {\n    console.log('Erreur parsing history:', e);\n    history = { codes: [], count: 0, last_updated: new Date().toISOString() };\n  }\n}\n\n// Ajouter le nouveau code au début\nhistory.codes.unshift(currentData);\n\n// Garder les 20 derniers codes\nhistory.codes = history.codes.slice(0, 20);\nhistory.count = history.codes.length;\nhistory.last_updated = new Date().toISOString();\n\nreturn {\n  json: {\n    user_id: userId,\n    history_string: JSON.stringify(history)\n  }\n};"
+      },
+      "id": "52c60503-fca9-40b5-b80b-8f4fcaeefb2b",
+      "name": "Build History",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1424,
+        1232
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "key": "={{$('Extraire Code').item.json.user_id}}_history",
+        "options": {}
+      },
+      "id": "a4a3f46f-c562-4c47-89bd-05618b132165",
+      "name": "Redis - Get History",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        1184,
+        1232
+      ],
+      "credentials": {
+        "redis": {
+          "id": "REPLACE_ME",
+          "name": "Redis Local"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "Envoie un email avec le code généré en pièce jointe. Utilise cet outil quand l'utilisateur demande explicitement d'envoyer le code par email. Demande l'adresse email si elle n'est pas fournie.",
+        "workflowId": {
+          "__rl": true,
+          "value": "Ru3BAcjHhZf3rAVk",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/Ru3BAcjHhZf3rAVk",
+          "cachedResultName": "🤖📨 Emails Agent"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "action": "send",
+            "to": "={{ $json.email }}",
+            "subject": "Code généré - {{ $json.language }}",
+            "body": "={{ $json.explanation }}",
+            "attachment": "={{ $json.code }}"
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        1040,
+        1264
+      ],
+      "id": "ce029817-66e4-4a42-bf00-e769a5029129",
+      "name": "Outil Envoi Email"
+    },
+    {
+      "parameters": {
+        "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Query', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "@tavily/n8n-nodes-tavily.tavilyTool",
+      "typeVersion": 1,
+      "position": [
+        800,
+        1264
+      ],
+      "id": "bfae2f1e-8d03-4eac-98b2-6eb1f3ea63c7",
+      "name": "Outil Recherche Web (Tavily)",
+      "credentials": {
+        "tavilyApi": {
+          "id": "REPLACE_ME",
+          "name": "Tavily API"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+      "typeVersion": 1,
+      "position": [
+        656,
+        1264
+      ],
+      "id": "c6a6f5d6-17ca-4425-a192-9eb9d999b611",
+      "name": "Calculator"
+    },
+    {
+      "parameters": {},
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1.1,
+      "position": [
+        528,
+        1264
+      ],
+      "id": "e5b25fec-01b4-4c45-9da9-8d31a5ece512",
+      "name": "Think (Réflexion)"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('When Executed by Another Workflow').item.json.sessionId || $('When Executed by Another Workflow').item.json.user_id || 'default' }}",
+        "contextWindowLength": 20
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryRedisChat",
+      "typeVersion": 1.5,
+      "position": [
+        384,
+        1264
+      ],
+      "id": "deb8eb5d-ee2f-4166-b868-bb3248e00461",
+      "name": "Redis Chat Memory",
+      "credentials": {
+        "redis": {
+          "id": "REPLACE_ME",
+          "name": "Redis Local"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "anthropic/claude-sonnet-4.5",
+        "options": {
+          "maxTokens": 4000,
+          "temperature": 0.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        224,
+        1264
+      ],
+      "id": "8a4e0f20-8080-4472-b0f6-17b8cfb5e351",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "REPLACE_ME",
+          "name": "OpenRouter API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "string": [
+            {
+              "value1": "={{$json.query || $json.message}}",
+              "operation": "contains",
+              "value2": "historique"
+            }
+          ]
+        }
+      },
+      "id": "72dbc1d4-07c6-4685-8a6f-53832a741b74",
+      "name": "Demande Historique?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        240,
+        1488
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "get",
+        "key": "={{$json.user_id || $json.sessionId || 'default_user'}}_history",
+        "options": {}
+      },
+      "id": "7ffd14ab-e878-480e-b3e0-e8747a03e79c",
+      "name": "Redis - Récupérer Historique",
+      "type": "n8n-nodes-base.redis",
+      "typeVersion": 1,
+      "position": [
+        464,
+        1488
+      ],
+      "credentials": {
+        "redis": {
+          "id": "REPLACE_ME",
+          "name": "Redis Local"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "response1",
+              "name": "success",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "response2",
+              "name": "response",
+              "value": "={{ \n  const historyData = $json.value ? JSON.parse($json.value) : { codes: [], count: 0 };\n  let formattedHistory = `📚 **Historique de vos codes** (${historyData.count} codes sauvegardés)\\n\\n`;\n  \n  if (historyData.codes && historyData.codes.length > 0) {\n    historyData.codes.forEach((codeStr, index) => {\n      try {\n        const code = JSON.parse(codeStr);\n        formattedHistory += `**${index + 1}. ${code.language.toUpperCase()}** - ${new Date(code.timestamp).toLocaleString('fr-FR')}\\n`;\n        formattedHistory += `   Requête: ${code.original_request.substring(0, 80)}${code.original_request.length > 80 ? '...' : ''}\\n\\n`;\n      } catch (e) {\n        console.log('Erreur parsing code:', e);\n      }\n    });\n  } else {\n    formattedHistory += 'Aucun code dans l\\'historique.';\n  }\n  \n  return formattedHistory;\n}}",
+              "type": "string"
+            },
+            {
+              "id": "response3",
+              "name": "agent",
+              "value": "coder",
+              "type": "string"
+            },
+            {
+              "id": "response4",
+              "name": "executedAt",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "response5",
+              "name": "query",
+              "value": "historique",
+              "type": "string"
+            },
+            {
+              "id": "response6",
+              "name": "history_data",
+              "value": "={{ $json.value }}",
+              "type": "string"
+            },
+            {
+              "id": "response7",
+              "name": "history_count",
+              "value": "={{ \n  const historyData = $json.value ? JSON.parse($json.value) : { count: 0 };\n  return historyData.count || 0;\n}}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        688,
+        1488
+      ],
+      "id": "5c17cac2-a3b0-412d-9075-54d43d7f4619",
+      "name": "Réponse Historique"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "response1",
+              "name": "success",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "response2",
+              "name": "response",
+              "value": "={{ $('Extraire Code').item.json.formatted_response }}",
+              "type": "string"
+            },
+            {
+              "id": "response3",
+              "name": "agent",
+              "value": "coder",
+              "type": "string"
+            },
+            {
+              "id": "response4",
+              "name": "executedAt",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "response5",
+              "name": "query",
+              "value": "={{ $('When Executed by Another Workflow') }}",
+              "type": "string"
+            },
+            {
+              "id": "response6",
+              "name": "language",
+              "value": "={{ $('Extraire Code').item.json.language }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1904,
+        1024
+      ],
+      "id": "56ad1688-ae6d-417e-9073-cd3f243e3d50",
+      "name": "Prepare Response2"
+    },
+    {
+      "parameters": {
+        "model": "sonar-reasoning-pro",
+        "messages": {
+          "message": [
+            {
+              "content": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('message0_Text', ``, 'string') }}"
+            }
+          ]
+        },
+        "options": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.perplexityTool",
+      "typeVersion": 1,
+      "position": [
+        928,
+        1264
+      ],
+      "id": "d25dba82-20cc-4b59-a921-d3f950a62e15",
+      "name": "Perplexity",
+      "credentials": {
+        "perplexityApi": {
+          "id": "REPLACE_ME",
+          "name": "Perplexity Pro"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Redis - Récupérer Dernier Code",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Demande Historique?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Clean Text for Telegram": {
+      "main": [
+        [
+          {
+            "node": "Create Text File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis - Récupérer Dernier Code": {
+      "main": [
+        [
+          {
+            "node": "Préparer Contexte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Préparer Contexte": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Extraire Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraire Code": {
+      "main": [
+        [
+          {
+            "node": "Redis - Sauvegarder Code",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Redis - Get History",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis - Sauvegarder Code": {
+      "main": [
+        [
+          {
+            "node": "Clean Text for Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Text File": {
+      "main": [
+        [
+          {
+            "node": "Send Telegram File",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Telegram File": {
+      "main": [
+        [
+          {
+            "node": "Prepare Response2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Build History": {
+      "main": [
+        [
+          {
+            "node": "Redis - Sauvegarder Historique",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis - Get History": {
+      "main": [
+        [
+          {
+            "node": "Build History",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Outil Envoi Email": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Outil Recherche Web (Tavily)": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Calculator": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Think (Réflexion)": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Demande Historique?": {
+      "main": [
+        [
+          {
+            "node": "Redis - Récupérer Historique",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis - Récupérer Historique": {
+      "main": [
+        [
+          {
+            "node": "Réponse Historique",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Perplexity": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "timezone": "Europe/Paris",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "activeVersionId": "951c9f5c-41e4-4f82-bd44-170dbce040cd",
+  "versionCounter": 18,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-02-02T17:22:19.408Z",
+      "createdAt": "2026-02-02T17:22:19.408Z",
+      "role": "workflow:owner",
+      "workflowId": "lZAcsbSxbwTilSQ4",
+      "projectId": "oYt1GPNUBpK2eWHS",
+      "project": {
+        "updatedAt": "2026-02-01T17:02:13.492Z",
+        "createdAt": "2026-02-01T15:39:19.158Z",
+        "id": "oYt1GPNUBpK2eWHS",
+        "name": "Wilfrid Peyrius <willbys@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c",
+        "projectRelations": [
+          {
+            "updatedAt": "2026-02-01T15:39:19.158Z",
+            "createdAt": "2026-02-01T15:39:19.158Z",
+            "userId": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c",
+            "projectId": "oYt1GPNUBpK2eWHS",
+            "user": {
+              "updatedAt": "2026-02-16T19:51:22.561Z",
+              "createdAt": "2026-02-01T15:39:18.127Z",
+              "id": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c",
+              "email": "willbys@gmail.com",
+              "firstName": "Wilfrid",
+              "lastName": "Peyrius",
+              "personalizationAnswers": null,
+              "settings": {
+                "userActivated": true,
+                "easyAIWorkflowOnboarded": true,
+                "firstSuccessfulWorkflowId": "ldbOBqQIXC1SIM3O",
+                "userActivatedAt": 1769981079850
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2026-02-16",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-02-03T07:58:57.303Z",
+    "createdAt": "2026-02-03T07:58:25.079Z",
+    "versionId": "951c9f5c-41e4-4f82-bd44-170dbce040cd",
+    "workflowId": "lZAcsbSxbwTilSQ4",
+    "nodes": [
+      {
+        "parameters": {
+          "inputSource": "passthrough"
+        },
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.1,
+        "position": [
+          -144,
+          1264
+        ],
+        "id": "b3ab0c79-337c-4ed9-82ff-fbf2865a334c",
+        "name": "When Executed by Another Workflow"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Récupérer les données depuis l'input (node précédent)\nconst extractCodeData = $input.first().json;\nconst explanation = extractCodeData.explanation;\nconst language = extractCodeData.language;\nconst fileName = extractCodeData.file_name;\n\nconsole.log('=== CLEAN TEXT FOR TELEGRAM ===');\n\n// Fonction pour échapper TOUS les caractères spéciaux de Telegram\nfunction escapeForTelegram(text) {\n  return text\n    // Supprimer d'abord tous les markdown\n    .replace(/```[\\w]*\\n?/g, '')\n    .replace(/```/g, '')\n    .replace(/#{1,6}\\s+/g, '')\n    .replace(/\\*\\*\\*/g, '')\n    .replace(/\\*\\*/g, '')\n    .replace(/\\*/g, '')\n    .replace(/___/g, '')\n    .replace(/__/g, '')\n    .replace(/_/g, ' ')  // Remplacer par espace\n    .replace(/~~~/g, '')\n    .replace(/~~/g, '')\n    .replace(/`/g, '')\n    .replace(/\\[([^\\]]+)\\]\\([^)]+\\)/g, '$1')\n    .replace(/<[^>]*>/g, '')\n    .replace(/\\\\/g, '')\n    \n    // Échapper les caractères qui causent des problèmes avec Markdown\n    .replace(/\\[/g, '(')\n    .replace(/\\]/g, ')')\n    .replace(/\\(/g, ' ')\n    .replace(/\\)/g, ' ')\n    \n    // Supprimer TOUS les emojis et symboles Unicode\n    .replace(/[\\u{1F000}-\\u{1F9FF}]/gu, '')\n    .replace(/[\\u{2600}-\\u{26FF}]/gu, '')\n    .replace(/[\\u{2700}-\\u{27BF}]/gu, '')\n    \n    // Remplacer les caractères spéciaux courants\n    .replace(/→/g, '->')\n    .replace(/←/g, '<-')\n    .replace(/✓/g, 'OK')\n    .replace(/✗/g, 'X')\n    .replace(/•/g, '-')\n    .replace(/–/g, '-')\n    .replace(/—/g, '-')\n    .replace(/[\"\"]/g, '\"')\n    .replace(/['']/g, \"'\")\n    \n    // Nettoyer les espaces\n    .replace(/\\s{3,}/g, '  ')\n    .replace(/\\n{4,}/g, '\\n\\n')\n    .trim();\n}\n\nconst cleanText = escapeForTelegram(explanation);\n\n// Limite Telegram : 4096 caractères\nconst MAX_LENGTH = 3500;\n\nlet finalText = cleanText;\n\n// Tronquer si nécessaire\nif (cleanText.length > MAX_LENGTH) {\n  console.log('Troncature necessaire');\n  \n  const truncated = cleanText.substring(0, MAX_LENGTH);\n  const lastPeriod = truncated.lastIndexOf('.');\n  const lastNewline = truncated.lastIndexOf('\\n');\n  \n  const cutPoint = Math.max(lastPeriod, lastNewline);\n  \n  if (cutPoint > MAX_LENGTH * 0.8) {\n    finalText = truncated.substring(0, cutPoint + 1) + '\\n\\nSuite dans le fichier';\n  } else {\n    finalText = truncated.substring(0, MAX_LENGTH - 25) + '\\n\\nSuite dans le fichier';\n  }\n}\n\n// Message ULTRA-SIMPLE sans AUCUN caractère spécial\nconst telegramMessage = `Code ${language} genere\\n\\nFichier ${fileName}\\n\\n${finalText}\\n\\nVoir fichier ci-joint`;\n\n// Dernière vérification\nconst finalMessage = telegramMessage.length > 4096 \n  ? telegramMessage.substring(0, 4090)\n  : telegramMessage;\n\nconsole.log('Message final length:', finalMessage.length);\n\nreturn {\n  json: {\n    telegram_text: finalMessage,\n    original_explanation: explanation,\n    language: language,\n    file_name: fileName,\n    text_truncated: cleanText.length > MAX_LENGTH,\n    original_length: explanation.length,\n    final_length: finalMessage.length\n  }\n};"
+        },
+        "id": "9f17a57c-5cc8-424c-a7a5-a3b2610439cd",
+        "name": "Clean Text for Telegram",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1344,
+          1024
+        ]
+      },
+      {
+        "parameters": {
+          "operation": "get",
+          "key": "={{$json.user_id || $json.sessionId || 'default_user'}}_last_code",
+          "options": {}
+        },
+        "id": "92d72d58-db1e-42aa-a92b-1f37fab87908",
+        "name": "Redis - Récupérer Dernier Code",
+        "type": "n8n-nodes-base.redis",
+        "typeVersion": 1,
+        "position": [
+          240,
+          1024
+        ],
+        "credentials": {
+          "redis": {
+            "id": "d2c1b3f2-65eb-4b75-ae32-9831d952721b",
+            "name": "Redis Local"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// Récupération rapide des données\nconst userMessage = $input.first().json.query || $input.first().json.message;\nconst userId = $input.first().json.user_id || $input.first().json.sessionId || 'default_user';\nconst lastCode = $input.first().json.value || null;\n\n// Détection rapide du type de requête\nconst isModification = /modif|change|corrige|améliore|ajuste|update|fix|bug|ajoute|supprime|remplace/i.test(userMessage);\n\nlet userPrompt = userMessage;\n\n// Modification de code (amélioré)\nif (isModification && lastCode) {\n  try {\n    const code = JSON.parse(lastCode);\n    userPrompt = `📌 MODIFICATION DU CODE PRÉCÉDENT\n\n**Code actuel (${code.language}):**\n\\`\\`\\`${code.language}\n${code.code}\n\\`\\`\\`\n\n**Requête originale:** ${code.original_request}\n\n**Date de création:** ${new Date(code.timestamp).toLocaleString('fr-FR')}\n\n---\n\n**🔄 MODIFICATION DEMANDÉE:** ${userMessage}\n\n⚠️ **IMPORTANT:** Fournis le code COMPLET modifié dans un bloc de code formaté avec \\`\\`\\`${code.language}.\nNe fournis PAS seulement les parties modifiées, mais tout le code complet et fonctionnel.`;\n  } catch (e) {\n    console.log('Erreur parsing last code:', e);\n  }\n}\n\nreturn {\n  json: {\n    user_id: userId,\n    user_message: userMessage,\n    user_prompt: userPrompt,\n    has_previous_code: lastCode !== null,\n    is_modification: isModification\n  }\n};"
+        },
+        "id": "2e7c63da-c917-4e27-b9e5-7bcae1ff63bb",
+        "name": "Préparer Contexte",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          400,
+          1024
+        ]
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ $('When Executed by Another Workflow').item.json.query }}",
+          "hasOutputParser": true,
+          "options": {
+            "systemMessage": "=Tu es un expert en développement logiciel spécialisé dans la création de scripts de haute qualité.\n\n🎯 COMPÉTENCES : Python, PowerShell, Bash/Shell, JavaScript/Node.js, SQL, Go, Rust\n\n📋 MISSION :\n1. Analyser la demande\n2. Identifier le langage adapté\n3. Créer un code propre, commenté et optimisé\n4. Inclure gestion des erreurs\n5. Fournir exemples d'utilisation\n\n- **Serts-toi si possible des outils **Tavily** **Think** **Calculator** pour plus de precision si necessaire**\n\n✅ QUALITÉ : Code modulaire, commentaires clairs, sécurité, performance\n\n🛠️ OUTILS DISPONIBLES :\n- **Think** : Réflexion approfondie pour problèmes complexes, architecture, algorithmes\n- **Tavily** : Recherche web pour doc récente, syntaxe, librairies\n- **Calculator** : Calculs précis, validation de formules\n- **Email** : Envoi du code par email si demandé\n\n📝 MÉTHODOLOGIE :\n**Simple** : Analyser → Coder → Expliquer\n**Complexe** : Perplexity → Think → Tavily (si besoin) → Calculator (si besoin) → Coder → Valider\n\n📧 EMAIL : Si demandé, utiliser l'outil d'envoi email\n\n📝 FORMAT RÉPONSE OBLIGATOIRE :\n1. Explication brève (2-3 phrases)\n2. Prérequis si nécessaires\n3. **CODE COMPLET dans un bloc formaté :**\n\n```bash\n#!/bin/bash\n# Ton code complet ici\n```\n\n4. Exemples d'utilisation\n5. Notes importantes\n\n**⚠️ RÈGLES STRICTES :**\n- TU DOIS TOUJOURS mettre le code dans un bloc avec triple backticks\n- TU DOIS TOUJOURS spécifier le langage après les backticks (bash, python, javascript, etc.)\n- LE CODE COMPLET doit être dans le bloc, pas juste des extraits\n- Format obligatoire : ```langage\\n[code]\\n```\n\n🔄 MODIFICATIONS : Si code précédent fourni, applique les modifications et fournis le code COMPLET modifié dans un bloc formaté.\n\nCondition :\nSi le message utilisateur contient l’expression exacte \"Envoie-le moi\", alors déclenche l'action suivante :\n→ Router le script vers \"l'Outil Envoi Email\" avec comme paramètre recipient=\"assisperso@gmail.com\" afin d'envoyer le contenu automatiquement.",
+            "maxIterations": 5
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 2.2,
+        "position": [
+          576,
+          1024
+        ],
+        "id": "ee500f29-1042-48a4-8806-35508121e0e3",
+        "name": "AI Agent"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Extraire le code de la réponse\nconst response = $input.first().json.output;\nconst prepareContext = $('Préparer Contexte').first().json;\nconst userId = prepareContext.user_id;\nconst userMessage = prepareContext.user_message;\n\nconsole.log('=== DEBUG EXTRAIRE CODE ===');\nconsole.log('User Message:', userMessage);\nconsole.log('Response length:', response.length);\n\n// Regex pour extraire le code et le langage\nconst codeBlockRegex = /```(\\w+)?\\n([\\s\\S]*?)```/g;\nlet matches = [...response.matchAll(codeBlockRegex)];\n\nlet extractedCode = '';\nlet language = 'bash'; // Défaut bash\nlet explanation = response;\n\nif (matches.length > 0) {\n  language = matches[0][1] || 'bash';\n  extractedCode = matches[0][2].trim();\n  \n  console.log('✅ Code trouvé - Language:', language);\n  console.log('Code length:', extractedCode.length);\n  \n  const splitResponse = response.split('```');\n  explanation = splitResponse[0].trim();\n  \n  if (splitResponse.length > 2) {\n    const afterCode = splitResponse.slice(2).join('').trim();\n    if (afterCode) {\n      explanation += '\\n\\n' + afterCode;\n    }\n  }\n} else {\n  console.log('⚠️ Aucun bloc de code trouvé');\n  // Deviner le langage depuis la requête\n  if (/python/i.test(userMessage)) language = 'python';\n  else if (/javascript|node/i.test(userMessage)) language = 'javascript';\n  else if (/powershell/i.test(userMessage)) language = 'powershell';\n  else if (/sql/i.test(userMessage)) language = 'sql';\n}\n\n// Fonction de génération du nom de fichier intelligent\nfunction generateFileName(query, lang) {\n  if (!query || typeof query !== 'string') query = 'script';\n  if (!lang || typeof lang !== 'string') lang = 'bash';\n  \n  // Stop words français\n  const stopWords = ['le', 'la', 'les', 'un', 'une', 'des', 'de', 'du', 'pour', 'avec', 'dans', 'sur', 'et', 'ou', 'mais', 'qui', 'que', 'quoi', 'comment', 'créer', 'faire', 'script', 'code', 'programme', 'écris', 'écrire', 'creer', 'bash', 'python', 'javascript', 'sql', 'powershell'];\n  \n  // Extraire les mots significatifs (max 5)\n  const words = query\n    .toLowerCase()\n    .normalize('NFD').replace(/[\\u0300-\\u036f]/g, '') // Enlever accents\n    .replace(/[^a-z0-9\\s]/g, '') // Garder lettres et chiffres\n    .split(/\\s+/)\n    .filter(word => word.length > 2 && !stopWords.includes(word))\n    .slice(0, 5);\n  \n  let keywords = words.length > 0 ? words.join('_') : 'script';\n  keywords = keywords.substring(0, 40); // Limiter longueur\n  \n  // Extensions par langage\n  const fileExtensions = {\n    'python': '.py',\n    'javascript': '.js',\n    'bash': '.sh',\n    'shell': '.sh',\n    'powershell': '.ps1',\n    'sql': '.sql',\n    'typescript': '.ts',\n    'php': '.php',\n    'ruby': '.rb',\n    'go': '.go',\n    'rust': '.rs'\n  };\n  \n  const fileExtension = fileExtensions[lang.toLowerCase()] || '.sh';\n  return `${lang.toLowerCase()}_${keywords}${fileExtension}`;\n}\n\nconst codeData = {\n  code: extractedCode,\n  language: language,\n  explanation: explanation,\n  timestamp: new Date().toISOString(),\n  original_request: userMessage,\n  version: 1\n};\n\nconst fileName = generateFileName(userMessage, language);\n\nreturn {\n  json: {\n    user_id: userId,\n    code: extractedCode,\n    language: language,\n    explanation: explanation,\n    full_response: response,\n    code_data_string: JSON.stringify(codeData),\n    formatted_response: `${explanation}\\n\\n\\`\\`\\`${language}\\n${extractedCode}\\n\\`\\`\\``,\n    file_name: fileName,\n    file_extension: fileName.split('.').pop(),\n    has_code: extractedCode.length > 0\n  }\n};"
+        },
+        "id": "5e5100f0-01ef-4770-9d4a-4857ab4240a6",
+        "name": "Extraire Code",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          960,
+          1024
+        ]
+      },
+      {
+        "parameters": {
+          "operation": "set",
+          "key": "={{$json.user_id}}_last_code",
+          "value": "={{$json.code_data_string}}",
+          "expire": true,
+          "ttl": 86400
+        },
+        "id": "fd829472-1dd8-4454-b99c-3a5298a6a8ae",
+        "name": "Redis - Sauvegarder Code",
+        "type": "n8n-nodes-base.redis",
+        "typeVersion": 1,
+        "position": [
+          1184,
+          1024
+        ],
+        "credentials": {
+          "redis": {
+            "id": "d2c1b3f2-65eb-4b75-ae32-9831d952721b",
+            "name": "Redis Local"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// Récupérer les données du code depuis \"Extraire Code\"\nconst extractCodeData = $('Extraire Code').first().json;\nconst code = extractCodeData.code || '# Code vide';\nconst fileName = extractCodeData.file_name;\nconst language = extractCodeData.language || 'bash';\nconst explanation = extractCodeData.explanation || 'Code généré';\n\nconsole.log('=== CREATE TEXT FILE ===');\nconsole.log('File name:', fileName);\nconsole.log('Language:', language);\nconsole.log('Code length:', code.length);\n\n// Shebang et commentaire selon le langage\nlet shebang = '';\nlet commentChar = '#';\n\nswitch(language.toLowerCase()) {\n  case 'bash':\n  case 'shell':\n    shebang = '#!/usr/bin/env bash';\n    commentChar = '#';\n    break;\n  case 'python':\n    shebang = '#!/usr/bin/env python3';\n    commentChar = '#';\n    break;\n  case 'powershell':\n    shebang = '';\n    commentChar = '#';\n    break;\n  case 'javascript':\n  case 'typescript':\n    shebang = '#!/usr/bin/env node';\n    commentChar = '//';\n    break;\n  case 'php':\n    shebang = '#!/usr/bin/env php';\n    commentChar = '//';\n    break;\n  case 'ruby':\n    shebang = '#!/usr/bin/env ruby';\n    commentChar = '#';\n    break;\n  default:\n    shebang = '';\n    commentChar = '#';\n}\n\n// Construire le contenu du fichier\nconst fileContent = `${shebang ? shebang + '\\n' : ''}${commentChar} Fichier généré par AI Coder Agent\n${commentChar} Langage: ${language}\n${commentChar} Date: ${new Date().toISOString()}\n${commentChar} Nom: ${fileName}\n${commentChar}\n${commentChar} ${explanation.split('\\n')[0]}\n\n${code}`;\n\nconsole.log('File content length:', fileContent.length);\n\n// Créer un objet binaire pour Telegram\nconst buffer = Buffer.from(fileContent, 'utf-8');\n\nreturn {\n  json: {\n    file_name: fileName,\n    language: language,\n    file_size: buffer.length\n  },\n  binary: {\n    file: {\n      data: buffer.toString('base64'),\n      mimeType: 'text/plain',\n      fileName: fileName,\n      fileExtension: fileName.split('.').pop()\n    }\n  }\n};"
+        },
+        "id": "585c0aa3-f5ef-4169-a17f-a91cb3ff57a1",
+        "name": "Create Text File",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1504,
+          1024
+        ]
+      },
+      {
+        "parameters": {
+          "operation": "sendDocument",
+          "chatId": "=8481398125",
+          "binaryData": true,
+          "binaryPropertyName": "file",
+          "additionalFields": {
+            "caption": "=💻 Hello Voici le fichier de votre script est prêt.😎🖥️\n\n📄 Nom  : {{ $('Extraire Code').item.json.language.toUpperCase() }} - {{ $('Extraire Code').item.json.file_name }} \n✅ Language : {{ $json.language }}\nℹ️ Taille   : {{ $json.file_size }}\n"
+          }
+        },
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          1680,
+          1024
+        ],
+        "id": "b1270360-4fc8-4dbb-9410-265d5c16aed4",
+        "name": "Send Telegram File",
+        "webhookId": "4e198201-65c7-4da0-a12a-9b772d34b7c3",
+        "credentials": {
+          "telegramApi": {
+            "id": "XkX1NWc7cCkxEsMd",
+            "name": "NexusFlow75"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "set",
+          "key": "={{$json.user_id}}_history",
+          "value": "={{$json.history_string}}",
+          "expire": true,
+          "ttl": 604800
+        },
+        "id": "a9be16d3-bf5c-4e85-be83-58e90197ba49",
+        "name": "Redis - Sauvegarder Historique",
+        "type": "n8n-nodes-base.redis",
+        "typeVersion": 1,
+        "position": [
+          1664,
+          1232
+        ],
+        "credentials": {
+          "redis": {
+            "id": "d2c1b3f2-65eb-4b75-ae32-9831d952721b",
+            "name": "Redis Local"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// Récupérer les données nécessaires\nconst extractCodeData = $('Extraire Code').first().json;\nconst currentData = extractCodeData.code_data_string;\nconst userId = extractCodeData.user_id;\n\n// Récupérer l'historique existant depuis Redis - Get History\nconst existingHistoryStr = $input.first().json.value || null;\n\nlet history = { codes: [], count: 0, last_updated: new Date().toISOString() };\n\n// Récupérer l'historique existant\nif (existingHistoryStr) {\n  try {\n    history = JSON.parse(existingHistoryStr);\n  } catch (e) {\n    console.log('Erreur parsing history:', e);\n    history = { codes: [], count: 0, last_updated: new Date().toISOString() };\n  }\n}\n\n// Ajouter le nouveau code au début\nhistory.codes.unshift(currentData);\n\n// Garder les 20 derniers codes\nhistory.codes = history.codes.slice(0, 20);\nhistory.count = history.codes.length;\nhistory.last_updated = new Date().toISOString();\n\nreturn {\n  json: {\n    user_id: userId,\n    history_string: JSON.stringify(history)\n  }\n};"
+        },
+        "id": "52c60503-fca9-40b5-b80b-8f4fcaeefb2b",
+        "name": "Build History",
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1424,
+          1232
+        ]
+      },
+      {
+        "parameters": {
+          "operation": "get",
+          "key": "={{$('Extraire Code').item.json.user_id}}_history",
+          "options": {}
+        },
+        "id": "a4a3f46f-c562-4c47-89bd-05618b132165",
+        "name": "Redis - Get History",
+        "type": "n8n-nodes-base.redis",
+        "typeVersion": 1,
+        "position": [
+          1184,
+          1232
+        ],
+        "credentials": {
+          "redis": {
+            "id": "d2c1b3f2-65eb-4b75-ae32-9831d952721b",
+            "name": "Redis Local"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "description": "Envoie un email avec le code généré en pièce jointe. Utilise cet outil quand l'utilisateur demande explicitement d'envoyer le code par email. Demande l'adresse email si elle n'est pas fournie.",
+          "workflowId": {
+            "__rl": true,
+            "value": "Ru3BAcjHhZf3rAVk",
+            "mode": "list",
+            "cachedResultUrl": "/workflow/Ru3BAcjHhZf3rAVk",
+            "cachedResultName": "🤖📨 Emails Agent"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "action": "send",
+              "to": "={{ $json.email }}",
+              "subject": "Code généré - {{ $json.language }}",
+              "body": "={{ $json.explanation }}",
+              "attachment": "={{ $json.code }}"
+            }
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+        "typeVersion": 2.2,
+        "position": [
+          1040,
+          1264
+        ],
+        "id": "ce029817-66e4-4a42-bf00-e769a5029129",
+        "name": "Outil Envoi Email"
+      },
+      {
+        "parameters": {
+          "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Query', ``, 'string') }}",
+          "options": {}
+        },
+        "type": "@tavily/n8n-nodes-tavily.tavilyTool",
+        "typeVersion": 1,
+        "position": [
+          800,
+          1264
+        ],
+        "id": "bfae2f1e-8d03-4eac-98b2-6eb1f3ea63c7",
+        "name": "Outil Recherche Web (Tavily)",
+        "credentials": {
+          "tavilyApi": {
+            "id": "18266d36-ee28-4d8b-a3fe-ded37a256df1",
+            "name": "Tavily API"
+          }
+        }
+      },
+      {
+        "parameters": {},
+        "type": "@n8n/n8n-nodes-langchain.toolCalculator",
+        "typeVersion": 1,
+        "position": [
+          656,
+          1264
+        ],
+        "id": "c6a6f5d6-17ca-4425-a192-9eb9d999b611",
+        "name": "Calculator"
+      },
+      {
+        "parameters": {},
+        "type": "@n8n/n8n-nodes-langchain.toolThink",
+        "typeVersion": 1.1,
+        "position": [
+          528,
+          1264
+        ],
+        "id": "e5b25fec-01b4-4c45-9da9-8d31a5ece512",
+        "name": "Think (Réflexion)"
+      },
+      {
+        "parameters": {
+          "sessionIdType": "customKey",
+          "sessionKey": "={{ $('When Executed by Another Workflow').item.json.sessionId || $('When Executed by Another Workflow').item.json.user_id || 'default' }}",
+          "contextWindowLength": 20
+        },
+        "type": "@n8n/n8n-nodes-langchain.memoryRedisChat",
+        "typeVersion": 1.5,
+        "position": [
+          384,
+          1264
+        ],
+        "id": "deb8eb5d-ee2f-4166-b868-bb3248e00461",
+        "name": "Redis Chat Memory",
+        "credentials": {
+          "redis": {
+            "id": "d2c1b3f2-65eb-4b75-ae32-9831d952721b",
+            "name": "Redis Local"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "model": "anthropic/claude-sonnet-4.5",
+          "options": {
+            "maxTokens": 4000,
+            "temperature": 0.2
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+        "typeVersion": 1,
+        "position": [
+          224,
+          1264
+        ],
+        "id": "8a4e0f20-8080-4472-b0f6-17b8cfb5e351",
+        "name": "OpenRouter Chat Model",
+        "credentials": {
+          "openRouterApi": {
+            "id": "7a43f38b-93c1-481e-bd33-d82b1a9d05e2",
+            "name": "OpenRouter API"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "string": [
+              {
+                "value1": "={{$json.query || $json.message}}",
+                "operation": "contains",
+                "value2": "historique"
+              }
+            ]
+          }
+        },
+        "id": "72dbc1d4-07c6-4685-8a6f-53832a741b74",
+        "name": "Demande Historique?",
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 1,
+        "position": [
+          240,
+          1488
+        ]
+      },
+      {
+        "parameters": {
+          "operation": "get",
+          "key": "={{$json.user_id || $json.sessionId || 'default_user'}}_history",
+          "options": {}
+        },
+        "id": "7ffd14ab-e878-480e-b3e0-e8747a03e79c",
+        "name": "Redis - Récupérer Historique",
+        "type": "n8n-nodes-base.redis",
+        "typeVersion": 1,
+        "position": [
+          464,
+          1488
+        ],
+        "credentials": {
+          "redis": {
+            "id": "d2c1b3f2-65eb-4b75-ae32-9831d952721b",
+            "name": "Redis Local"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "response1",
+                "name": "success",
+                "value": true,
+                "type": "boolean"
+              },
+              {
+                "id": "response2",
+                "name": "response",
+                "value": "={{ \n  const historyData = $json.value ? JSON.parse($json.value) : { codes: [], count: 0 };\n  let formattedHistory = `📚 **Historique de vos codes** (${historyData.count} codes sauvegardés)\\n\\n`;\n  \n  if (historyData.codes && historyData.codes.length > 0) {\n    historyData.codes.forEach((codeStr, index) => {\n      try {\n        const code = JSON.parse(codeStr);\n        formattedHistory += `**${index + 1}. ${code.language.toUpperCase()}** - ${new Date(code.timestamp).toLocaleString('fr-FR')}\\n`;\n        formattedHistory += `   Requête: ${code.original_request.substring(0, 80)}${code.original_request.length > 80 ? '...' : ''}\\n\\n`;\n      } catch (e) {\n        console.log('Erreur parsing code:', e);\n      }\n    });\n  } else {\n    formattedHistory += 'Aucun code dans l\\'historique.';\n  }\n  \n  return formattedHistory;\n}}",
+                "type": "string"
+              },
+              {
+                "id": "response3",
+                "name": "agent",
+                "value": "coder",
+                "type": "string"
+              },
+              {
+                "id": "response4",
+                "name": "executedAt",
+                "value": "={{ $now.toISO() }}",
+                "type": "string"
+              },
+              {
+                "id": "response5",
+                "name": "query",
+                "value": "historique",
+                "type": "string"
+              },
+              {
+                "id": "response6",
+                "name": "history_data",
+                "value": "={{ $json.value }}",
+                "type": "string"
+              },
+              {
+                "id": "response7",
+                "name": "history_count",
+                "value": "={{ \n  const historyData = $json.value ? JSON.parse($json.value) : { count: 0 };\n  return historyData.count || 0;\n}}",
+                "type": "number"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          688,
+          1488
+        ],
+        "id": "5c17cac2-a3b0-412d-9075-54d43d7f4619",
+        "name": "Réponse Historique"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "response1",
+                "name": "success",
+                "value": true,
+                "type": "boolean"
+              },
+              {
+                "id": "response2",
+                "name": "response",
+                "value": "={{ $('Extraire Code').item.json.formatted_response }}",
+                "type": "string"
+              },
+              {
+                "id": "response3",
+                "name": "agent",
+                "value": "coder",
+                "type": "string"
+              },
+              {
+                "id": "response4",
+                "name": "executedAt",
+                "value": "={{ $now.toISO() }}",
+                "type": "string"
+              },
+              {
+                "id": "response5",
+                "name": "query",
+                "value": "={{ $('When Executed by Another Workflow') }}",
+                "type": "string"
+              },
+              {
+                "id": "response6",
+                "name": "language",
+                "value": "={{ $('Extraire Code').item.json.language }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          1904,
+          1024
+        ],
+        "id": "56ad1688-ae6d-417e-9073-cd3f243e3d50",
+        "name": "Prepare Response2"
+      },
+      {
+        "parameters": {
+          "model": "sonar-reasoning-pro",
+          "messages": {
+            "message": [
+              {
+                "content": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('message0_Text', ``, 'string') }}"
+              }
+            ]
+          },
+          "options": {},
+          "requestOptions": {}
+        },
+        "type": "n8n-nodes-base.perplexityTool",
+        "typeVersion": 1,
+        "position": [
+          928,
+          1264
+        ],
+        "id": "d25dba82-20cc-4b59-a921-d3f950a62e15",
+        "name": "Perplexity",
+        "credentials": {
+          "perplexityApi": {
+            "id": "400fd330-2c56-45ed-b60d-e44c45f6b1a0",
+            "name": "Perplexity Pro"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "When Executed by Another Workflow": {
+        "main": [
+          [
+            {
+              "node": "Redis - Récupérer Dernier Code",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Demande Historique?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Clean Text for Telegram": {
+        "main": [
+          [
+            {
+              "node": "Create Text File",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Redis - Récupérer Dernier Code": {
+        "main": [
+          [
+            {
+              "node": "Préparer Contexte",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Préparer Contexte": {
+        "main": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AI Agent": {
+        "main": [
+          [
+            {
+              "node": "Extraire Code",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Extraire Code": {
+        "main": [
+          [
+            {
+              "node": "Redis - Sauvegarder Code",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Redis - Get History",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Redis - Sauvegarder Code": {
+        "main": [
+          [
+            {
+              "node": "Clean Text for Telegram",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create Text File": {
+        "main": [
+          [
+            {
+              "node": "Send Telegram File",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Send Telegram File": {
+        "main": [
+          [
+            {
+              "node": "Prepare Response2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Build History": {
+        "main": [
+          [
+            {
+              "node": "Redis - Sauvegarder Historique",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Redis - Get History": {
+        "main": [
+          [
+            {
+              "node": "Build History",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Outil Envoi Email": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Outil Recherche Web (Tavily)": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Calculator": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Think (Réflexion)": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Redis Chat Memory": {
+        "ai_memory": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_memory",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenRouter Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Demande Historique?": {
+        "main": [
+          [
+            {
+              "node": "Redis - Récupérer Historique",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Redis - Récupérer Historique": {
+        "main": [
+          [
+            {
+              "node": "Réponse Historique",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Perplexity": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Wilfrid Peyrius",
+    "name": "Version 951c9f5c",
+    "description": "",
+    "autosaved": true,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-02-03T07:58:57.298Z",
+        "id": 36,
+        "workflowId": "lZAcsbSxbwTilSQ4",
+        "versionId": "951c9f5c-41e4-4f82-bd44-170dbce040cd",
+        "event": "activated",
+        "userId": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c"
+      },
+      {
+        "createdAt": "2026-02-03T16:36:48.354Z",
+        "id": 63,
+        "workflowId": "lZAcsbSxbwTilSQ4",
+        "versionId": "951c9f5c-41e4-4f82-bd44-170dbce040cd",
+        "event": "activated",
+        "userId": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c"
+      }
+    ]
+  }
+}
