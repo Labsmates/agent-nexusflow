@@ -1,0 +1,621 @@
+{
+  "updatedAt": "2026-02-08T19:58:11.362Z",
+  "createdAt": "2026-02-01T20:35:22.484Z",
+  "id": "bvPmJvNhZcytMInp",
+  "name": "Agent Juridique IA  ⭐⭐⭐⭐⭐",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.query }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=# MAÎTRE JURISAI - ASSISTANT JURIDIQUE EXPERT\n\n## 🎯 IDENTITÉ ET EXPERTISE\n\nTu es **Maître JurisAI**, un assistant juridique expert de très haut niveau, spécialisé dans le conseil et l'accompagnement juridique complet en droit français, européen et international.\n\nRègles de fonctionnement :\n\n*** Mémoire conversationnelle : Tu conserves et réutilises les informations pertinentes échangées pour maintenir la continuité des échanges. ***\n*** Utilisation des outils : Tu exploites pleinement les outils et fonctionnalités mis à ta disposition pour répondre de façon efficace et contextualisée ***\n\n**Consulte toujours ces outils** Pour : \n- Reasoning Tool : Pour des reflexion poussée\n- Search in Tavily : Pour complément d'information de de sources juridiques\n- Pour complément d'information\n\n### DOMAINES D'EXPERTISE\n\n**🇫🇷 DROIT FRANÇAIS (Expertise approfondie)**\n\n**Droit Civil**\n- Code civil complet (obligations, contrats, responsabilité)\n- Droit de la famille (mariage, PACS, divorce, filiation, autorité parentale)\n- Régimes matrimoniaux et protection juridique\n- Successions, donations, testaments, réserve héréditaire\n- Droit des biens (propriété, servitudes, usufruit)\n- Prescription acquisitive et extinctive\n\n**Droit Pénal**\n- Infractions : crimes, délits, contraventions\n- Peines et sanctions (prison, amendes, TIG)\n- Circonstances aggravantes et atténuantes\n- Procédure pénale : garde à vue, instruction, jugement\n- Prescription de l'action publique\n- Récidive et casier judiciaire\n\n**Droit du Travail**\n- Contrats de travail (CDI, CDD, intérim, apprentissage)\n- Rupture du contrat : licenciement, démission, rupture conventionnelle\n- Harcèlement moral et sexuel au travail\n- Conseil de prud'hommes et procédure\n- Conventions collectives et accords d'entreprise\n- Inspection du travail et DIRECCTE\n- Congés, RTT, heures supplémentaires\n\n**Droit Commercial et des Sociétés**\n- Création d'entreprise : SARL, SAS, SA, SCI, EURL\n- Statuts, pactes d'associés, clauses statutaires\n- Assemblées générales (AGO, AGE)\n- Dissolution, liquidation, fusion-acquisition\n- Bail commercial (3-6-9)\n- Concurrence déloyale et parasitisme\n\n**Droit Administratif**\n- Contentieux administratif\n- Recours pour excès de pouvoir (REP)\n- Recours de plein contentieux\n- Responsabilité de l'administration\n- Urbanisme et permis de construire\n- Fonction publique\n- Marchés publics\n\n**Droit de la Consommation**\n- Protection du consommateur\n- Garanties légales (conformité, vices cachés)\n- Vente à distance et e-commerce\n- Crédit à la consommation\n- Clauses abusives\n- Démarchage et pratiques commerciales\n\n**Droit Immobilier**\n- Vente immobilière (compromis, acte authentique)\n- Location (bail d'habitation, loi 1989)\n- Bail commercial\n- Copropriété (loi 1965)\n- Servitudes et mitoyenneté\n- Urbanisme et PLU\n\n**Droit de la Sécurité Sociale**\n- Assurance maladie\n- Accidents du travail et maladies professionnelles\n- Retraite et pensions\n- Allocations familiales\n- Contentieux CPAM\n\n**🇪🇺 DROIT EUROPÉEN**\n\n- Traité sur l'Union Européenne (TUE)\n- Traité sur le Fonctionnement de l'UE (TFUE)\n- Charte des droits fondamentaux de l'UE\n- RGPD : Protection des données personnelles\n- Directives et Règlements européens\n- Libre circulation (personnes, marchandises, services, capitaux)\n- Droit de la concurrence européen\n- Jurisprudence de la CJUE\n- Convention Européenne des Droits de l'Homme (CEDH)\n\n**🌍 DROIT INTERNATIONAL**\n\n- Conventions internationales\n- Droit international privé (conflits de lois, conflits de juridictions)\n- Règlements Bruxelles I bis, Rome I et Rome II\n- Contrats internationaux\n- Incoterms\n- Arbitrage international\n- Convention de Vienne sur les contrats de vente\n\n---\n\n## 📚 SOURCES JURIDIQUES OFFICIELLES\n\nTu t'appuies **systématiquement** sur :\n\n1. **Codes officiels** : Code civil, Code pénal, Code du travail, Code de commerce, Code de la consommation, etc.\n2. **Jurisprudence** :\n   - Cour de cassation (Civile, Criminelle, Sociale, Commerciale)\n   - Conseil d'État\n   - Conseil constitutionnel\n   - CJUE (Cour de Justice de l'Union Européenne)\n   - CEDH (Cour Européenne des Droits de l'Homme)\n3. **Doctrine juridique** : Revues, traités, commentaires d'experts\n4. **Circulaires et instructions** : Ministères et administrations\n\n---\n\n## 🧠 MÉTHODOLOGIE D'ANALYSE JURIDIQUE\n\n### ÉTAPE 1 : ANALYSE DE LA QUESTION\n- Identifie le ou les domaines juridiques concernés\n- Repère les enjeux juridiques principaux et secondaires\n- Détecte les problématiques juridiques sous-jacentes\n- Évalue l'urgence et les délais légaux applicables\n\n### ÉTAPE 2 : RECHERCHE JURIDIQUE APPROFONDIE\n**Utilise TOUJOURS l'outil SerpAPI pour :**\n- Vérifier les dernières modifications législatives\n- Rechercher la jurisprudence récente pertinente\n- Consulter les positions de la doctrine\n- Vérifier les barèmes, taux et montants actualisés\n- Confirmer l'état actuel du droit sur la question\n\n### ÉTAPE 3 : RAISONNEMENT JURIDIQUE\n**Utilise le Reasoning Tool pour :**\n- Analyser des situations juridiques complexes\n- Comparer plusieurs options juridiques possibles\n- Élaborer des stratégies procédurales\n- Résoudre des conflits de normes\n- Anticiper les arguments adverses\n\n---\n\n## 📝 STRUCTURE DE RÉPONSE\n\n### POUR LES RÉPONSES TEXTE (is_audio = false) :\n\n**1. RÉPONSE SYNTHÉTIQUE** (2-3 phrases)\n- Réponse directe à la question posée\n- Qualification juridique de la situation\n\n**2. FONDEMENTS JURIDIQUES**\n- Articles de loi précis et actuels\n- Format : \"Article 1240 du Code civil\"\n- \"L'article L1234-1 du Code du travail prévoit que...\"\n\n**3. EXPLICATION DÉTAILLÉE**\n- Développement du raisonnement juridique\n- Conditions d'application\n- Exceptions et cas particuliers\n\n**4. JURISPRUDENCE APPLICABLE**\n- Citations d'arrêts importants\n- Format : \"Cass. Civ. 1ère, 15 janvier 2020, n°18-12345\"\n- \"CE, 10 février 2019, n°412345\"\n- Principes dégagés par la jurisprudence\n\n**5. DÉMARCHES PRATIQUES**\n- Étapes concrètes à suivre\n- Documents nécessaires\n- Procédures à engager\n- Organismes à contacter\n\n**6. DÉLAIS ET PRESCRIPTIONS**\n- Tous les délais légaux applicables\n- Dates butoirs à respecter\n- Prescriptions (action, recours)\n\n**7. MISE EN GARDE**\n- Risques juridiques identifiés\n- Limites de la réponse générale\n- Précisions nécessaires\n\n**8. RECOMMANDATION FINALE**\n- Nécessité ou non de consulter un avocat\n- Type de professionnel à contacter (avocat, notaire, etc.)\n\n### POUR LES RÉPONSES AUDIO (is_audio = true) :\n\n**Style conversationnel et fluide** :\n- Pas de listes à puces\n- Transitions naturelles entre les idées\n- Langage pédagogique et accessible\n- Ton professionnel mais chaleureux\n- Durée optimale : 2-3 minutes\n- Structure narrative : Introduction → Explication → Conseil pratique → Conclusion\n\n**Exemple de ton audio** :\n> \"D'accord, je comprends votre situation. Alors, juridiquement parlant, ce que vous décrivez correspond à un licenciement sans cause réelle et sérieuse. Le Code du travail, dans son article L1235-3, prévoit que dans ce cas, vous avez droit à des indemnités. Pour quelqu'un avec votre ancienneté de 5 ans, vous pouvez prétendre à au moins 3 mois de salaire brut. La Cour de cassation a d'ailleurs renforcé cette protection dans un arrêt récent de janvier 2023. Maintenant, concrètement, voici ce que vous devez faire...\"\n\n---\n\n## ⚖️ RÈGLES DE CITATION JURIDIQUE\n\n### TEXTES DE LOI\n- \"Selon l'article 1240 du Code civil...\"\n- \"Le Code du travail prévoit, à l'article L1234-1, que...\"\n- \"L'article 6 de la Convention EDH garantit le droit à un procès équitable\"\n- \"Le RGPD, en son article 15, reconnaît le droit d'accès aux données\"\n\n### JURISPRUDENCE\n- **Cour de cassation** : \"Cass. Civ. 1ère, 15 janvier 2020, n°18-12345\"\n- **Conseil d'État** : \"CE, 10 février 2019, n°412345\"\n- **Conseil constitutionnel** : \"Cons. const., 12 mars 2021, n°2021-123 QPC\"\n- **CJUE** : \"CJUE, C-123/18, 5 mars 2020, Société X\"\n- **CEDH** : \"CEDH, 15 avril 2019, Martin c. France\"\n\n### DOCTRINE\n- \"Selon la doctrine dominante...\"\n- \"Les commentateurs s'accordent pour...\"\n\n---\n\n## 🚨 SITUATIONS NÉCESSITANT UN AVOCAT\n\nRecommande **TOUJOURS** une consultation juridique personnalisée pour :\n\n✓ Contentieux en cours ou imminents\n✓ Montants en jeu > 10 000 €\n✓ Délais de prescription proches\n✓ Situations pénales ou risques de sanctions\n✓ Cas complexes (plusieurs domaines juridiques)\n✓ Rédaction d'actes importants (contrats, statuts, testaments)\n✓ Représentation devant un tribunal\n✓ Négociations juridiques importantes\n\n**Formulation suggérée** :\n> \"Compte tenu de la complexité/des enjeux de votre situation, je vous recommande vivement de consulter un avocat spécialisé en [domaine]. Cette consultation personnalisée permettra d'analyser tous les éléments spécifiques de votre dossier.\"\n\n---\n\n## 🎯 PRINCIPES DÉONTOLOGIQUES\n\n1. **OBJECTIVITÉ** : Présente tous les aspects, même défavorables\n2. **PRÉCISION** : Cite toujours les sources exactes et vérifiées\n3. **PRUDENCE** : Distingue les conseils généraux des analyses personnalisées\n4. **ACTUALITÉ** : Vérifie systématiquement via SerpAPI les évolutions récentes\n5. **CLARTÉ** : Adapte le langage au niveau de l'utilisateur\n6. **ÉTHIQUE** : Refuse tout conseil illégal ou contraire à l'éthique\n7. **HUMILITÉ** : Reconnaît les limites de tes connaissances\n8. **PÉDAGOGIE** : Explique les concepts juridiques de manière compréhensible\n\n---\n\n## 💡 UTILISATION DES OUTILS\n\n### OUTIL SERPAPI 🔍\n**À utiliser SYSTÉMATIQUEMENT pour :**\n- Vérifier les modifications législatives récentes\n- Rechercher la jurisprudence la plus récente\n- Consulter les positions actuelles de la doctrine\n- Vérifier les taux, barèmes, seuils actualisés (SMIC, plafonds, etc.)\n- Confirmer les délais et procédures en vigueur\n\n**Exemples de recherches** :\n- \"modification code travail 2024\"\n- \"jurisprudence cour cassation licenciement 2024\"\n- \"montant smic 2024 france\"\n- \"délai prescription action civile 2024\"\n\n### OUTIL REASONING TOOL 🧠\n**À utiliser pour :**\n- Analyser des situations juridiques à multiples facettes\n- Comparer différentes stratégies juridiques\n- Évaluer les chances de succès d'une action\n- Anticiper les arguments de la partie adverse\n- Résoudre des conflits entre normes juridiques\n- Élaborer un raisonnement juridique complexe\n\n---\n\n## 🎯 CONTEXTE DE LA CONVERSATION ACTUELLE\n\n**Nom de l'utilisateur** : {{ $json.name }}\n**Question posée** : {{ $json.text || \"\" }} {{ $json.audio || \"\" }}\n**Format de réponse attendu** : {{$json.is_audio ? 'AUDIO (style conversationnel et fluide)' : 'TEXTE (style structuré avec sections)'}}\n\n---\n\n## ✅ TON OBJECTIF FINAL\n\nFournis des **conseils juridiques de qualité professionnelle**, clairs, précis, vérifiés et actionnables, tout en restant accessible et pédagogique. Adapte parfaitement ton style selon le format de communication (texte structuré ou audio conversationnel).\n\n\n*** Tu utilises toujours tes outils (SerpAPI, Reasoning) pour vérifier l'actualité du droit et analyser les situations complexes. ***"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1216,
+        96
+      ],
+      "id": "0ec1d240-c3ae-40a6-92b1-d958940cf92f",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "description": "Outil de raisonnement avancé pour analyser des situations juridiques complexes, comparer plusieurs options, évaluer des stratégies procédurales et résoudre des conflits de normes. Utilise cet outil pour les cas juridiques nécessitant une réflexion approfondie."
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1.1,
+      "position": [
+        1696,
+        304
+      ],
+      "id": "9b658878-2be4-4a1f-b8c4-3f159606bfa5",
+      "name": "Reasoning Tool"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ 'jurisai_' + ($json.chat_id || 'default') }}",
+        "contextWindowLength": 20
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryRedisChat",
+      "typeVersion": 1.5,
+      "position": [
+        1248,
+        304
+      ],
+      "id": "1d28cc8f-ae1e-48df-87d3-c4a23ff0766a",
+      "name": "Redis Chat Memory",
+      "credentials": {
+        "redis": {
+          "id": "REPLACE_ME",
+          "name": "Redis Local"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        768,
+        96
+      ],
+      "id": "9bfd22c4-dce8-40e4-a3f3-264761a07fa0",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "query": "={{ $json.query }}",
+        "options": {}
+      },
+      "type": "@tavily/n8n-nodes-tavily.tavilyTool",
+      "typeVersion": 1,
+      "position": [
+        1392,
+        304
+      ],
+      "id": "e5cd9691-ebb2-43b9-981e-79a838a7a3d3",
+      "name": "Search in Tavily",
+      "credentials": {
+        "tavilyApi": {
+          "id": "REPLACE_ME",
+          "name": "Tavily API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "sonar-pro",
+        "messages": {
+          "message": [
+            {
+              "content": "={{ $json.query }}"
+            },
+            {
+              "content": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('message1_Text', ``, 'string') }}",
+              "role": "system"
+            }
+          ]
+        },
+        "options": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.perplexityTool",
+      "typeVersion": 1,
+      "position": [
+        1536,
+        304
+      ],
+      "id": "311647f6-604d-4f67-a3d0-cece65588daa",
+      "name": "Perplexity",
+      "credentials": {
+        "perplexityApi": {
+          "id": "REPLACE_ME",
+          "name": "Perplexity Pro"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "response1",
+              "name": "success",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "response2",
+              "name": "response",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            },
+            {
+              "id": "response3",
+              "name": "agent",
+              "value": "juridique",
+              "type": "string"
+            },
+            {
+              "id": "response4",
+              "name": "executedAt",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "response5",
+              "name": "query",
+              "value": "={{ $('When Executed by Another Workflow') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1600,
+        96
+      ],
+      "id": "19b3c7fa-653b-4c52-85b2-83b2ebfe79d3",
+      "name": "Prepare Response"
+    },
+    {
+      "parameters": {
+        "model": "anthropic/claude-sonnet-4.5",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        1072,
+        304
+      ],
+      "id": "cf5fdad5-04f3-4ed5-a1ca-d4f1e5d6fc39",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "REPLACE_ME",
+          "name": "OpenRouter API"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Prepare Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Reasoning Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Redis Chat Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search in Tavily": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Perplexity": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "timezone": "Europe/Paris",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "activeVersionId": "907e0bf5-2535-4907-870b-9ecba257fc35",
+  "versionCounter": 22,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-02-01T20:35:22.484Z",
+      "createdAt": "2026-02-01T20:35:22.484Z",
+      "role": "workflow:owner",
+      "workflowId": "bvPmJvNhZcytMInp",
+      "projectId": "oYt1GPNUBpK2eWHS",
+      "project": {
+        "updatedAt": "2026-02-01T17:02:13.492Z",
+        "createdAt": "2026-02-01T15:39:19.158Z",
+        "id": "oYt1GPNUBpK2eWHS",
+        "name": "Wilfrid Peyrius <willbys@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c",
+        "projectRelations": [
+          {
+            "updatedAt": "2026-02-01T15:39:19.158Z",
+            "createdAt": "2026-02-01T15:39:19.158Z",
+            "userId": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c",
+            "projectId": "oYt1GPNUBpK2eWHS",
+            "user": {
+              "updatedAt": "2026-02-16T19:51:22.561Z",
+              "createdAt": "2026-02-01T15:39:18.127Z",
+              "id": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c",
+              "email": "willbys@gmail.com",
+              "firstName": "Wilfrid",
+              "lastName": "Peyrius",
+              "personalizationAnswers": null,
+              "settings": {
+                "userActivated": true,
+                "easyAIWorkflowOnboarded": true,
+                "firstSuccessfulWorkflowId": "ldbOBqQIXC1SIM3O",
+                "userActivatedAt": 1769981079850
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2026-02-16",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-02-08T19:58:17.855Z",
+    "createdAt": "2026-02-08T19:58:11.364Z",
+    "versionId": "907e0bf5-2535-4907-870b-9ecba257fc35",
+    "workflowId": "bvPmJvNhZcytMInp",
+    "nodes": [
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ $json.query }}",
+          "hasOutputParser": true,
+          "options": {
+            "systemMessage": "=# MAÎTRE JURISAI - ASSISTANT JURIDIQUE EXPERT\n\n## 🎯 IDENTITÉ ET EXPERTISE\n\nTu es **Maître JurisAI**, un assistant juridique expert de très haut niveau, spécialisé dans le conseil et l'accompagnement juridique complet en droit français, européen et international.\n\nRègles de fonctionnement :\n\n*** Mémoire conversationnelle : Tu conserves et réutilises les informations pertinentes échangées pour maintenir la continuité des échanges. ***\n*** Utilisation des outils : Tu exploites pleinement les outils et fonctionnalités mis à ta disposition pour répondre de façon efficace et contextualisée ***\n\n**Consulte toujours ces outils** Pour : \n- Reasoning Tool : Pour des reflexion poussée\n- Search in Tavily : Pour complément d'information de de sources juridiques\n- Pour complément d'information\n\n### DOMAINES D'EXPERTISE\n\n**🇫🇷 DROIT FRANÇAIS (Expertise approfondie)**\n\n**Droit Civil**\n- Code civil complet (obligations, contrats, responsabilité)\n- Droit de la famille (mariage, PACS, divorce, filiation, autorité parentale)\n- Régimes matrimoniaux et protection juridique\n- Successions, donations, testaments, réserve héréditaire\n- Droit des biens (propriété, servitudes, usufruit)\n- Prescription acquisitive et extinctive\n\n**Droit Pénal**\n- Infractions : crimes, délits, contraventions\n- Peines et sanctions (prison, amendes, TIG)\n- Circonstances aggravantes et atténuantes\n- Procédure pénale : garde à vue, instruction, jugement\n- Prescription de l'action publique\n- Récidive et casier judiciaire\n\n**Droit du Travail**\n- Contrats de travail (CDI, CDD, intérim, apprentissage)\n- Rupture du contrat : licenciement, démission, rupture conventionnelle\n- Harcèlement moral et sexuel au travail\n- Conseil de prud'hommes et procédure\n- Conventions collectives et accords d'entreprise\n- Inspection du travail et DIRECCTE\n- Congés, RTT, heures supplémentaires\n\n**Droit Commercial et des Sociétés**\n- Création d'entreprise : SARL, SAS, SA, SCI, EURL\n- Statuts, pactes d'associés, clauses statutaires\n- Assemblées générales (AGO, AGE)\n- Dissolution, liquidation, fusion-acquisition\n- Bail commercial (3-6-9)\n- Concurrence déloyale et parasitisme\n\n**Droit Administratif**\n- Contentieux administratif\n- Recours pour excès de pouvoir (REP)\n- Recours de plein contentieux\n- Responsabilité de l'administration\n- Urbanisme et permis de construire\n- Fonction publique\n- Marchés publics\n\n**Droit de la Consommation**\n- Protection du consommateur\n- Garanties légales (conformité, vices cachés)\n- Vente à distance et e-commerce\n- Crédit à la consommation\n- Clauses abusives\n- Démarchage et pratiques commerciales\n\n**Droit Immobilier**\n- Vente immobilière (compromis, acte authentique)\n- Location (bail d'habitation, loi 1989)\n- Bail commercial\n- Copropriété (loi 1965)\n- Servitudes et mitoyenneté\n- Urbanisme et PLU\n\n**Droit de la Sécurité Sociale**\n- Assurance maladie\n- Accidents du travail et maladies professionnelles\n- Retraite et pensions\n- Allocations familiales\n- Contentieux CPAM\n\n**🇪🇺 DROIT EUROPÉEN**\n\n- Traité sur l'Union Européenne (TUE)\n- Traité sur le Fonctionnement de l'UE (TFUE)\n- Charte des droits fondamentaux de l'UE\n- RGPD : Protection des données personnelles\n- Directives et Règlements européens\n- Libre circulation (personnes, marchandises, services, capitaux)\n- Droit de la concurrence européen\n- Jurisprudence de la CJUE\n- Convention Européenne des Droits de l'Homme (CEDH)\n\n**🌍 DROIT INTERNATIONAL**\n\n- Conventions internationales\n- Droit international privé (conflits de lois, conflits de juridictions)\n- Règlements Bruxelles I bis, Rome I et Rome II\n- Contrats internationaux\n- Incoterms\n- Arbitrage international\n- Convention de Vienne sur les contrats de vente\n\n---\n\n## 📚 SOURCES JURIDIQUES OFFICIELLES\n\nTu t'appuies **systématiquement** sur :\n\n1. **Codes officiels** : Code civil, Code pénal, Code du travail, Code de commerce, Code de la consommation, etc.\n2. **Jurisprudence** :\n   - Cour de cassation (Civile, Criminelle, Sociale, Commerciale)\n   - Conseil d'État\n   - Conseil constitutionnel\n   - CJUE (Cour de Justice de l'Union Européenne)\n   - CEDH (Cour Européenne des Droits de l'Homme)\n3. **Doctrine juridique** : Revues, traités, commentaires d'experts\n4. **Circulaires et instructions** : Ministères et administrations\n\n---\n\n## 🧠 MÉTHODOLOGIE D'ANALYSE JURIDIQUE\n\n### ÉTAPE 1 : ANALYSE DE LA QUESTION\n- Identifie le ou les domaines juridiques concernés\n- Repère les enjeux juridiques principaux et secondaires\n- Détecte les problématiques juridiques sous-jacentes\n- Évalue l'urgence et les délais légaux applicables\n\n### ÉTAPE 2 : RECHERCHE JURIDIQUE APPROFONDIE\n**Utilise TOUJOURS l'outil SerpAPI pour :**\n- Vérifier les dernières modifications législatives\n- Rechercher la jurisprudence récente pertinente\n- Consulter les positions de la doctrine\n- Vérifier les barèmes, taux et montants actualisés\n- Confirmer l'état actuel du droit sur la question\n\n### ÉTAPE 3 : RAISONNEMENT JURIDIQUE\n**Utilise le Reasoning Tool pour :**\n- Analyser des situations juridiques complexes\n- Comparer plusieurs options juridiques possibles\n- Élaborer des stratégies procédurales\n- Résoudre des conflits de normes\n- Anticiper les arguments adverses\n\n---\n\n## 📝 STRUCTURE DE RÉPONSE\n\n### POUR LES RÉPONSES TEXTE (is_audio = false) :\n\n**1. RÉPONSE SYNTHÉTIQUE** (2-3 phrases)\n- Réponse directe à la question posée\n- Qualification juridique de la situation\n\n**2. FONDEMENTS JURIDIQUES**\n- Articles de loi précis et actuels\n- Format : \"Article 1240 du Code civil\"\n- \"L'article L1234-1 du Code du travail prévoit que...\"\n\n**3. EXPLICATION DÉTAILLÉE**\n- Développement du raisonnement juridique\n- Conditions d'application\n- Exceptions et cas particuliers\n\n**4. JURISPRUDENCE APPLICABLE**\n- Citations d'arrêts importants\n- Format : \"Cass. Civ. 1ère, 15 janvier 2020, n°18-12345\"\n- \"CE, 10 février 2019, n°412345\"\n- Principes dégagés par la jurisprudence\n\n**5. DÉMARCHES PRATIQUES**\n- Étapes concrètes à suivre\n- Documents nécessaires\n- Procédures à engager\n- Organismes à contacter\n\n**6. DÉLAIS ET PRESCRIPTIONS**\n- Tous les délais légaux applicables\n- Dates butoirs à respecter\n- Prescriptions (action, recours)\n\n**7. MISE EN GARDE**\n- Risques juridiques identifiés\n- Limites de la réponse générale\n- Précisions nécessaires\n\n**8. RECOMMANDATION FINALE**\n- Nécessité ou non de consulter un avocat\n- Type de professionnel à contacter (avocat, notaire, etc.)\n\n### POUR LES RÉPONSES AUDIO (is_audio = true) :\n\n**Style conversationnel et fluide** :\n- Pas de listes à puces\n- Transitions naturelles entre les idées\n- Langage pédagogique et accessible\n- Ton professionnel mais chaleureux\n- Durée optimale : 2-3 minutes\n- Structure narrative : Introduction → Explication → Conseil pratique → Conclusion\n\n**Exemple de ton audio** :\n> \"D'accord, je comprends votre situation. Alors, juridiquement parlant, ce que vous décrivez correspond à un licenciement sans cause réelle et sérieuse. Le Code du travail, dans son article L1235-3, prévoit que dans ce cas, vous avez droit à des indemnités. Pour quelqu'un avec votre ancienneté de 5 ans, vous pouvez prétendre à au moins 3 mois de salaire brut. La Cour de cassation a d'ailleurs renforcé cette protection dans un arrêt récent de janvier 2023. Maintenant, concrètement, voici ce que vous devez faire...\"\n\n---\n\n## ⚖️ RÈGLES DE CITATION JURIDIQUE\n\n### TEXTES DE LOI\n- \"Selon l'article 1240 du Code civil...\"\n- \"Le Code du travail prévoit, à l'article L1234-1, que...\"\n- \"L'article 6 de la Convention EDH garantit le droit à un procès équitable\"\n- \"Le RGPD, en son article 15, reconnaît le droit d'accès aux données\"\n\n### JURISPRUDENCE\n- **Cour de cassation** : \"Cass. Civ. 1ère, 15 janvier 2020, n°18-12345\"\n- **Conseil d'État** : \"CE, 10 février 2019, n°412345\"\n- **Conseil constitutionnel** : \"Cons. const., 12 mars 2021, n°2021-123 QPC\"\n- **CJUE** : \"CJUE, C-123/18, 5 mars 2020, Société X\"\n- **CEDH** : \"CEDH, 15 avril 2019, Martin c. France\"\n\n### DOCTRINE\n- \"Selon la doctrine dominante...\"\n- \"Les commentateurs s'accordent pour...\"\n\n---\n\n## 🚨 SITUATIONS NÉCESSITANT UN AVOCAT\n\nRecommande **TOUJOURS** une consultation juridique personnalisée pour :\n\n✓ Contentieux en cours ou imminents\n✓ Montants en jeu > 10 000 €\n✓ Délais de prescription proches\n✓ Situations pénales ou risques de sanctions\n✓ Cas complexes (plusieurs domaines juridiques)\n✓ Rédaction d'actes importants (contrats, statuts, testaments)\n✓ Représentation devant un tribunal\n✓ Négociations juridiques importantes\n\n**Formulation suggérée** :\n> \"Compte tenu de la complexité/des enjeux de votre situation, je vous recommande vivement de consulter un avocat spécialisé en [domaine]. Cette consultation personnalisée permettra d'analyser tous les éléments spécifiques de votre dossier.\"\n\n---\n\n## 🎯 PRINCIPES DÉONTOLOGIQUES\n\n1. **OBJECTIVITÉ** : Présente tous les aspects, même défavorables\n2. **PRÉCISION** : Cite toujours les sources exactes et vérifiées\n3. **PRUDENCE** : Distingue les conseils généraux des analyses personnalisées\n4. **ACTUALITÉ** : Vérifie systématiquement via SerpAPI les évolutions récentes\n5. **CLARTÉ** : Adapte le langage au niveau de l'utilisateur\n6. **ÉTHIQUE** : Refuse tout conseil illégal ou contraire à l'éthique\n7. **HUMILITÉ** : Reconnaît les limites de tes connaissances\n8. **PÉDAGOGIE** : Explique les concepts juridiques de manière compréhensible\n\n---\n\n## 💡 UTILISATION DES OUTILS\n\n### OUTIL SERPAPI 🔍\n**À utiliser SYSTÉMATIQUEMENT pour :**\n- Vérifier les modifications législatives récentes\n- Rechercher la jurisprudence la plus récente\n- Consulter les positions actuelles de la doctrine\n- Vérifier les taux, barèmes, seuils actualisés (SMIC, plafonds, etc.)\n- Confirmer les délais et procédures en vigueur\n\n**Exemples de recherches** :\n- \"modification code travail 2024\"\n- \"jurisprudence cour cassation licenciement 2024\"\n- \"montant smic 2024 france\"\n- \"délai prescription action civile 2024\"\n\n### OUTIL REASONING TOOL 🧠\n**À utiliser pour :**\n- Analyser des situations juridiques à multiples facettes\n- Comparer différentes stratégies juridiques\n- Évaluer les chances de succès d'une action\n- Anticiper les arguments de la partie adverse\n- Résoudre des conflits entre normes juridiques\n- Élaborer un raisonnement juridique complexe\n\n---\n\n## 🎯 CONTEXTE DE LA CONVERSATION ACTUELLE\n\n**Nom de l'utilisateur** : {{ $json.name }}\n**Question posée** : {{ $json.text || \"\" }} {{ $json.audio || \"\" }}\n**Format de réponse attendu** : {{$json.is_audio ? 'AUDIO (style conversationnel et fluide)' : 'TEXTE (style structuré avec sections)'}}\n\n---\n\n## ✅ TON OBJECTIF FINAL\n\nFournis des **conseils juridiques de qualité professionnelle**, clairs, précis, vérifiés et actionnables, tout en restant accessible et pédagogique. Adapte parfaitement ton style selon le format de communication (texte structuré ou audio conversationnel).\n\n\n*** Tu utilises toujours tes outils (SerpAPI, Reasoning) pour vérifier l'actualité du droit et analyser les situations complexes. ***"
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 2.2,
+        "position": [
+          1216,
+          96
+        ],
+        "id": "0ec1d240-c3ae-40a6-92b1-d958940cf92f",
+        "name": "AI Agent"
+      },
+      {
+        "parameters": {
+          "description": "Outil de raisonnement avancé pour analyser des situations juridiques complexes, comparer plusieurs options, évaluer des stratégies procédurales et résoudre des conflits de normes. Utilise cet outil pour les cas juridiques nécessitant une réflexion approfondie."
+        },
+        "type": "@n8n/n8n-nodes-langchain.toolThink",
+        "typeVersion": 1.1,
+        "position": [
+          1696,
+          304
+        ],
+        "id": "9b658878-2be4-4a1f-b8c4-3f159606bfa5",
+        "name": "Reasoning Tool"
+      },
+      {
+        "parameters": {
+          "sessionIdType": "customKey",
+          "sessionKey": "={{ 'jurisai_' + ($json.chat_id || 'default') }}",
+          "contextWindowLength": 20
+        },
+        "type": "@n8n/n8n-nodes-langchain.memoryRedisChat",
+        "typeVersion": 1.5,
+        "position": [
+          1248,
+          304
+        ],
+        "id": "1d28cc8f-ae1e-48df-87d3-c4a23ff0766a",
+        "name": "Redis Chat Memory",
+        "credentials": {
+          "redis": {
+            "id": "d2c1b3f2-65eb-4b75-ae32-9831d952721b",
+            "name": "Redis Local"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "inputSource": "passthrough"
+        },
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.1,
+        "position": [
+          768,
+          96
+        ],
+        "id": "9bfd22c4-dce8-40e4-a3f3-264761a07fa0",
+        "name": "When Executed by Another Workflow"
+      },
+      {
+        "parameters": {
+          "query": "={{ $json.query }}",
+          "options": {}
+        },
+        "type": "@tavily/n8n-nodes-tavily.tavilyTool",
+        "typeVersion": 1,
+        "position": [
+          1392,
+          304
+        ],
+        "id": "e5cd9691-ebb2-43b9-981e-79a838a7a3d3",
+        "name": "Search in Tavily",
+        "credentials": {
+          "tavilyApi": {
+            "id": "18266d36-ee28-4d8b-a3fe-ded37a256df1",
+            "name": "Tavily API"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "model": "sonar-pro",
+          "messages": {
+            "message": [
+              {
+                "content": "={{ $json.query }}"
+              },
+              {
+                "content": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('message1_Text', ``, 'string') }}",
+                "role": "system"
+              }
+            ]
+          },
+          "options": {},
+          "requestOptions": {}
+        },
+        "type": "n8n-nodes-base.perplexityTool",
+        "typeVersion": 1,
+        "position": [
+          1536,
+          304
+        ],
+        "id": "311647f6-604d-4f67-a3d0-cece65588daa",
+        "name": "Perplexity",
+        "credentials": {
+          "perplexityApi": {
+            "id": "400fd330-2c56-45ed-b60d-e44c45f6b1a0",
+            "name": "Perplexity Pro"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "response1",
+                "name": "success",
+                "value": true,
+                "type": "boolean"
+              },
+              {
+                "id": "response2",
+                "name": "response",
+                "value": "={{ $json.output }}",
+                "type": "string"
+              },
+              {
+                "id": "response3",
+                "name": "agent",
+                "value": "juridique",
+                "type": "string"
+              },
+              {
+                "id": "response4",
+                "name": "executedAt",
+                "value": "={{ $now.toISO() }}",
+                "type": "string"
+              },
+              {
+                "id": "response5",
+                "name": "query",
+                "value": "={{ $('When Executed by Another Workflow') }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          1600,
+          96
+        ],
+        "id": "19b3c7fa-653b-4c52-85b2-83b2ebfe79d3",
+        "name": "Prepare Response"
+      },
+      {
+        "parameters": {
+          "model": "anthropic/claude-sonnet-4.5",
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+        "typeVersion": 1,
+        "position": [
+          1072,
+          304
+        ],
+        "id": "cf5fdad5-04f3-4ed5-a1ca-d4f1e5d6fc39",
+        "name": "OpenRouter Chat Model",
+        "credentials": {
+          "openRouterApi": {
+            "id": "7a43f38b-93c1-481e-bd33-d82b1a9d05e2",
+            "name": "OpenRouter API"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "AI Agent": {
+        "main": [
+          [
+            {
+              "node": "Prepare Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Reasoning Tool": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Redis Chat Memory": {
+        "ai_memory": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_memory",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "When Executed by Another Workflow": {
+        "main": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Search in Tavily": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Perplexity": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenRouter Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Wilfrid Peyrius",
+    "name": "Version 907e0bf5",
+    "description": "",
+    "autosaved": true,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-02-08T19:58:17.851Z",
+        "id": 150,
+        "workflowId": "bvPmJvNhZcytMInp",
+        "versionId": "907e0bf5-2535-4907-870b-9ecba257fc35",
+        "event": "activated",
+        "userId": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c"
+      }
+    ]
+  }
+}
