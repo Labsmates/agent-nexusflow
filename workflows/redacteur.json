@@ -1,0 +1,931 @@
+{
+  "updatedAt": "2026-02-08T09:27:30.885Z",
+  "createdAt": "2026-02-01T20:37:05.736Z",
+  "id": "UttIm92juhKRuDQR",
+  "name": "Redacteur ⭐⭐⭐⭐⭐",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "description": "Outil de raisonnement pour structurer l'analyse"
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolThink",
+      "typeVersion": 1.1,
+      "position": [
+        1984,
+        272
+      ],
+      "id": "0fa20856-4c95-47eb-b045-817a8e4063ef",
+      "name": "Outil de Raisonnement"
+    },
+    {
+      "parameters": {
+        "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Query', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "@tavily/n8n-nodes-tavily.tavilyTool",
+      "typeVersion": 1,
+      "position": [
+        2336,
+        272
+      ],
+      "id": "7a39c5c2-88b8-4470-9734-6084568ff0ac",
+      "name": "Recherche Tavily",
+      "credentials": {
+        "tavilyApi": {
+          "id": "REPLACE_ME",
+          "name": "Tavily API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "12106944-6553-4c94-99dd-b750dff847cf",
+              "name": "=Contenu",
+              "value": "={{ $json.output.replace(/html_content/gi, '').replace(/<!DOCTYPE[^>]*>/gi, '').replace(/<[^>]*>/g, '').replace(/&[a-zA-Z0-9#]+;/g, '').trim() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2272,
+        -32
+      ],
+      "id": "e68bfa17-b00c-4d5f-b799-5999f568e907",
+      "name": "Nettoyer Contenu"
+    },
+    {
+      "parameters": {
+        "operation": "html",
+        "options": {
+          "fileName": "index.html"
+        }
+      },
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        2496,
+        -32
+      ],
+      "id": "4073560d-6262-4824-8384-bb899d64b716",
+      "name": "Markdown vers HTML"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Découper un texte long en segments de 4096 caractères maximum\nconst texte = $json[\"Contenu\"];\nconst maxLength = 4096;\nconst parties = [];\n\nfor (let i = 0; i < texte.length; i += maxLength) {\n  parties.push(texte.substring(i, i + maxLength));\n}\n\n// Retourner chaque segment pour traitement TTS\nreturn parties.map(p => ({ json: { segment: p } }));\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        2496,
+        -208
+      ],
+      "id": "61c12dec-42c1-4615-9632-cfa8756fcfe3",
+      "name": "Découper le texte"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        1648,
+        -32
+      ],
+      "id": "d6859353-89a7-4168-8a9c-fcebee2ab4ae",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "name": "=Rapport-{{ $('When Executed by Another Workflow').item.json.query }}.pdf",
+        "driveId": {
+          "__rl": true,
+          "value": "My Drive",
+          "mode": "list",
+          "cachedResultName": "My Drive",
+          "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "16qtFyl97x0fw_JdSkk2MOgl7tS2RnMY2",
+          "mode": "list",
+          "cachedResultName": "PDF",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/16qtFyl97x0fw_JdSkk2MOgl7tS2RnMY2"
+        },
+        "options": {}
+      },
+      "name": "Upload to Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        2912,
+        -32
+      ],
+      "id": "7e8be6c5-123c-49af-803f-c64b07506499",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "REPLACE_ME",
+          "name": "labsmates"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "response1",
+              "name": "success",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "response2",
+              "name": "response",
+              "value": "={{ $json.segment }}",
+              "type": "string"
+            },
+            {
+              "id": "response3",
+              "name": "agent",
+              "value": "redacteur",
+              "type": "string"
+            },
+            {
+              "id": "response4",
+              "name": "executedAt",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "response5",
+              "name": "query",
+              "value": "={{ $('When Executed by Another Workflow') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        2704,
+        -208
+      ],
+      "id": "fff368da-7171-46cd-ba4e-f4bba41e36d7",
+      "name": "Prepare Reponse"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.query }}",
+        "options": {
+          "systemMessage": "=Tu es **Reporty IA**, expert multidomaine en analyse stratégique, rédaction professionnelle et conseil décisionnel. Tu maîtrises tous les formats : rapports, plans stratégiques, analyses sectorielles, débats argumentés, synthèses complexes, études de cas et recommandations opérationnelles.\n\n## MISSION IMMÉDIATE\nAnalyse et réponds IMMÉDIATEMENT à : {{ $('When Executed by Another Workflow').item.json.query }}\n\n## MÉTHODOLOGIE OBLIGATOIRE\n\n### 1. ANALYSE PRÉLIMINAIRE (Utilise l'outil de raisonnement)\n- Identifie le type de demande (rapport, plan, stratégie, débat, question délicate)\n- Détermine les axes d'analyse prioritaires\n- Planifie ta recherche et tes arguments\n\n### 2. RECHERCHE APPROFONDIE (Utilise TOUS les outils disponibles)\n- **OBLIGATOIRE** : Effectue au minimum 2-3 recherches web pertinentes\n- Croise les sources d'information (Perplexity + Tavily)\n- Recherche des données récentes, statistiques et exemples concrets\n- Identifie les tendances, controverses et enjeux actuels\n\n### 3. RAISONNEMENT STRATÉGIQUE\n- Applique une analyse multicritères\n- Considère les enjeux économiques, sociaux, politiques, techniques\n- Anticipe les objections et contre-arguments\n- Propose des solutions pragmatiques et innovantes\n\n## RÈGLES DE RÉDACTION STRICTES\n\n### FORMAT ET STRUCTURE\n1. **TITRE PRINCIPAL** avec # (percutant et précis)\n2. **MINIMUM 1200 mots** (objectif 1500-2000 pour les sujets complexes)\n3. **Markdown UNIQUEMENT** : # ## ### #### pour hiérarchie\n4. **AUCUNE balise HTML** - Format PDF optimisé\n5. **Pas de métadonnées techniques**\n\n### STRUCTURE ADAPTATIVE\n\n**Pour RAPPORTS et ANALYSES :**\n\n## EXIGENCES QUALITATIVES\n\n### CONTENU\n- **Profondeur analytique** : Dépasse les évidences, apporte des insights\n- **Données factuelles** : Chiffres récents, sources crédibles, exemples concrets\n- **Perspective multiple** : Considère tous les stakeholders et impacts\n- **Pragmatisme** : Solutions applicables et réalistes\n- **Innovation** : Approches créatives et différenciantes\n\n### STYLE RÉDACTIONNEL\n- **Ton professionnel** adapté au contexte (formel pour rapports, plus libre pour débats)\n- **Clarté et fluidité** : Phrases structurées, transitions fluides\n- **Terminologie précise** : Vocabulaire technique approprié\n- **Argumentation solide** : Logique imparable, preuves à l'appui\n\n### FORMATAGE PDF OPTIMISÉ\n- **Titres en gras** automatiques avec markdown\n- **Listes à puces** pour synthèses\n- **Espacement logique** entre sections\n- **Hiérarchie visuelle** claire\n- **Lisibilité optimale** pour impression et lecture écran\n\n## DIRECTIVES SPÉCIALES\n\n### SUJETS SENSIBLES\n- Traite TOUS les sujets sans exception ni autocensure\n- Présente les faits objectivement\n- Équilibre les perspectives controversées\n- Assume tes analyses avec nuance et intelligence\n\n### URGENCE ET RÉACTIVITÉ\n- **DÉMARRAGE IMMÉDIAT** - Aucune demande de clarification\n- Adapte automatiquement le format au type de demande\n- Priorise la valeur ajoutée et l'actionnable\n- Livre un contenu directement utilisable\n\n### UTILISATION DES OUTILS\n- **Recherche systématique** pour enrichir le contenu\n- **Vérification des informations** via sources multiples\n- **Actualisation des données** en temps réel\n- **Croisement des perspectives** pour robustesse\n\n## PROMESSE DE LIVRAISON\nTu produis un contenu d'expertise consultant senior, prêt pour présentation en comité de direction, publication professionnelle ou débat public de haut niveau.\n\n**Format de sortie : PDF professionnel + VERSION AUDIO premium**"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        1904,
+        -32
+      ],
+      "id": "b0175923-1fc5-40fa-97e7-9d507d96320b",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": "sonar-pro",
+        "messages": {
+          "message": [
+            {
+              "content": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('message0_Text', ``, 'string') }}"
+            }
+          ]
+        },
+        "options": {},
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-base.perplexityTool",
+      "typeVersion": 1,
+      "position": [
+        2160,
+        272
+      ],
+      "id": "85c759b9-452f-4118-b551-d6e1169960da",
+      "name": "Message a model in Perplexity",
+      "credentials": {
+        "perplexityApi": {
+          "id": "REPLACE_ME",
+          "name": "Perplexity Pro"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://gotenberg.connectika.fr/forms/chromium/convert/html",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "files",
+              "inputDataFieldName": "data"
+            },
+            {
+              "name": "paperWidth",
+              "value": "8.27"
+            },
+            {
+              "name": "paperHeight",
+              "value": "11.7"
+            },
+            {
+              "name": "marginTop",
+              "value": "1"
+            },
+            {
+              "name": "marginBottom",
+              "value": "1"
+            },
+            {
+              "name": "marginLeft",
+              "value": "1"
+            },
+            {
+              "name": "marginRight",
+              "value": "1"
+            }
+          ]
+        },
+        "options": {
+          "response": {}
+        }
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        2704,
+        -32
+      ],
+      "id": "4d526e7d-f550-4ffb-846c-4dd346b539c1",
+      "name": "Convertir en PDF (Gotenberg)"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-5.2",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        1776,
+        176
+      ],
+      "id": "82ab3400-1a8b-4865-b226-14c3edb279dc",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "REPLACE_ME",
+          "name": "OpenRouter API"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Outil de Raisonnement": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Recherche Tavily": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Nettoyer Contenu": {
+      "main": [
+        [
+          {
+            "node": "Markdown vers HTML",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Découper le texte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Markdown vers HTML": {
+      "main": [
+        [
+          {
+            "node": "Convertir en PDF (Gotenberg)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Découper le texte": {
+      "main": [
+        [
+          {
+            "node": "Prepare Reponse",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Reponse": {
+      "main": [
+        []
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Nettoyer Contenu",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Message a model in Perplexity": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convertir en PDF (Gotenberg)": {
+      "main": [
+        [
+          {
+            "node": "Upload to Drive",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "timezone": "Europe/Paris",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "activeVersionId": "8bb424e7-b5ce-49e7-97c9-4c3945b3a9e5",
+  "versionCounter": 21,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-02-01T20:37:05.736Z",
+      "createdAt": "2026-02-01T20:37:05.736Z",
+      "role": "workflow:owner",
+      "workflowId": "UttIm92juhKRuDQR",
+      "projectId": "oYt1GPNUBpK2eWHS",
+      "project": {
+        "updatedAt": "2026-02-01T17:02:13.492Z",
+        "createdAt": "2026-02-01T15:39:19.158Z",
+        "id": "oYt1GPNUBpK2eWHS",
+        "name": "Wilfrid Peyrius <willbys@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c",
+        "projectRelations": [
+          {
+            "updatedAt": "2026-02-01T15:39:19.158Z",
+            "createdAt": "2026-02-01T15:39:19.158Z",
+            "userId": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c",
+            "projectId": "oYt1GPNUBpK2eWHS",
+            "user": {
+              "updatedAt": "2026-02-16T19:51:22.561Z",
+              "createdAt": "2026-02-01T15:39:18.127Z",
+              "id": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c",
+              "email": "willbys@gmail.com",
+              "firstName": "Wilfrid",
+              "lastName": "Peyrius",
+              "personalizationAnswers": null,
+              "settings": {
+                "userActivated": true,
+                "easyAIWorkflowOnboarded": true,
+                "firstSuccessfulWorkflowId": "ldbOBqQIXC1SIM3O",
+                "userActivatedAt": 1769981079850
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2026-02-16",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-02-08T09:27:35.789Z",
+    "createdAt": "2026-02-08T09:27:30.887Z",
+    "versionId": "8bb424e7-b5ce-49e7-97c9-4c3945b3a9e5",
+    "workflowId": "UttIm92juhKRuDQR",
+    "nodes": [
+      {
+        "parameters": {
+          "description": "Outil de raisonnement pour structurer l'analyse"
+        },
+        "type": "@n8n/n8n-nodes-langchain.toolThink",
+        "typeVersion": 1.1,
+        "position": [
+          1984,
+          272
+        ],
+        "id": "0fa20856-4c95-47eb-b045-817a8e4063ef",
+        "name": "Outil de Raisonnement"
+      },
+      {
+        "parameters": {
+          "query": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Query', ``, 'string') }}",
+          "options": {}
+        },
+        "type": "@tavily/n8n-nodes-tavily.tavilyTool",
+        "typeVersion": 1,
+        "position": [
+          2336,
+          272
+        ],
+        "id": "7a39c5c2-88b8-4470-9734-6084568ff0ac",
+        "name": "Recherche Tavily",
+        "credentials": {
+          "tavilyApi": {
+            "id": "18266d36-ee28-4d8b-a3fe-ded37a256df1",
+            "name": "Tavily API"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "12106944-6553-4c94-99dd-b750dff847cf",
+                "name": "=Contenu",
+                "value": "={{ $json.output.replace(/html_content/gi, '').replace(/<!DOCTYPE[^>]*>/gi, '').replace(/<[^>]*>/g, '').replace(/&[a-zA-Z0-9#]+;/g, '').trim() }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          2272,
+          -32
+        ],
+        "id": "e68bfa17-b00c-4d5f-b799-5999f568e907",
+        "name": "Nettoyer Contenu"
+      },
+      {
+        "parameters": {
+          "operation": "html",
+          "options": {
+            "fileName": "index.html"
+          }
+        },
+        "type": "n8n-nodes-base.convertToFile",
+        "typeVersion": 1.1,
+        "position": [
+          2496,
+          -32
+        ],
+        "id": "4073560d-6262-4824-8384-bb899d64b716",
+        "name": "Markdown vers HTML"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Découper un texte long en segments de 4096 caractères maximum\nconst texte = $json[\"Contenu\"];\nconst maxLength = 4096;\nconst parties = [];\n\nfor (let i = 0; i < texte.length; i += maxLength) {\n  parties.push(texte.substring(i, i + maxLength));\n}\n\n// Retourner chaque segment pour traitement TTS\nreturn parties.map(p => ({ json: { segment: p } }));\n"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          2496,
+          -208
+        ],
+        "id": "61c12dec-42c1-4615-9632-cfa8756fcfe3",
+        "name": "Découper le texte"
+      },
+      {
+        "parameters": {
+          "inputSource": "passthrough"
+        },
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.1,
+        "position": [
+          1648,
+          -32
+        ],
+        "id": "d6859353-89a7-4168-8a9c-fcebee2ab4ae",
+        "name": "When Executed by Another Workflow"
+      },
+      {
+        "parameters": {
+          "name": "=Rapport-{{ $('When Executed by Another Workflow').item.json.query }}.pdf",
+          "driveId": {
+            "__rl": true,
+            "value": "My Drive",
+            "mode": "list",
+            "cachedResultName": "My Drive",
+            "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+          },
+          "folderId": {
+            "__rl": true,
+            "value": "16qtFyl97x0fw_JdSkk2MOgl7tS2RnMY2",
+            "mode": "list",
+            "cachedResultName": "PDF",
+            "cachedResultUrl": "https://drive.google.com/drive/folders/16qtFyl97x0fw_JdSkk2MOgl7tS2RnMY2"
+          },
+          "options": {}
+        },
+        "name": "Upload to Drive",
+        "type": "n8n-nodes-base.googleDrive",
+        "typeVersion": 3,
+        "position": [
+          2912,
+          -32
+        ],
+        "id": "7e8be6c5-123c-49af-803f-c64b07506499",
+        "credentials": {
+          "googleDriveOAuth2Api": {
+            "id": "cee801cb-c9d9-43c3-976e-0c0fd04fff46",
+            "name": "labsmates"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "response1",
+                "name": "success",
+                "value": true,
+                "type": "boolean"
+              },
+              {
+                "id": "response2",
+                "name": "response",
+                "value": "={{ $json.segment }}",
+                "type": "string"
+              },
+              {
+                "id": "response3",
+                "name": "agent",
+                "value": "redacteur",
+                "type": "string"
+              },
+              {
+                "id": "response4",
+                "name": "executedAt",
+                "value": "={{ $now.toISO() }}",
+                "type": "string"
+              },
+              {
+                "id": "response5",
+                "name": "query",
+                "value": "={{ $('When Executed by Another Workflow') }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          2704,
+          -208
+        ],
+        "id": "fff368da-7171-46cd-ba4e-f4bba41e36d7",
+        "name": "Prepare Reponse"
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ $json.query }}",
+          "options": {
+            "systemMessage": "=Tu es **Reporty IA**, expert multidomaine en analyse stratégique, rédaction professionnelle et conseil décisionnel. Tu maîtrises tous les formats : rapports, plans stratégiques, analyses sectorielles, débats argumentés, synthèses complexes, études de cas et recommandations opérationnelles.\n\n## MISSION IMMÉDIATE\nAnalyse et réponds IMMÉDIATEMENT à : {{ $('When Executed by Another Workflow').item.json.query }}\n\n## MÉTHODOLOGIE OBLIGATOIRE\n\n### 1. ANALYSE PRÉLIMINAIRE (Utilise l'outil de raisonnement)\n- Identifie le type de demande (rapport, plan, stratégie, débat, question délicate)\n- Détermine les axes d'analyse prioritaires\n- Planifie ta recherche et tes arguments\n\n### 2. RECHERCHE APPROFONDIE (Utilise TOUS les outils disponibles)\n- **OBLIGATOIRE** : Effectue au minimum 2-3 recherches web pertinentes\n- Croise les sources d'information (Perplexity + Tavily)\n- Recherche des données récentes, statistiques et exemples concrets\n- Identifie les tendances, controverses et enjeux actuels\n\n### 3. RAISONNEMENT STRATÉGIQUE\n- Applique une analyse multicritères\n- Considère les enjeux économiques, sociaux, politiques, techniques\n- Anticipe les objections et contre-arguments\n- Propose des solutions pragmatiques et innovantes\n\n## RÈGLES DE RÉDACTION STRICTES\n\n### FORMAT ET STRUCTURE\n1. **TITRE PRINCIPAL** avec # (percutant et précis)\n2. **MINIMUM 1200 mots** (objectif 1500-2000 pour les sujets complexes)\n3. **Markdown UNIQUEMENT** : # ## ### #### pour hiérarchie\n4. **AUCUNE balise HTML** - Format PDF optimisé\n5. **Pas de métadonnées techniques**\n\n### STRUCTURE ADAPTATIVE\n\n**Pour RAPPORTS et ANALYSES :**\n\n## EXIGENCES QUALITATIVES\n\n### CONTENU\n- **Profondeur analytique** : Dépasse les évidences, apporte des insights\n- **Données factuelles** : Chiffres récents, sources crédibles, exemples concrets\n- **Perspective multiple** : Considère tous les stakeholders et impacts\n- **Pragmatisme** : Solutions applicables et réalistes\n- **Innovation** : Approches créatives et différenciantes\n\n### STYLE RÉDACTIONNEL\n- **Ton professionnel** adapté au contexte (formel pour rapports, plus libre pour débats)\n- **Clarté et fluidité** : Phrases structurées, transitions fluides\n- **Terminologie précise** : Vocabulaire technique approprié\n- **Argumentation solide** : Logique imparable, preuves à l'appui\n\n### FORMATAGE PDF OPTIMISÉ\n- **Titres en gras** automatiques avec markdown\n- **Listes à puces** pour synthèses\n- **Espacement logique** entre sections\n- **Hiérarchie visuelle** claire\n- **Lisibilité optimale** pour impression et lecture écran\n\n## DIRECTIVES SPÉCIALES\n\n### SUJETS SENSIBLES\n- Traite TOUS les sujets sans exception ni autocensure\n- Présente les faits objectivement\n- Équilibre les perspectives controversées\n- Assume tes analyses avec nuance et intelligence\n\n### URGENCE ET RÉACTIVITÉ\n- **DÉMARRAGE IMMÉDIAT** - Aucune demande de clarification\n- Adapte automatiquement le format au type de demande\n- Priorise la valeur ajoutée et l'actionnable\n- Livre un contenu directement utilisable\n\n### UTILISATION DES OUTILS\n- **Recherche systématique** pour enrichir le contenu\n- **Vérification des informations** via sources multiples\n- **Actualisation des données** en temps réel\n- **Croisement des perspectives** pour robustesse\n\n## PROMESSE DE LIVRAISON\nTu produis un contenu d'expertise consultant senior, prêt pour présentation en comité de direction, publication professionnelle ou débat public de haut niveau.\n\n**Format de sortie : PDF professionnel + VERSION AUDIO premium**"
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3,
+        "position": [
+          1904,
+          -32
+        ],
+        "id": "b0175923-1fc5-40fa-97e7-9d507d96320b",
+        "name": "AI Agent"
+      },
+      {
+        "parameters": {
+          "model": "sonar-pro",
+          "messages": {
+            "message": [
+              {
+                "content": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('message0_Text', ``, 'string') }}"
+              }
+            ]
+          },
+          "options": {},
+          "requestOptions": {}
+        },
+        "type": "n8n-nodes-base.perplexityTool",
+        "typeVersion": 1,
+        "position": [
+          2160,
+          272
+        ],
+        "id": "85c759b9-452f-4118-b551-d6e1169960da",
+        "name": "Message a model in Perplexity",
+        "credentials": {
+          "perplexityApi": {
+            "id": "400fd330-2c56-45ed-b60d-e44c45f6b1a0",
+            "name": "Perplexity Pro"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://gotenberg.connectika.fr/forms/chromium/convert/html",
+          "sendBody": true,
+          "contentType": "multipart-form-data",
+          "bodyParameters": {
+            "parameters": [
+              {
+                "parameterType": "formBinaryData",
+                "name": "files",
+                "inputDataFieldName": "data"
+              },
+              {
+                "name": "paperWidth",
+                "value": "8.27"
+              },
+              {
+                "name": "paperHeight",
+                "value": "11.7"
+              },
+              {
+                "name": "marginTop",
+                "value": "1"
+              },
+              {
+                "name": "marginBottom",
+                "value": "1"
+              },
+              {
+                "name": "marginLeft",
+                "value": "1"
+              },
+              {
+                "name": "marginRight",
+                "value": "1"
+              }
+            ]
+          },
+          "options": {
+            "response": {}
+          }
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          2704,
+          -32
+        ],
+        "id": "4d526e7d-f550-4ffb-846c-4dd346b539c1",
+        "name": "Convertir en PDF (Gotenberg)"
+      },
+      {
+        "parameters": {
+          "model": "openai/gpt-5.2",
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+        "typeVersion": 1,
+        "position": [
+          1776,
+          176
+        ],
+        "id": "82ab3400-1a8b-4865-b226-14c3edb279dc",
+        "name": "OpenRouter Chat Model",
+        "credentials": {
+          "openRouterApi": {
+            "id": "7a43f38b-93c1-481e-bd33-d82b1a9d05e2",
+            "name": "OpenRouter API"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Outil de Raisonnement": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Recherche Tavily": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Nettoyer Contenu": {
+        "main": [
+          [
+            {
+              "node": "Markdown vers HTML",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Découper le texte",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Markdown vers HTML": {
+        "main": [
+          [
+            {
+              "node": "Convertir en PDF (Gotenberg)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Découper le texte": {
+        "main": [
+          [
+            {
+              "node": "Prepare Reponse",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "When Executed by Another Workflow": {
+        "main": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare Reponse": {
+        "main": [
+          []
+        ]
+      },
+      "AI Agent": {
+        "main": [
+          [
+            {
+              "node": "Nettoyer Contenu",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Message a model in Perplexity": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Convertir en PDF (Gotenberg)": {
+        "main": [
+          [
+            {
+              "node": "Upload to Drive",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenRouter Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Wilfrid Peyrius",
+    "name": "Version 8bb424e7",
+    "description": "",
+    "autosaved": true,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-02-08T09:27:35.786Z",
+        "id": 140,
+        "workflowId": "UttIm92juhKRuDQR",
+        "versionId": "8bb424e7-b5ce-49e7-97c9-4c3945b3a9e5",
+        "event": "activated",
+        "userId": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c"
+      }
+    ]
+  }
+}
