@@ -1,0 +1,873 @@
+{
+  "updatedAt": "2026-02-08T09:23:20.972Z",
+  "createdAt": "2026-02-01T20:37:10.084Z",
+  "id": "Hp3Qb2nV27CrAtea",
+  "name": "Resume ⭐⭐⭐⭐⭐",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "url-field",
+              "name": "url",
+              "value": "={{ $json.query }}",
+              "type": "string"
+            },
+            {
+              "id": "content-field",
+              "name": "content",
+              "value": "={{ $json.query }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -432,
+        -96
+      ],
+      "id": "95bcaddb-1b29-45e9-9693-3cc491777342",
+      "name": "Extract Summary"
+    },
+    {
+      "parameters": {
+        "modelId": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "GPT-4o-mini"
+        },
+        "messages": {
+          "values": [
+            {
+              "content": "==Tu es un assistant expert en résumé. Analyse le texte suivant et crée un résumé clair et structuré en français avec :\n1. Un titre accrocheur (<h2>)\n2. Les points clés (<h3> + <ul><li>)\n3. Les informations importantes (<p>)\n4. Une conclusion (<h3> + <p>)\nTexte à résumer :\n{{ $('When Executed by Another Workflow').item.json.query }}\nFormate UNIQUEMENT en HTML (<h2>,<h3>,<p>,<ul>,<li>,<strong>)\n"
+            }
+          ]
+        },
+        "options": {
+          "maxTokens": 2000,
+          "temperature": 0.7
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.openAi",
+      "typeVersion": 1.8,
+      "position": [
+        -240,
+        -96
+      ],
+      "id": "d777f3d0-5d83-43f6-afa1-5cb86a2385bf",
+      "name": "OpenAI Summarize",
+      "credentials": {
+        "openAiApi": {
+          "id": "REPLACE_ME",
+          "name": "OpenAi API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "title-field",
+              "name": "title",
+              "value": "={{ $json.message.content.match(/<h2>(.*?)<\\/h2>/)?.[1] || 'Résumé Web' }}",
+              "type": "string"
+            },
+            {
+              "id": "summary-field",
+              "name": "summary",
+              "value": "={{ $json.message.content }}",
+              "type": "string"
+            },
+            {
+              "id": "url-field",
+              "name": "source_url",
+              "value": "={{ $('Extract Summary').item.json.url }}",
+              "type": "string"
+            },
+            {
+              "id": "date-field",
+              "name": "date",
+              "value": "={{ $now.toFormat('dd/MM/yyyy à HH:mm') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        80,
+        -96
+      ],
+      "id": "a0bdcf54-bb9e-4919-ac9a-4a8e84d76376",
+      "name": "Préparer Données"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Récupérer les données\nconst title = $input.item.json.title;\nconst summary = $input.item.json.summary;\nconst sourceUrl = $input.item.json.source_url;\nconst date = $input.item.json.date;\n\n// Créer le HTML complet\nconst htmlContent = `<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n<meta charset=\"UTF-8\">\n<title>${title}</title>\n<style>\nbody {\n  font-family: 'Segoe UI', Arial, sans-serif;\n  line-height: 1.7;\n  margin: 40px;\n  padding: 20px;\n  color: #2c3e50;\n  background: #fff;\n}\n.header {\n  text-align: center;\n  margin-bottom: 40px;\n  padding-bottom: 20px;\n  border-bottom: 2px solid #3498db;\n}\n.header h1 {\n  font-size: 28px;\n  margin-bottom: 10px;\n  color: #2c3e50;\n}\n.date, .url {\n  font-size: 12px;\n  color: #666;\n  margin: 5px 0;\n}\n.url {\n  word-break: break-all;\n}\nh2 {\n  font-size: 22px;\n  color: #2c3e50;\n  border-left: 4px solid #3498db;\n  padding-left: 10px;\n  margin-top: 30px;\n  margin-bottom: 15px;\n}\nh3 {\n  font-size: 18px;\n  color: #34495e;\n  margin-top: 25px;\n  margin-bottom: 10px;\n}\np {\n  margin-bottom: 15px;\n  text-align: justify;\n}\nul {\n  margin: 10px 0 20px 30px;\n}\nli {\n  margin-bottom: 8px;\n}\nstrong {\n  color: #2980b9;\n}\n</style>\n</head>\n<body>\n  <div class=\"header\">\n    <h1>📄 Résumé Web - ${title}</h1>\n    <p class=\"date\">📅 Généré le : ${date}</p>\n    <p class=\"url\">🔗 Source : ${sourceUrl}</p>\n  </div>\n\n  ${summary}\n</body>\n</html>`;\n\n// Convertir en buffer et retourner comme binaire\nconst buffer = Buffer.from(htmlContent, 'utf-8');\n\nreturn {\n  json: $input.item.json,\n  binary: {\n    data: {\n      data: buffer.toString('base64'),\n      mimeType: 'text/html',\n      fileName: 'index.html'\n    }\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        272,
+        -96
+      ],
+      "id": "94f08b27-5336-408a-89ff-32dfda3e7379",
+      "name": "Créer HTML et Convertir"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://gotenberg.connectika.fr/forms/chromium/convert/html",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "files",
+              "inputDataFieldName": "data"
+            },
+            {
+              "name": "paperWidth",
+              "value": "8.27"
+            },
+            {
+              "name": "paperHeight",
+              "value": "11.7"
+            },
+            {
+              "name": "marginTop",
+              "value": "0"
+            },
+            {
+              "name": "marginBottom",
+              "value": "0"
+            },
+            {
+              "name": "marginLeft",
+              "value": "0"
+            },
+            {
+              "name": "marginRight",
+              "value": "0"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        464,
+        -96
+      ],
+      "id": "364d86d1-04dd-4a3f-9845-d276b820af47",
+      "name": "Convertir en PDF (Gotenberg)"
+    },
+    {
+      "parameters": {
+        "name": "=Resume-Web-{{ $('Préparer Données').item.json.title }}.pdf",
+        "driveId": {
+          "__rl": true,
+          "value": "My Drive",
+          "mode": "list",
+          "cachedResultName": "My Drive",
+          "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "value": "11F4RPskcfJ58h2Lxi7oPmSqsjlfKWtUp",
+          "mode": "list",
+          "cachedResultName": "Scrape Web",
+          "cachedResultUrl": "https://drive.google.com/drive/folders/11F4RPskcfJ58h2Lxi7oPmSqsjlfKWtUp"
+        },
+        "options": {}
+      },
+      "name": "Upload to Drive",
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        704,
+        -96
+      ],
+      "id": "0a2fc910-51b5-4abe-afcc-9e6cc0359f3f",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "REPLACE_ME",
+          "name": "labsmates"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -672,
+        -96
+      ],
+      "id": "33da21d8-dd7b-427c-8795-156941dc6f23",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "operation": "sendDocument",
+        "chatId": "=8481398125",
+        "binaryData": true,
+        "replyMarkup": "=none",
+        "forceReply": {},
+        "replyKeyboardOptions": {},
+        "replyKeyboardRemove": {},
+        "additionalFields": {
+          "caption": "=✅ **Résumé généré avec succès!**\n📄 **Nom du fichier:** Resume-Web-{{ $('Préparer Données').item.json.title }}.pdf\n🗓️ **Date de génération:** {{ $('Préparer Données').item.json.date }}\n🚀 Votre document PDF est prêt!\n\n",
+          "fileName": "=Resume-Web-{{ $('Préparer Données').item.json.title }}.pdf",
+          "parse_mode": "HTML"
+        }
+      },
+      "name": "Send PDF Telegram",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        720,
+        112
+      ],
+      "id": "7f69db73-dfb6-4d98-ace1-66f966194d8a",
+      "webhookId": "c5960cdd-02e4-43d8-8746-96979d74d06c",
+      "credentials": {
+        "telegramApi": {
+          "id": "REPLACE_ME",
+          "name": "NexusFlow"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "## I'm a note \nTu es un assistant expert en résumé de contenu web. Analyse le contenu suivant et crée un résumé détaillé et structuré en français.\n\nURL: {{ $json.url }}\n\nContenu:\n{{ $json.content }}\n\nCrée un résumé avec:\n1. Un titre accrocheur (dans une balise h2)\n2. Les points clés principaux (dans une balise h3 suivie d'une liste ul/li)\n3. Les informations importantes (dans des paragraphes p)\n4. Une conclusion (dans une balise h3 suivie de paragraphe p)\n\nFormate UNIQUEMENT le contenu du résumé en HTML propre (balises <h2>, <h3>, <p>, <ul>, <li>, <strong>), sans <html>, <head> ou <body>.\nN'inclus pas de styles ni de fond, uniquement du contenu structuré."
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -240,
+        144
+      ],
+      "id": "fde00698-ec6d-4f79-ab3a-7404e6975572",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "response1",
+              "name": "success",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "response2",
+              "name": "response",
+              "value": "=Le lien du site que vous avez fourni a été analysé et résumé 📄. Le résultat a été enregistré au format PDF 📘✨.",
+              "type": "string"
+            },
+            {
+              "id": "response3",
+              "name": "agent",
+              "value": "resume",
+              "type": "string"
+            },
+            {
+              "id": "response4",
+              "name": "executedAt",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "response5",
+              "name": "query",
+              "value": "={{ $('When Executed by Another Workflow') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        928,
+        -96
+      ],
+      "id": "43c45406-a296-4cbc-b737-245cc984ae37",
+      "name": "Prepare Response"
+    }
+  ],
+  "connections": {
+    "Extract Summary": {
+      "main": [
+        [
+          {
+            "node": "OpenAI Summarize",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Summarize": {
+      "main": [
+        [
+          {
+            "node": "Préparer Données",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Préparer Données": {
+      "main": [
+        [
+          {
+            "node": "Créer HTML et Convertir",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Créer HTML et Convertir": {
+      "main": [
+        [
+          {
+            "node": "Convertir en PDF (Gotenberg)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Convertir en PDF (Gotenberg)": {
+      "main": [
+        [
+          {
+            "node": "Upload to Drive",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Send PDF Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Extract Summary",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Upload to Drive": {
+      "main": [
+        [
+          {
+            "node": "Prepare Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "timezone": "Europe/Paris",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "activeVersionId": "f5aa5f18-e443-426f-8f0e-f5987b805354",
+  "versionCounter": 17,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-02-01T20:37:10.084Z",
+      "createdAt": "2026-02-01T20:37:10.084Z",
+      "role": "workflow:owner",
+      "workflowId": "Hp3Qb2nV27CrAtea",
+      "projectId": "oYt1GPNUBpK2eWHS",
+      "project": {
+        "updatedAt": "2026-02-01T17:02:13.492Z",
+        "createdAt": "2026-02-01T15:39:19.158Z",
+        "id": "oYt1GPNUBpK2eWHS",
+        "name": "Wilfrid Peyrius <willbys@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c",
+        "projectRelations": [
+          {
+            "updatedAt": "2026-02-01T15:39:19.158Z",
+            "createdAt": "2026-02-01T15:39:19.158Z",
+            "userId": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c",
+            "projectId": "oYt1GPNUBpK2eWHS",
+            "user": {
+              "updatedAt": "2026-02-16T19:51:22.561Z",
+              "createdAt": "2026-02-01T15:39:18.127Z",
+              "id": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c",
+              "email": "willbys@gmail.com",
+              "firstName": "Wilfrid",
+              "lastName": "Peyrius",
+              "personalizationAnswers": null,
+              "settings": {
+                "userActivated": true,
+                "easyAIWorkflowOnboarded": true,
+                "firstSuccessfulWorkflowId": "ldbOBqQIXC1SIM3O",
+                "userActivatedAt": 1769981079850
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2026-02-16",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-02-08T09:23:26.785Z",
+    "createdAt": "2026-02-08T09:23:20.974Z",
+    "versionId": "f5aa5f18-e443-426f-8f0e-f5987b805354",
+    "workflowId": "Hp3Qb2nV27CrAtea",
+    "nodes": [
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "url-field",
+                "name": "url",
+                "value": "={{ $json.query }}",
+                "type": "string"
+              },
+              {
+                "id": "content-field",
+                "name": "content",
+                "value": "={{ $json.query }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          -432,
+          -96
+        ],
+        "id": "95bcaddb-1b29-45e9-9693-3cc491777342",
+        "name": "Extract Summary"
+      },
+      {
+        "parameters": {
+          "modelId": {
+            "__rl": true,
+            "value": "gpt-4o-mini",
+            "mode": "list",
+            "cachedResultName": "GPT-4o-mini"
+          },
+          "messages": {
+            "values": [
+              {
+                "content": "==Tu es un assistant expert en résumé. Analyse le texte suivant et crée un résumé clair et structuré en français avec :\n1. Un titre accrocheur (<h2>)\n2. Les points clés (<h3> + <ul><li>)\n3. Les informations importantes (<p>)\n4. Une conclusion (<h3> + <p>)\nTexte à résumer :\n{{ $('When Executed by Another Workflow').item.json.query }}\nFormate UNIQUEMENT en HTML (<h2>,<h3>,<p>,<ul>,<li>,<strong>)\n"
+              }
+            ]
+          },
+          "options": {
+            "maxTokens": 2000,
+            "temperature": 0.7
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.openAi",
+        "typeVersion": 1.8,
+        "position": [
+          -240,
+          -96
+        ],
+        "id": "d777f3d0-5d83-43f6-afa1-5cb86a2385bf",
+        "name": "OpenAI Summarize",
+        "credentials": {
+          "openAiApi": {
+            "id": "1dd133dd-1b8a-4f5e-9fb5-980f00e2efa1",
+            "name": "OpenAi API"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "title-field",
+                "name": "title",
+                "value": "={{ $json.message.content.match(/<h2>(.*?)<\\/h2>/)?.[1] || 'Résumé Web' }}",
+                "type": "string"
+              },
+              {
+                "id": "summary-field",
+                "name": "summary",
+                "value": "={{ $json.message.content }}",
+                "type": "string"
+              },
+              {
+                "id": "url-field",
+                "name": "source_url",
+                "value": "={{ $('Extract Summary').item.json.url }}",
+                "type": "string"
+              },
+              {
+                "id": "date-field",
+                "name": "date",
+                "value": "={{ $now.toFormat('dd/MM/yyyy à HH:mm') }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          80,
+          -96
+        ],
+        "id": "a0bdcf54-bb9e-4919-ac9a-4a8e84d76376",
+        "name": "Préparer Données"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Récupérer les données\nconst title = $input.item.json.title;\nconst summary = $input.item.json.summary;\nconst sourceUrl = $input.item.json.source_url;\nconst date = $input.item.json.date;\n\n// Créer le HTML complet\nconst htmlContent = `<!DOCTYPE html>\n<html lang=\"fr\">\n<head>\n<meta charset=\"UTF-8\">\n<title>${title}</title>\n<style>\nbody {\n  font-family: 'Segoe UI', Arial, sans-serif;\n  line-height: 1.7;\n  margin: 40px;\n  padding: 20px;\n  color: #2c3e50;\n  background: #fff;\n}\n.header {\n  text-align: center;\n  margin-bottom: 40px;\n  padding-bottom: 20px;\n  border-bottom: 2px solid #3498db;\n}\n.header h1 {\n  font-size: 28px;\n  margin-bottom: 10px;\n  color: #2c3e50;\n}\n.date, .url {\n  font-size: 12px;\n  color: #666;\n  margin: 5px 0;\n}\n.url {\n  word-break: break-all;\n}\nh2 {\n  font-size: 22px;\n  color: #2c3e50;\n  border-left: 4px solid #3498db;\n  padding-left: 10px;\n  margin-top: 30px;\n  margin-bottom: 15px;\n}\nh3 {\n  font-size: 18px;\n  color: #34495e;\n  margin-top: 25px;\n  margin-bottom: 10px;\n}\np {\n  margin-bottom: 15px;\n  text-align: justify;\n}\nul {\n  margin: 10px 0 20px 30px;\n}\nli {\n  margin-bottom: 8px;\n}\nstrong {\n  color: #2980b9;\n}\n</style>\n</head>\n<body>\n  <div class=\"header\">\n    <h1>📄 Résumé Web - ${title}</h1>\n    <p class=\"date\">📅 Généré le : ${date}</p>\n    <p class=\"url\">🔗 Source : ${sourceUrl}</p>\n  </div>\n\n  ${summary}\n</body>\n</html>`;\n\n// Convertir en buffer et retourner comme binaire\nconst buffer = Buffer.from(htmlContent, 'utf-8');\n\nreturn {\n  json: $input.item.json,\n  binary: {\n    data: {\n      data: buffer.toString('base64'),\n      mimeType: 'text/html',\n      fileName: 'index.html'\n    }\n  }\n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          272,
+          -96
+        ],
+        "id": "94f08b27-5336-408a-89ff-32dfda3e7379",
+        "name": "Créer HTML et Convertir"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://gotenberg.connectika.fr/forms/chromium/convert/html",
+          "sendBody": true,
+          "contentType": "multipart-form-data",
+          "bodyParameters": {
+            "parameters": [
+              {
+                "parameterType": "formBinaryData",
+                "name": "files",
+                "inputDataFieldName": "data"
+              },
+              {
+                "name": "paperWidth",
+                "value": "8.27"
+              },
+              {
+                "name": "paperHeight",
+                "value": "11.7"
+              },
+              {
+                "name": "marginTop",
+                "value": "0"
+              },
+              {
+                "name": "marginBottom",
+                "value": "0"
+              },
+              {
+                "name": "marginLeft",
+                "value": "0"
+              },
+              {
+                "name": "marginRight",
+                "value": "0"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          464,
+          -96
+        ],
+        "id": "364d86d1-04dd-4a3f-9845-d276b820af47",
+        "name": "Convertir en PDF (Gotenberg)"
+      },
+      {
+        "parameters": {
+          "name": "=Resume-Web-{{ $('Préparer Données').item.json.title }}.pdf",
+          "driveId": {
+            "__rl": true,
+            "value": "My Drive",
+            "mode": "list",
+            "cachedResultName": "My Drive",
+            "cachedResultUrl": "https://drive.google.com/drive/my-drive"
+          },
+          "folderId": {
+            "__rl": true,
+            "value": "11F4RPskcfJ58h2Lxi7oPmSqsjlfKWtUp",
+            "mode": "list",
+            "cachedResultName": "Scrape Web",
+            "cachedResultUrl": "https://drive.google.com/drive/folders/11F4RPskcfJ58h2Lxi7oPmSqsjlfKWtUp"
+          },
+          "options": {}
+        },
+        "name": "Upload to Drive",
+        "type": "n8n-nodes-base.googleDrive",
+        "typeVersion": 3,
+        "position": [
+          704,
+          -96
+        ],
+        "id": "0a2fc910-51b5-4abe-afcc-9e6cc0359f3f",
+        "credentials": {
+          "googleDriveOAuth2Api": {
+            "id": "cee801cb-c9d9-43c3-976e-0c0fd04fff46",
+            "name": "labsmates"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "inputSource": "passthrough"
+        },
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.1,
+        "position": [
+          -672,
+          -96
+        ],
+        "id": "33da21d8-dd7b-427c-8795-156941dc6f23",
+        "name": "When Executed by Another Workflow"
+      },
+      {
+        "parameters": {
+          "operation": "sendDocument",
+          "chatId": "=8481398125",
+          "binaryData": true,
+          "replyMarkup": "=none",
+          "forceReply": {},
+          "replyKeyboardOptions": {},
+          "replyKeyboardRemove": {},
+          "additionalFields": {
+            "caption": "=✅ **Résumé généré avec succès!**\n📄 **Nom du fichier:** Resume-Web-{{ $('Préparer Données').item.json.title }}.pdf\n🗓️ **Date de génération:** {{ $('Préparer Données').item.json.date }}\n🚀 Votre document PDF est prêt!\n\n",
+            "fileName": "=Resume-Web-{{ $('Préparer Données').item.json.title }}.pdf",
+            "parse_mode": "HTML"
+          }
+        },
+        "name": "Send PDF Telegram",
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          720,
+          112
+        ],
+        "id": "7f69db73-dfb6-4d98-ace1-66f966194d8a",
+        "webhookId": "c5960cdd-02e4-43d8-8746-96979d74d06c",
+        "credentials": {
+          "telegramApi": {
+            "id": "4hniUmWQYT9HIzKA",
+            "name": "NexusFlow"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "content": "## I'm a note \nTu es un assistant expert en résumé de contenu web. Analyse le contenu suivant et crée un résumé détaillé et structuré en français.\n\nURL: {{ $json.url }}\n\nContenu:\n{{ $json.content }}\n\nCrée un résumé avec:\n1. Un titre accrocheur (dans une balise h2)\n2. Les points clés principaux (dans une balise h3 suivie d'une liste ul/li)\n3. Les informations importantes (dans des paragraphes p)\n4. Une conclusion (dans une balise h3 suivie de paragraphe p)\n\nFormate UNIQUEMENT le contenu du résumé en HTML propre (balises <h2>, <h3>, <p>, <ul>, <li>, <strong>), sans <html>, <head> ou <body>.\nN'inclus pas de styles ni de fond, uniquement du contenu structuré."
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -240,
+          144
+        ],
+        "id": "fde00698-ec6d-4f79-ab3a-7404e6975572",
+        "name": "Sticky Note"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "response1",
+                "name": "success",
+                "value": true,
+                "type": "boolean"
+              },
+              {
+                "id": "response2",
+                "name": "response",
+                "value": "=Le lien du site que vous avez fourni a été analysé et résumé 📄. Le résultat a été enregistré au format PDF 📘✨.",
+                "type": "string"
+              },
+              {
+                "id": "response3",
+                "name": "agent",
+                "value": "resume",
+                "type": "string"
+              },
+              {
+                "id": "response4",
+                "name": "executedAt",
+                "value": "={{ $now.toISO() }}",
+                "type": "string"
+              },
+              {
+                "id": "response5",
+                "name": "query",
+                "value": "={{ $('When Executed by Another Workflow') }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          928,
+          -96
+        ],
+        "id": "43c45406-a296-4cbc-b737-245cc984ae37",
+        "name": "Prepare Response"
+      }
+    ],
+    "connections": {
+      "Extract Summary": {
+        "main": [
+          [
+            {
+              "node": "OpenAI Summarize",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenAI Summarize": {
+        "main": [
+          [
+            {
+              "node": "Préparer Données",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Préparer Données": {
+        "main": [
+          [
+            {
+              "node": "Créer HTML et Convertir",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Créer HTML et Convertir": {
+        "main": [
+          [
+            {
+              "node": "Convertir en PDF (Gotenberg)",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Convertir en PDF (Gotenberg)": {
+        "main": [
+          [
+            {
+              "node": "Upload to Drive",
+              "type": "main",
+              "index": 0
+            },
+            {
+              "node": "Send PDF Telegram",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "When Executed by Another Workflow": {
+        "main": [
+          [
+            {
+              "node": "Extract Summary",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Upload to Drive": {
+        "main": [
+          [
+            {
+              "node": "Prepare Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Wilfrid Peyrius",
+    "name": "Version f5aa5f18",
+    "description": "",
+    "autosaved": true,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-02-08T09:23:26.783Z",
+        "id": 138,
+        "workflowId": "Hp3Qb2nV27CrAtea",
+        "versionId": "f5aa5f18-e443-426f-8f0e-f5987b805354",
+        "event": "activated",
+        "userId": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c"
+      }
+    ]
+  }
+}
