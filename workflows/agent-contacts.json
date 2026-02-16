@@ -1,0 +1,729 @@
+{
+  "updatedAt": "2026-02-03T16:34:50.208Z",
+  "createdAt": "2026-02-01T20:33:46.284Z",
+  "id": "fKUTAqQzFJZII2MT",
+  "name": "👥📇🤝 Agent Contacts",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -64,
+        32
+      ],
+      "id": "3d21d72e-79a4-4194-a407-9edb9737d660",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.query }}",
+        "options": {
+          "systemMessage": "=**Node:** Contact Agent  \n**Description:** Agent spécialisé dans la gestion complète des contacts\n\n```\n# Aperçu\n\nVous êtes l'**assistant de gestion des contacts**. Vos responsabilités incluent la recherche, l'ajout et la mise à jour des informations de contact.\n\n---\n\n## 👥 Outils de gestion des contacts\n\n1. **Get Contacts** : Récupérer les informations d'un contact\n2. **Add or Update Contact** : Ajouter ou modifier un contact\n\n---\n\n## 🔍 Processus de recherche\n\n**Pour obtenir un contact :**\n- Utiliser **Get Contacts** avec le nom ou critère de recherche\n- Retourner toutes les informations disponibles (nom, e-mail, téléphone)\n\n**Pour ajouter ou mettre à jour :**\n- Utiliser **Add or Update Contact**\n- Fournir : nom, e-mail, numéro de téléphone\n- Le système met à jour si le contact existe, sinon il le crée\n\n---\n\n## 📝 Remarques finales\n\n- Toujours confirmer l'action effectuée\n- Vérifier la présence de doublons avant ajout\n- Format : nom complet, e-mail valide, téléphone international\n```\n\n---\n\n"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        224,
+        32
+      ],
+      "id": "60142bd8-2ae6-4e52-b58a-0cfe199139a0",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        128,
+        256
+      ],
+      "id": "aa8accdd-0104-4334-8e23-67f80bd23174",
+      "name": "GPT 4.1-mini1",
+      "credentials": {
+        "openRouterApi": {
+          "id": "REPLACE_ME",
+          "name": "OpenRouter API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "response1",
+              "name": "success",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "response2",
+              "name": "response",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            },
+            {
+              "id": "response3",
+              "name": "agent",
+              "value": "contacts",
+              "type": "string"
+            },
+            {
+              "id": "response4",
+              "name": "executedAt",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "response5",
+              "name": "query",
+              "value": "={{ $('When Executed by Another Workflow').item.json.query }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        608,
+        32
+      ],
+      "id": "9f21cad0-7212-4688-9cc8-062cf5997927",
+      "name": "Prepare Response"
+    },
+    {
+      "parameters": {
+        "operation": "search",
+        "base": {
+          "__rl": true,
+          "value": "appb5YH51c0JVf6UZ",
+          "mode": "list",
+          "cachedResultName": "Contacts",
+          "cachedResultUrl": "https://airtable.com/appb5YH51c0JVf6UZ"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblUHP9OCT7SykmzN",
+          "mode": "list",
+          "cachedResultName": "Contacts",
+          "cachedResultUrl": "https://airtable.com/appb5YH51c0JVf6UZ/tblUHP9OCT7SykmzN"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtableTool",
+      "typeVersion": 2.1,
+      "position": [
+        416,
+        256
+      ],
+      "id": "f4ecd1a5-ea3d-44c0-ad0d-eca4c00cb888",
+      "name": "Get Contacts",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "REPLACE_ME",
+          "name": "Airtable API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "upsert",
+        "base": {
+          "__rl": true,
+          "value": "appb5YH51c0JVf6UZ",
+          "mode": "list",
+          "cachedResultName": "Contacts",
+          "cachedResultUrl": "https://airtable.com/appb5YH51c0JVf6UZ"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblUHP9OCT7SykmzN",
+          "mode": "list",
+          "cachedResultName": "Contacts",
+          "cachedResultUrl": "https://airtable.com/appb5YH51c0JVf6UZ/tblUHP9OCT7SykmzN"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "name": "={{ $fromAI(\"name\") }}",
+            "email": "={{ $fromAI(\"emailAddress\") }}",
+            "phoneNumber": "={{ $fromAI(\"phoneNumber\") }}"
+          },
+          "matchingColumns": [
+            "name"
+          ],
+          "schema": [
+            {
+              "id": "name",
+              "displayName": "name",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            },
+            {
+              "id": "phoneNumber",
+              "displayName": "phoneNumber",
+              "required": false,
+              "defaultMatch": false,
+              "canBeUsedToMatch": true,
+              "display": true,
+              "type": "string",
+              "readOnly": false,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.airtableTool",
+      "typeVersion": 2.1,
+      "position": [
+        544,
+        256
+      ],
+      "id": "e5cd11a2-5fa2-42e4-a6e0-f1f045fbe3fc",
+      "name": "Add or Update Contact",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "REPLACE_ME",
+          "name": "Airtable API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "deleteRecord",
+        "base": {
+          "__rl": true,
+          "value": "appb5YH51c0JVf6UZ",
+          "mode": "list",
+          "cachedResultName": "Contacts",
+          "cachedResultUrl": "https://airtable.com/appb5YH51c0JVf6UZ"
+        },
+        "table": {
+          "__rl": true,
+          "value": "tblUHP9OCT7SykmzN",
+          "mode": "list",
+          "cachedResultName": "Contacts",
+          "cachedResultUrl": "https://airtable.com/appb5YH51c0JVf6UZ/tblUHP9OCT7SykmzN"
+        },
+        "id": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Record_ID', ``, 'string') }}"
+      },
+      "type": "n8n-nodes-base.airtableTool",
+      "typeVersion": 2.1,
+      "position": [
+        688,
+        256
+      ],
+      "id": "f5b54b44-4dc1-4f78-b7a4-7a45dc5f36ab",
+      "name": "Get Contacts1",
+      "credentials": {
+        "airtableTokenApi": {
+          "id": "REPLACE_ME",
+          "name": "Airtable API"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Prepare Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GPT 4.1-mini1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Contacts": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add or Update Contact": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Contacts1": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "timezone": "Europe/Paris",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": null,
+  "activeVersionId": "97961f44-84e8-4af1-9d22-6af08bc3a396",
+  "versionCounter": 16,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-02-02T17:18:39.415Z",
+      "createdAt": "2026-02-02T17:18:39.415Z",
+      "role": "workflow:owner",
+      "workflowId": "fKUTAqQzFJZII2MT",
+      "projectId": "oYt1GPNUBpK2eWHS",
+      "project": {
+        "updatedAt": "2026-02-01T17:02:13.492Z",
+        "createdAt": "2026-02-01T15:39:19.158Z",
+        "id": "oYt1GPNUBpK2eWHS",
+        "name": "Wilfrid Peyrius <willbys@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c",
+        "projectRelations": [
+          {
+            "updatedAt": "2026-02-01T15:39:19.158Z",
+            "createdAt": "2026-02-01T15:39:19.158Z",
+            "userId": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c",
+            "projectId": "oYt1GPNUBpK2eWHS",
+            "user": {
+              "updatedAt": "2026-02-16T19:51:22.561Z",
+              "createdAt": "2026-02-01T15:39:18.127Z",
+              "id": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c",
+              "email": "willbys@gmail.com",
+              "firstName": "Wilfrid",
+              "lastName": "Peyrius",
+              "personalizationAnswers": null,
+              "settings": {
+                "userActivated": true,
+                "easyAIWorkflowOnboarded": true,
+                "firstSuccessfulWorkflowId": "ldbOBqQIXC1SIM3O",
+                "userActivatedAt": 1769981079850
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2026-02-16",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-02-02T17:18:14.691Z",
+    "createdAt": "2026-02-01T20:33:46.296Z",
+    "versionId": "97961f44-84e8-4af1-9d22-6af08bc3a396",
+    "workflowId": "fKUTAqQzFJZII2MT",
+    "nodes": [
+      {
+        "parameters": {
+          "inputSource": "passthrough"
+        },
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.1,
+        "position": [
+          -64,
+          32
+        ],
+        "id": "3d21d72e-79a4-4194-a407-9edb9737d660",
+        "name": "When Executed by Another Workflow"
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ $json.query }}",
+          "options": {
+            "systemMessage": "=**Node:** Contact Agent  \n**Description:** Agent spécialisé dans la gestion complète des contacts\n\n```\n# Aperçu\n\nVous êtes l'**assistant de gestion des contacts**. Vos responsabilités incluent la recherche, l'ajout et la mise à jour des informations de contact.\n\n---\n\n## 👥 Outils de gestion des contacts\n\n1. **Get Contacts** : Récupérer les informations d'un contact\n2. **Add or Update Contact** : Ajouter ou modifier un contact\n\n---\n\n## 🔍 Processus de recherche\n\n**Pour obtenir un contact :**\n- Utiliser **Get Contacts** avec le nom ou critère de recherche\n- Retourner toutes les informations disponibles (nom, e-mail, téléphone)\n\n**Pour ajouter ou mettre à jour :**\n- Utiliser **Add or Update Contact**\n- Fournir : nom, e-mail, numéro de téléphone\n- Le système met à jour si le contact existe, sinon il le crée\n\n---\n\n## 📝 Remarques finales\n\n- Toujours confirmer l'action effectuée\n- Vérifier la présence de doublons avant ajout\n- Format : nom complet, e-mail valide, téléphone international\n```\n\n---\n\n"
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 2.2,
+        "position": [
+          224,
+          32
+        ],
+        "id": "60142bd8-2ae6-4e52-b58a-0cfe199139a0",
+        "name": "AI Agent"
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+        "typeVersion": 1,
+        "position": [
+          128,
+          256
+        ],
+        "id": "aa8accdd-0104-4334-8e23-67f80bd23174",
+        "name": "GPT 4.1-mini1",
+        "credentials": {
+          "openRouterApi": {
+            "id": "7a43f38b-93c1-481e-bd33-d82b1a9d05e2",
+            "name": "OpenRouter API"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "response1",
+                "name": "success",
+                "value": true,
+                "type": "boolean"
+              },
+              {
+                "id": "response2",
+                "name": "response",
+                "value": "={{ $json.output }}",
+                "type": "string"
+              },
+              {
+                "id": "response3",
+                "name": "agent",
+                "value": "contacts",
+                "type": "string"
+              },
+              {
+                "id": "response4",
+                "name": "executedAt",
+                "value": "={{ $now.toISO() }}",
+                "type": "string"
+              },
+              {
+                "id": "response5",
+                "name": "query",
+                "value": "={{ $('When Executed by Another Workflow').item.json.query }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          608,
+          32
+        ],
+        "id": "9f21cad0-7212-4688-9cc8-062cf5997927",
+        "name": "Prepare Response"
+      },
+      {
+        "parameters": {
+          "operation": "search",
+          "base": {
+            "__rl": true,
+            "value": "appb5YH51c0JVf6UZ",
+            "mode": "list",
+            "cachedResultName": "Contacts",
+            "cachedResultUrl": "https://airtable.com/appb5YH51c0JVf6UZ"
+          },
+          "table": {
+            "__rl": true,
+            "value": "tblUHP9OCT7SykmzN",
+            "mode": "list",
+            "cachedResultName": "Contacts",
+            "cachedResultUrl": "https://airtable.com/appb5YH51c0JVf6UZ/tblUHP9OCT7SykmzN"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.airtableTool",
+        "typeVersion": 2.1,
+        "position": [
+          416,
+          256
+        ],
+        "id": "f4ecd1a5-ea3d-44c0-ad0d-eca4c00cb888",
+        "name": "Get Contacts",
+        "credentials": {
+          "airtableTokenApi": {
+            "id": "1b8a7bee-a299-46c4-b17f-b6aa2c5951ac",
+            "name": "Airtable API"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "upsert",
+          "base": {
+            "__rl": true,
+            "value": "appb5YH51c0JVf6UZ",
+            "mode": "list",
+            "cachedResultName": "Contacts",
+            "cachedResultUrl": "https://airtable.com/appb5YH51c0JVf6UZ"
+          },
+          "table": {
+            "__rl": true,
+            "value": "tblUHP9OCT7SykmzN",
+            "mode": "list",
+            "cachedResultName": "Contacts",
+            "cachedResultUrl": "https://airtable.com/appb5YH51c0JVf6UZ/tblUHP9OCT7SykmzN"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "name": "={{ $fromAI(\"name\") }}",
+              "email": "={{ $fromAI(\"emailAddress\") }}",
+              "phoneNumber": "={{ $fromAI(\"phoneNumber\") }}"
+            },
+            "matchingColumns": [
+              "name"
+            ],
+            "schema": [
+              {
+                "id": "name",
+                "displayName": "name",
+                "required": false,
+                "defaultMatch": false,
+                "canBeUsedToMatch": true,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "email",
+                "displayName": "email",
+                "required": false,
+                "defaultMatch": false,
+                "canBeUsedToMatch": true,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              },
+              {
+                "id": "phoneNumber",
+                "displayName": "phoneNumber",
+                "required": false,
+                "defaultMatch": false,
+                "canBeUsedToMatch": true,
+                "display": true,
+                "type": "string",
+                "readOnly": false,
+                "removed": false
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.airtableTool",
+        "typeVersion": 2.1,
+        "position": [
+          544,
+          256
+        ],
+        "id": "e5cd11a2-5fa2-42e4-a6e0-f1f045fbe3fc",
+        "name": "Add or Update Contact",
+        "credentials": {
+          "airtableTokenApi": {
+            "id": "1b8a7bee-a299-46c4-b17f-b6aa2c5951ac",
+            "name": "Airtable API"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "deleteRecord",
+          "base": {
+            "__rl": true,
+            "value": "appb5YH51c0JVf6UZ",
+            "mode": "list",
+            "cachedResultName": "Contacts",
+            "cachedResultUrl": "https://airtable.com/appb5YH51c0JVf6UZ"
+          },
+          "table": {
+            "__rl": true,
+            "value": "tblUHP9OCT7SykmzN",
+            "mode": "list",
+            "cachedResultName": "Contacts",
+            "cachedResultUrl": "https://airtable.com/appb5YH51c0JVf6UZ/tblUHP9OCT7SykmzN"
+          },
+          "id": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Record_ID', ``, 'string') }}"
+        },
+        "type": "n8n-nodes-base.airtableTool",
+        "typeVersion": 2.1,
+        "position": [
+          688,
+          256
+        ],
+        "id": "f5b54b44-4dc1-4f78-b7a4-7a45dc5f36ab",
+        "name": "Get Contacts1",
+        "credentials": {
+          "airtableTokenApi": {
+            "id": "1b8a7bee-a299-46c4-b17f-b6aa2c5951ac",
+            "name": "Airtable API"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "When Executed by Another Workflow": {
+        "main": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AI Agent": {
+        "main": [
+          [
+            {
+              "node": "Prepare Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "GPT 4.1-mini1": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Contacts": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Add or Update Contact": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Contacts1": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Wilfrid Peyrius",
+    "name": "DayOne",
+    "description": "",
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-02-02T17:18:14.689Z",
+        "id": 13,
+        "workflowId": "fKUTAqQzFJZII2MT",
+        "versionId": "97961f44-84e8-4af1-9d22-6af08bc3a396",
+        "event": "activated",
+        "userId": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c"
+      },
+      {
+        "createdAt": "2026-02-03T16:34:50.290Z",
+        "id": 60,
+        "workflowId": "fKUTAqQzFJZII2MT",
+        "versionId": "97961f44-84e8-4af1-9d22-6af08bc3a396",
+        "event": "activated",
+        "userId": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c"
+      }
+    ]
+  }
+}
