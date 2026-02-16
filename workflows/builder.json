@@ -1,0 +1,503 @@
+{
+  "updatedAt": "2026-02-03T13:04:02.481Z",
+  "createdAt": "2026-02-01T20:36:18.380Z",
+  "id": "lZkoPDBxkKAqGgzT",
+  "name": "🧩⚙️🤖 Builder 🚀✨",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        640,
+        448
+      ],
+      "id": "1e80d2ff-c1eb-42dd-8e0e-f480ddd3fc75",
+      "name": "GPT 4.1 mini",
+      "credentials": {
+        "openRouterApi": {
+          "id": "REPLACE_ME",
+          "name": "OpenRouter API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "# n8n Developer Agent\n",
+        "height": 280,
+        "width": 676,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        592,
+        80
+      ],
+      "id": "3feae8b0-ba65-47d2-aeb1-bfe2f45a129a",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.query }}",
+        "options": {
+          "systemMessage": "=# Aperçu\n\nVotre tâche consiste à recevoir la requête et à la transmettre à l'outil « Développeur » EXACTEMENT COMME VOUS L'AVEZ REÇUE. Ne modifiez en aucun cas le texte.\n\nUne fois que vous avez reçu un lien vers le workflow de l'outil « Développeur », présentez-le à l'utilisateur sous la forme d'un lien cliquable intitulé « Afficher votre workflow terminé ».\n\nCe lien doit être cliquable et rediriger l'utilisateur vers le workflow."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        864,
+        192
+      ],
+      "id": "67bc03b5-35ac-41cc-bc32-e768ada33dee",
+      "name": "n8n Developer"
+    },
+    {
+      "parameters": {
+        "description": "Call this tool once you have a finished workflow design to build the workflow.",
+        "workflowId": {
+          "__rl": true,
+          "value": "g1lbl9OretY9FtMT",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/g1lbl9OretY9FtMT",
+          "cachedResultName": "🛠️🧩⚡ Workflow Builder 🚀✨"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        1152,
+        448
+      ],
+      "id": "c159800b-13e6-492d-b751-876fbeb44ac5",
+      "name": "Developer Tool"
+    },
+    {
+      "parameters": {
+        "content": "## Brain\n",
+        "height": 280,
+        "width": 336,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        592,
+        384
+      ],
+      "id": "8db4ff19-ecbb-46a5-a417-0fcbcbb7bf17",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Tool\n",
+        "height": 280,
+        "width": 336,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        944,
+        384
+      ],
+      "id": "5bea309f-80af-4158-b191-37496a67b937",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.query }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        992,
+        448
+      ],
+      "id": "3fcf2637-35bb-4e1a-ad2e-656e08bc01b1",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "content": "# 🛠️ Installation Guide\n\n**Author:** [Nate Herk](https://www.youtube.com/@nateherk)\n\n## 🔧 CORRECTION APPLIQUÉE\n\nUn nouveau nœud **Code** (\"Clean JSON Output\") a été ajouté entre \"n8n Builder\" et \"n8n\" pour:\n- Nettoyer les balises Markdown ```json\n- Extraire uniquement le JSON valide\n- Valider le parsing avant l'envoi à l'API\n\nCela résout l'erreur: \"The 'workflowObject' property must be valid JSON\"\n\n### ✅ Step 1: Connect OpenRouter API Key\n### ✅ Step 2: Add Anthropic API Key (Optional)\n### ✅ Step 3: Link Developer Tool\n### ✅ Step 4: Add n8n API Key\n### ✅ Step 5: Copy Google Doc and connect credentials\n\n### 🧪 Final Step: Test",
+        "height": 588,
+        "width": 720
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -160,
+        80
+      ],
+      "id": "e11badae-aa1d-428c-9e97-ffc361c1b9cf",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        704,
+        192
+      ],
+      "id": "a4a1fdcc-bbce-4da5-a092-0397db31adf4",
+      "name": "When Executed by Another Workflow"
+    }
+  ],
+  "connections": {
+    "GPT 4.1 mini": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "n8n Developer",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Developer Tool": {
+      "ai_tool": [
+        [
+          {
+            "node": "n8n Developer",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "n8n Developer",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "n8n Developer",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "timezone": "Europe/Paris",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "activeVersionId": "13ff59d3-5dab-4f8e-b4bf-03b7a68648f2",
+  "versionCounter": 18,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-02-01T20:36:18.380Z",
+      "createdAt": "2026-02-01T20:36:18.380Z",
+      "role": "workflow:owner",
+      "workflowId": "lZkoPDBxkKAqGgzT",
+      "projectId": "oYt1GPNUBpK2eWHS",
+      "project": {
+        "updatedAt": "2026-02-01T17:02:13.492Z",
+        "createdAt": "2026-02-01T15:39:19.158Z",
+        "id": "oYt1GPNUBpK2eWHS",
+        "name": "Wilfrid Peyrius <willbys@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c",
+        "projectRelations": [
+          {
+            "updatedAt": "2026-02-01T15:39:19.158Z",
+            "createdAt": "2026-02-01T15:39:19.158Z",
+            "userId": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c",
+            "projectId": "oYt1GPNUBpK2eWHS",
+            "user": {
+              "updatedAt": "2026-02-16T19:51:22.561Z",
+              "createdAt": "2026-02-01T15:39:18.127Z",
+              "id": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c",
+              "email": "willbys@gmail.com",
+              "firstName": "Wilfrid",
+              "lastName": "Peyrius",
+              "personalizationAnswers": null,
+              "settings": {
+                "userActivated": true,
+                "easyAIWorkflowOnboarded": true,
+                "firstSuccessfulWorkflowId": "ldbOBqQIXC1SIM3O",
+                "userActivatedAt": 1769981079850
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2026-02-16",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-02-03T07:20:28.726Z",
+    "createdAt": "2026-02-03T07:13:52.171Z",
+    "versionId": "13ff59d3-5dab-4f8e-b4bf-03b7a68648f2",
+    "workflowId": "lZkoPDBxkKAqGgzT",
+    "nodes": [
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+        "typeVersion": 1,
+        "position": [
+          640,
+          448
+        ],
+        "id": "1e80d2ff-c1eb-42dd-8e0e-f480ddd3fc75",
+        "name": "GPT 4.1 mini",
+        "credentials": {
+          "openRouterApi": {
+            "id": "7a43f38b-93c1-481e-bd33-d82b1a9d05e2",
+            "name": "OpenRouter API"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "content": "# n8n Developer Agent\n",
+          "height": 280,
+          "width": 676,
+          "color": 4
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          592,
+          80
+        ],
+        "id": "3feae8b0-ba65-47d2-aeb1-bfe2f45a129a",
+        "name": "Sticky Note1"
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ $json.query }}",
+          "options": {
+            "systemMessage": "=# Aperçu\n\nVotre tâche consiste à recevoir la requête et à la transmettre à l'outil « Développeur » EXACTEMENT COMME VOUS L'AVEZ REÇUE. Ne modifiez en aucun cas le texte.\n\nUne fois que vous avez reçu un lien vers le workflow de l'outil « Développeur », présentez-le à l'utilisateur sous la forme d'un lien cliquable intitulé « Afficher votre workflow terminé ».\n\nCe lien doit être cliquable et rediriger l'utilisateur vers le workflow."
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 2,
+        "position": [
+          864,
+          192
+        ],
+        "id": "67bc03b5-35ac-41cc-bc32-e768ada33dee",
+        "name": "n8n Developer"
+      },
+      {
+        "parameters": {
+          "description": "Call this tool once you have a finished workflow design to build the workflow.",
+          "workflowId": {
+            "__rl": true,
+            "value": "g1lbl9OretY9FtMT",
+            "mode": "list",
+            "cachedResultUrl": "/workflow/g1lbl9OretY9FtMT",
+            "cachedResultName": "🛠️🧩⚡ Workflow Builder 🚀✨"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {},
+            "matchingColumns": [],
+            "schema": [],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+        "typeVersion": 2.2,
+        "position": [
+          1152,
+          448
+        ],
+        "id": "c159800b-13e6-492d-b751-876fbeb44ac5",
+        "name": "Developer Tool"
+      },
+      {
+        "parameters": {
+          "content": "## Brain\n",
+          "height": 280,
+          "width": 336,
+          "color": 6
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          592,
+          384
+        ],
+        "id": "8db4ff19-ecbb-46a5-a417-0fcbcbb7bf17",
+        "name": "Sticky Note2"
+      },
+      {
+        "parameters": {
+          "content": "## Tool\n",
+          "height": 280,
+          "width": 336,
+          "color": 5
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          944,
+          384
+        ],
+        "id": "5bea309f-80af-4158-b191-37496a67b937",
+        "name": "Sticky Note3"
+      },
+      {
+        "parameters": {
+          "sessionIdType": "customKey",
+          "sessionKey": "={{ $json.query }}",
+          "contextWindowLength": 10
+        },
+        "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+        "typeVersion": 1.3,
+        "position": [
+          992,
+          448
+        ],
+        "id": "3fcf2637-35bb-4e1a-ad2e-656e08bc01b1",
+        "name": "Simple Memory"
+      },
+      {
+        "parameters": {
+          "content": "# 🛠️ Installation Guide\n\n**Author:** [Nate Herk](https://www.youtube.com/@nateherk)\n\n## 🔧 CORRECTION APPLIQUÉE\n\nUn nouveau nœud **Code** (\"Clean JSON Output\") a été ajouté entre \"n8n Builder\" et \"n8n\" pour:\n- Nettoyer les balises Markdown ```json\n- Extraire uniquement le JSON valide\n- Valider le parsing avant l'envoi à l'API\n\nCela résout l'erreur: \"The 'workflowObject' property must be valid JSON\"\n\n### ✅ Step 1: Connect OpenRouter API Key\n### ✅ Step 2: Add Anthropic API Key (Optional)\n### ✅ Step 3: Link Developer Tool\n### ✅ Step 4: Add n8n API Key\n### ✅ Step 5: Copy Google Doc and connect credentials\n\n### 🧪 Final Step: Test",
+          "height": 588,
+          "width": 720
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -160,
+          80
+        ],
+        "id": "e11badae-aa1d-428c-9e97-ffc361c1b9cf",
+        "name": "Sticky Note4"
+      },
+      {
+        "parameters": {
+          "inputSource": "passthrough"
+        },
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.1,
+        "position": [
+          704,
+          192
+        ],
+        "id": "a4a1fdcc-bbce-4da5-a092-0397db31adf4",
+        "name": "When Executed by Another Workflow"
+      }
+    ],
+    "connections": {
+      "GPT 4.1 mini": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "n8n Developer",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Developer Tool": {
+        "ai_tool": [
+          [
+            {
+              "node": "n8n Developer",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Simple Memory": {
+        "ai_memory": [
+          [
+            {
+              "node": "n8n Developer",
+              "type": "ai_memory",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "When Executed by Another Workflow": {
+        "main": [
+          [
+            {
+              "node": "n8n Developer",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Wilfrid Peyrius",
+    "name": "Version 13ff59d3",
+    "description": "",
+    "autosaved": true,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-02-03T07:20:28.721Z",
+        "id": 30,
+        "workflowId": "lZkoPDBxkKAqGgzT",
+        "versionId": "13ff59d3-5dab-4f8e-b4bf-03b7a68648f2",
+        "event": "activated",
+        "userId": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c"
+      },
+      {
+        "createdAt": "2026-02-03T13:04:02.596Z",
+        "id": 54,
+        "workflowId": "lZkoPDBxkKAqGgzT",
+        "versionId": "13ff59d3-5dab-4f8e-b4bf-03b7a68648f2",
+        "event": "activated",
+        "userId": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c"
+      }
+    ]
+  }
+}
