@@ -1,0 +1,1223 @@
+{
+  "updatedAt": "2026-02-03T12:55:28.065Z",
+  "createdAt": "2026-02-01T20:35:09.565Z",
+  "id": "qYG3MHI5mwIQhCxX",
+  "name": "🖌️ Photoshop 🎨✨",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "claude-3-5-sonnet-20241022",
+          "mode": "list",
+          "cachedResultName": "Claude Sonnet 3.5 (New)"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+      "typeVersion": 1.3,
+      "position": [
+        1136,
+        448
+      ],
+      "id": "0a9b2868-009c-4604-9e75-a399f4c646bd",
+      "name": "Sonnet 3.5",
+      "credentials": {
+        "anthropicApi": {
+          "id": "REPLACE_ME",
+          "name": "Anthropic API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.query }}",
+        "needsFallback": true,
+        "options": {
+          "systemMessage": "=# Aperçu\nVous êtes un agent assistant personnel. Votre travail consiste à utiliser les outils auxquels vous avez accès pour aider l'utilisateur dans sa demande. \n\n## Outils\nChange Name - Utilisez cet outil pour changer le nom d'une photo. Vous devez avoir l'ID du fichier pour changer le nom.\nCombine Images - Utilisez cet outil pour combiner deux images.\nSearch Raw Files - Utilisez cet outil pour rechercher des fichiers image que l'utilisateur a précédemment téléchargés.\nSearch AI Images - Utilisez cet outil pour rechercher des images générées par l'IA que vous avez aidé l'utilisateur à créer. \nEdit Image - Utilisez cet outil pour modifier une image.\n\n## Instructions\n1) Si l'utilisateur soumet une photo, demandez-lui comment nommer cette photo en disant « Comment souhaitez-vous que je nomme cette photo dans votre Google Drive ? ». Ensuite, une fois qu’ils répondent, modifiez le nom à l’aide de votre outil Change Name.\n\n",
+          "returnIntermediateSteps": true
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1744,
+        144
+      ],
+      "id": "829be101-2062-49a1-bd4c-c60a83b5ab8f",
+      "name": "Photoshop Agent",
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "chatId": "=8481398125",
+        "text": "={{ $json.output }}",
+        "additionalFields": {
+          "appendAttribution": false,
+          "parse_mode": "HTML"
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2064,
+        144
+      ],
+      "id": "46f571ba-d020-4afb-b0de-00b9bae675da",
+      "name": "Respond",
+      "webhookId": "59e97411-22ee-4106-82ff-e36c1f0eed39",
+      "credentials": {
+        "telegramApi": {
+          "id": "REPLACE_ME",
+          "name": "NexusFlow75"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "fileId": {
+          "__rl": true,
+          "mode": "id",
+          "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('File_to_Update', ``, 'string') }}"
+        },
+        "newUpdatedFileName": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('New_Updated_File_Name', ``, 'string') }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDriveTool",
+      "typeVersion": 3,
+      "position": [
+        1728,
+        448
+      ],
+      "id": "3c50db16-9b2f-4f17-adb9-a657784368c7",
+      "name": "Change Name",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "REPLACE_ME",
+          "name": "labsmates"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "Call this tool to combine two images. You must pass over an image generation prompt, the IDs of both of the images, and a title for this new image.",
+        "workflowId": {
+          "__rl": true,
+          "value": "EJJEtj1pm7sj8mj5",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/EJJEtj1pm7sj8mj5",
+          "cachedResultName": "🚨Combine Images Nanobanana"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "prompt": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('prompt', `The image generation prompt. This should be optimized for IA image`, 'string') }}",
+            "image1": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('image1', `The ID of image 1`, 'string') }}",
+            "image2": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('image2', `The ID of image 2`, 'string') }}",
+            "imageTitle": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('imageTitle', ``, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "prompt",
+              "displayName": "prompt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "image1",
+              "displayName": "image1",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "image2",
+              "displayName": "image2",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "imageTitle",
+              "displayName": "imageTitle",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        1424,
+        448
+      ],
+      "id": "0d8f3694-0732-491c-965a-7efdb480559e",
+      "name": "Combine Images"
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "returnAll": true,
+        "filter": {
+          "folderId": {
+            "__rl": true,
+            "value": "11oDIGzTB0qQst34P6FNrh7l1qrOSQT0R",
+            "mode": "list",
+            "cachedResultName": "Media",
+            "cachedResultUrl": "https://drive.google.com/drive/folders/11oDIGzTB0qQst34P6FNrh7l1qrOSQT0R"
+          },
+          "whatToSearch": "files"
+        },
+        "options": {
+          "fields": [
+            "id",
+            "name",
+            "webViewLink"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDriveTool",
+      "typeVersion": 3,
+      "position": [
+        1888,
+        448
+      ],
+      "id": "3de93f78-c230-49ae-819b-e61f52f74991",
+      "name": "Search Raw Files",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "REPLACE_ME",
+          "name": "labsmates"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "returnAll": true,
+        "filter": {
+          "folderId": {
+            "__rl": true,
+            "value": "1jeuzbnhbShdmYxnzeJcBifG_FqjmeeQT",
+            "mode": "list",
+            "cachedResultName": "AI Image Generation",
+            "cachedResultUrl": "https://drive.google.com/drive/folders/1jeuzbnhbShdmYxnzeJcBifG_FqjmeeQT"
+          },
+          "whatToSearch": "files"
+        },
+        "options": {
+          "fields": [
+            "id",
+            "name",
+            "webViewLink"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDriveTool",
+      "typeVersion": 3,
+      "position": [
+        2048,
+        448
+      ],
+      "id": "5a55de56-44b9-451c-80d5-90fd128fb8a8",
+      "name": "Search AI Images",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "REPLACE_ME",
+          "name": "labsmates"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "description": "Call this tool to edit an image. You must pass over a new image title, an image prompt, and the image ID. ",
+        "workflowId": {
+          "__rl": true,
+          "value": "3kIle2lK5rcQM0Uv",
+          "mode": "list",
+          "cachedResultUrl": "/workflow/3kIle2lK5rcQM0Uv",
+          "cachedResultName": "🚨Edit Image Nanobanana Tool"
+        },
+        "workflowInputs": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "imageTitle": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('imageTitle', `The title of the new image`, 'string') }}",
+            "imagePrompt": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('imagePrompt', `The image generation prompt. This should be detailed and optimized for AI image generation. This prompt should not contain \\\\n or \"\".`, 'string') }}",
+            "imageID": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('imageID', `The ID of the image to edit`, 'string') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "imageTitle",
+              "displayName": "imageTitle",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "imagePrompt",
+              "displayName": "imagePrompt",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            },
+            {
+              "id": "imageID",
+              "displayName": "imageID",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "canBeUsedToMatch": true,
+              "type": "string"
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+      "typeVersion": 2.2,
+      "position": [
+        1568,
+        448
+      ],
+      "id": "b1bfa69d-2ec7-4907-99e6-8d387f13f488",
+      "name": "Edit Image"
+    },
+    {
+      "parameters": {
+        "content": "## Brain",
+        "height": 224,
+        "width": 416,
+        "color": 7
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        960,
+        368
+      ],
+      "id": "6e487cc4-b856-4b9b-a6cb-485d064191c9",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## AI Image Gen",
+        "height": 224,
+        "width": 288,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1392,
+        368
+      ],
+      "id": "9e21923b-1dab-49ba-8fc4-abd78c4335b2",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## File Handling\n",
+        "height": 224,
+        "width": 480,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1696,
+        368
+      ],
+      "id": "4b475b7b-342f-4463-a64b-4971129e649b",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "content": "## Text/Image Input",
+        "height": 352,
+        "width": 720,
+        "color": 2
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        960,
+        0
+      ],
+      "id": "6441f035-a28d-4e35-b7f0-68085a6ef345",
+      "name": "Sticky Note3"
+    },
+    {
+      "parameters": {
+        "content": "## Photoshop Agent",
+        "height": 352,
+        "width": 480,
+        "color": 6
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1696,
+        0
+      ],
+      "id": "bc36f114-5479-402e-aec3-12677780c817",
+      "name": "Sticky Note4"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.query }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1264,
+        448
+      ],
+      "id": "c2c1b034-582c-4ec4-9cf8-4d4ca190f356",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-5-mini",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        1008,
+        448
+      ],
+      "id": "60093c17-7055-4304-9529-9ce3e9b60c04",
+      "name": "GPT 5 mini",
+      "credentials": {
+        "openRouterApi": {
+          "id": "REPLACE_ME",
+          "name": "OpenRouter API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "content": "Prompt\n\n# Overview\nYou are a personal assistant agent. Your job is to use the tools you have access to help the user with their request. \n\n## Tools\nChange Name - Use this tool to change the name of a photo. You must have the file ID to change the name.\nCombine Images - Use this tool to combine two images.\nSearch Raw Files - Use this tool to search for image files that the user has previously uploaded.\nSearch AI Images - Use this tool to search for AI-generated images that you've helped the user create. \nEdit Image - Use this tool to edit an image.\n\n## Instructions\n1) If the user submits a photo, ask them what to name that photo by saying \"What would you like me to name that photo in your Google Drive?\". Then once they respond, change the name using your Change Name tool.\n",
+        "width": 496
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        1376,
+        688
+      ],
+      "id": "c7edb403-6131-40fb-9555-b7f9c675df93",
+      "name": "Sticky Note6"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        1328,
+        144
+      ],
+      "id": "4b6c794b-0d6e-4394-89ca-6e85a2333bd6",
+      "name": "When Executed by Another Workflow"
+    }
+  ],
+  "connections": {
+    "Sonnet 3.5": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Photoshop Agent",
+            "type": "ai_languageModel",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "Photoshop Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Respond",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Change Name": {
+      "ai_tool": [
+        [
+          {
+            "node": "Photoshop Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Combine Images": {
+      "ai_tool": [
+        [
+          {
+            "node": "Photoshop Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Raw Files": {
+      "ai_tool": [
+        [
+          {
+            "node": "Photoshop Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search AI Images": {
+      "ai_tool": [
+        [
+          {
+            "node": "Photoshop Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Edit Image": {
+      "ai_tool": [
+        [
+          {
+            "node": "Photoshop Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Photoshop Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "GPT 5 mini": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Photoshop Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Photoshop Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "timezone": "Europe/Paris",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "activeVersionId": "2ea52f1a-2ba0-4ee2-9db4-55243e55d3d5",
+  "versionCounter": 19,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-02-02T17:07:26.974Z",
+      "createdAt": "2026-02-02T17:07:26.974Z",
+      "role": "workflow:owner",
+      "workflowId": "qYG3MHI5mwIQhCxX",
+      "projectId": "oYt1GPNUBpK2eWHS",
+      "project": {
+        "updatedAt": "2026-02-01T17:02:13.492Z",
+        "createdAt": "2026-02-01T15:39:19.158Z",
+        "id": "oYt1GPNUBpK2eWHS",
+        "name": "Wilfrid Peyrius <willbys@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c",
+        "projectRelations": [
+          {
+            "updatedAt": "2026-02-01T15:39:19.158Z",
+            "createdAt": "2026-02-01T15:39:19.158Z",
+            "userId": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c",
+            "projectId": "oYt1GPNUBpK2eWHS",
+            "user": {
+              "updatedAt": "2026-02-16T19:51:22.561Z",
+              "createdAt": "2026-02-01T15:39:18.127Z",
+              "id": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c",
+              "email": "willbys@gmail.com",
+              "firstName": "Wilfrid",
+              "lastName": "Peyrius",
+              "personalizationAnswers": null,
+              "settings": {
+                "userActivated": true,
+                "easyAIWorkflowOnboarded": true,
+                "firstSuccessfulWorkflowId": "ldbOBqQIXC1SIM3O",
+                "userActivatedAt": 1769981079850
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2026-02-16",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-02-03T07:15:19.183Z",
+    "createdAt": "2026-02-03T07:14:51.816Z",
+    "versionId": "2ea52f1a-2ba0-4ee2-9db4-55243e55d3d5",
+    "workflowId": "qYG3MHI5mwIQhCxX",
+    "nodes": [
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "value": "claude-3-5-sonnet-20241022",
+            "mode": "list",
+            "cachedResultName": "Claude Sonnet 3.5 (New)"
+          },
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatAnthropic",
+        "typeVersion": 1.3,
+        "position": [
+          1136,
+          448
+        ],
+        "id": "0a9b2868-009c-4604-9e75-a399f4c646bd",
+        "name": "Sonnet 3.5",
+        "credentials": {
+          "anthropicApi": {
+            "id": "fadaffd6-9ae2-4944-8038-fbbc85324912",
+            "name": "Anthropic API"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ $json.query }}",
+          "needsFallback": true,
+          "options": {
+            "systemMessage": "=# Aperçu\nVous êtes un agent assistant personnel. Votre travail consiste à utiliser les outils auxquels vous avez accès pour aider l'utilisateur dans sa demande. \n\n## Outils\nChange Name - Utilisez cet outil pour changer le nom d'une photo. Vous devez avoir l'ID du fichier pour changer le nom.\nCombine Images - Utilisez cet outil pour combiner deux images.\nSearch Raw Files - Utilisez cet outil pour rechercher des fichiers image que l'utilisateur a précédemment téléchargés.\nSearch AI Images - Utilisez cet outil pour rechercher des images générées par l'IA que vous avez aidé l'utilisateur à créer. \nEdit Image - Utilisez cet outil pour modifier une image.\n\n## Instructions\n1) Si l'utilisateur soumet une photo, demandez-lui comment nommer cette photo en disant « Comment souhaitez-vous que je nomme cette photo dans votre Google Drive ? ». Ensuite, une fois qu’ils répondent, modifiez le nom à l’aide de votre outil Change Name.\n\n",
+            "returnIntermediateSteps": true
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 2.2,
+        "position": [
+          1744,
+          144
+        ],
+        "id": "829be101-2062-49a1-bd4c-c60a83b5ab8f",
+        "name": "Photoshop Agent",
+        "onError": "continueErrorOutput"
+      },
+      {
+        "parameters": {
+          "chatId": "=8481398125",
+          "text": "={{ $json.output }}",
+          "additionalFields": {
+            "appendAttribution": false,
+            "parse_mode": "HTML"
+          }
+        },
+        "type": "n8n-nodes-base.telegram",
+        "typeVersion": 1.2,
+        "position": [
+          2064,
+          144
+        ],
+        "id": "46f571ba-d020-4afb-b0de-00b9bae675da",
+        "name": "Respond",
+        "webhookId": "59e97411-22ee-4106-82ff-e36c1f0eed39",
+        "credentials": {
+          "telegramApi": {
+            "id": "XkX1NWc7cCkxEsMd",
+            "name": "NexusFlow75"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "update",
+          "fileId": {
+            "__rl": true,
+            "mode": "id",
+            "value": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('File_to_Update', ``, 'string') }}"
+          },
+          "newUpdatedFileName": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('New_Updated_File_Name', ``, 'string') }}",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleDriveTool",
+        "typeVersion": 3,
+        "position": [
+          1728,
+          448
+        ],
+        "id": "3c50db16-9b2f-4f17-adb9-a657784368c7",
+        "name": "Change Name",
+        "credentials": {
+          "googleDriveOAuth2Api": {
+            "id": "cee801cb-c9d9-43c3-976e-0c0fd04fff46",
+            "name": "labsmates"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "description": "Call this tool to combine two images. You must pass over an image generation prompt, the IDs of both of the images, and a title for this new image.",
+          "workflowId": {
+            "__rl": true,
+            "value": "EJJEtj1pm7sj8mj5",
+            "mode": "list",
+            "cachedResultUrl": "/workflow/EJJEtj1pm7sj8mj5",
+            "cachedResultName": "🚨Combine Images Nanobanana"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "prompt": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('prompt', `The image generation prompt. This should be optimized for IA image`, 'string') }}",
+              "image1": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('image1', `The ID of image 1`, 'string') }}",
+              "image2": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('image2', `The ID of image 2`, 'string') }}",
+              "imageTitle": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('imageTitle', ``, 'string') }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "prompt",
+                "displayName": "prompt",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string"
+              },
+              {
+                "id": "image1",
+                "displayName": "image1",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string"
+              },
+              {
+                "id": "image2",
+                "displayName": "image2",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string"
+              },
+              {
+                "id": "imageTitle",
+                "displayName": "imageTitle",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string"
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+        "typeVersion": 2.2,
+        "position": [
+          1424,
+          448
+        ],
+        "id": "0d8f3694-0732-491c-965a-7efdb480559e",
+        "name": "Combine Images"
+      },
+      {
+        "parameters": {
+          "resource": "fileFolder",
+          "returnAll": true,
+          "filter": {
+            "folderId": {
+              "__rl": true,
+              "value": "11oDIGzTB0qQst34P6FNrh7l1qrOSQT0R",
+              "mode": "list",
+              "cachedResultName": "Media",
+              "cachedResultUrl": "https://drive.google.com/drive/folders/11oDIGzTB0qQst34P6FNrh7l1qrOSQT0R"
+            },
+            "whatToSearch": "files"
+          },
+          "options": {
+            "fields": [
+              "id",
+              "name",
+              "webViewLink"
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.googleDriveTool",
+        "typeVersion": 3,
+        "position": [
+          1888,
+          448
+        ],
+        "id": "3de93f78-c230-49ae-819b-e61f52f74991",
+        "name": "Search Raw Files",
+        "credentials": {
+          "googleDriveOAuth2Api": {
+            "id": "cee801cb-c9d9-43c3-976e-0c0fd04fff46",
+            "name": "labsmates"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "resource": "fileFolder",
+          "returnAll": true,
+          "filter": {
+            "folderId": {
+              "__rl": true,
+              "value": "1jeuzbnhbShdmYxnzeJcBifG_FqjmeeQT",
+              "mode": "list",
+              "cachedResultName": "AI Image Generation",
+              "cachedResultUrl": "https://drive.google.com/drive/folders/1jeuzbnhbShdmYxnzeJcBifG_FqjmeeQT"
+            },
+            "whatToSearch": "files"
+          },
+          "options": {
+            "fields": [
+              "id",
+              "name",
+              "webViewLink"
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.googleDriveTool",
+        "typeVersion": 3,
+        "position": [
+          2048,
+          448
+        ],
+        "id": "5a55de56-44b9-451c-80d5-90fd128fb8a8",
+        "name": "Search AI Images",
+        "credentials": {
+          "googleDriveOAuth2Api": {
+            "id": "cee801cb-c9d9-43c3-976e-0c0fd04fff46",
+            "name": "labsmates"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "description": "Call this tool to edit an image. You must pass over a new image title, an image prompt, and the image ID. ",
+          "workflowId": {
+            "__rl": true,
+            "value": "3kIle2lK5rcQM0Uv",
+            "mode": "list",
+            "cachedResultUrl": "/workflow/3kIle2lK5rcQM0Uv",
+            "cachedResultName": "🚨Edit Image Nanobanana Tool"
+          },
+          "workflowInputs": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "imageTitle": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('imageTitle', `The title of the new image`, 'string') }}",
+              "imagePrompt": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('imagePrompt', `The image generation prompt. This should be detailed and optimized for AI image generation. This prompt should not contain \\\\n or \"\".`, 'string') }}",
+              "imageID": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('imageID', `The ID of the image to edit`, 'string') }}"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "imageTitle",
+                "displayName": "imageTitle",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string"
+              },
+              {
+                "id": "imagePrompt",
+                "displayName": "imagePrompt",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string"
+              },
+              {
+                "id": "imageID",
+                "displayName": "imageID",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "canBeUsedToMatch": true,
+                "type": "string"
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.toolWorkflow",
+        "typeVersion": 2.2,
+        "position": [
+          1568,
+          448
+        ],
+        "id": "b1bfa69d-2ec7-4907-99e6-8d387f13f488",
+        "name": "Edit Image"
+      },
+      {
+        "parameters": {
+          "content": "## Brain",
+          "height": 224,
+          "width": 416,
+          "color": 7
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          960,
+          368
+        ],
+        "id": "6e487cc4-b856-4b9b-a6cb-485d064191c9",
+        "name": "Sticky Note"
+      },
+      {
+        "parameters": {
+          "content": "## AI Image Gen",
+          "height": 224,
+          "width": 288,
+          "color": 5
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          1392,
+          368
+        ],
+        "id": "9e21923b-1dab-49ba-8fc4-abd78c4335b2",
+        "name": "Sticky Note1"
+      },
+      {
+        "parameters": {
+          "content": "## File Handling\n",
+          "height": 224,
+          "width": 480,
+          "color": 4
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          1696,
+          368
+        ],
+        "id": "4b475b7b-342f-4463-a64b-4971129e649b",
+        "name": "Sticky Note2"
+      },
+      {
+        "parameters": {
+          "content": "## Text/Image Input",
+          "height": 352,
+          "width": 720,
+          "color": 2
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          960,
+          0
+        ],
+        "id": "6441f035-a28d-4e35-b7f0-68085a6ef345",
+        "name": "Sticky Note3"
+      },
+      {
+        "parameters": {
+          "content": "## Photoshop Agent",
+          "height": 352,
+          "width": 480,
+          "color": 6
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          1696,
+          0
+        ],
+        "id": "bc36f114-5479-402e-aec3-12677780c817",
+        "name": "Sticky Note4"
+      },
+      {
+        "parameters": {
+          "sessionIdType": "customKey",
+          "sessionKey": "={{ $json.query }}",
+          "contextWindowLength": 10
+        },
+        "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+        "typeVersion": 1.3,
+        "position": [
+          1264,
+          448
+        ],
+        "id": "c2c1b034-582c-4ec4-9cf8-4d4ca190f356",
+        "name": "Simple Memory"
+      },
+      {
+        "parameters": {
+          "model": "openai/gpt-5-mini",
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+        "typeVersion": 1,
+        "position": [
+          1008,
+          448
+        ],
+        "id": "60093c17-7055-4304-9529-9ce3e9b60c04",
+        "name": "GPT 5 mini",
+        "credentials": {
+          "openRouterApi": {
+            "id": "7a43f38b-93c1-481e-bd33-d82b1a9d05e2",
+            "name": "OpenRouter API"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "content": "Prompt\n\n# Overview\nYou are a personal assistant agent. Your job is to use the tools you have access to help the user with their request. \n\n## Tools\nChange Name - Use this tool to change the name of a photo. You must have the file ID to change the name.\nCombine Images - Use this tool to combine two images.\nSearch Raw Files - Use this tool to search for image files that the user has previously uploaded.\nSearch AI Images - Use this tool to search for AI-generated images that you've helped the user create. \nEdit Image - Use this tool to edit an image.\n\n## Instructions\n1) If the user submits a photo, ask them what to name that photo by saying \"What would you like me to name that photo in your Google Drive?\". Then once they respond, change the name using your Change Name tool.\n",
+          "width": 496
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          1376,
+          688
+        ],
+        "id": "c7edb403-6131-40fb-9555-b7f9c675df93",
+        "name": "Sticky Note6"
+      },
+      {
+        "parameters": {
+          "inputSource": "passthrough"
+        },
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.1,
+        "position": [
+          1328,
+          144
+        ],
+        "id": "4b6c794b-0d6e-4394-89ca-6e85a2333bd6",
+        "name": "When Executed by Another Workflow"
+      }
+    ],
+    "connections": {
+      "Sonnet 3.5": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Photoshop Agent",
+              "type": "ai_languageModel",
+              "index": 1
+            }
+          ]
+        ]
+      },
+      "Photoshop Agent": {
+        "main": [
+          [
+            {
+              "node": "Respond",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Respond",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Change Name": {
+        "ai_tool": [
+          [
+            {
+              "node": "Photoshop Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Combine Images": {
+        "ai_tool": [
+          [
+            {
+              "node": "Photoshop Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Search Raw Files": {
+        "ai_tool": [
+          [
+            {
+              "node": "Photoshop Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Search AI Images": {
+        "ai_tool": [
+          [
+            {
+              "node": "Photoshop Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Edit Image": {
+        "ai_tool": [
+          [
+            {
+              "node": "Photoshop Agent",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Simple Memory": {
+        "ai_memory": [
+          [
+            {
+              "node": "Photoshop Agent",
+              "type": "ai_memory",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "GPT 5 mini": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "Photoshop Agent",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "When Executed by Another Workflow": {
+        "main": [
+          [
+            {
+              "node": "Photoshop Agent",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Wilfrid Peyrius",
+    "name": "Version 2ea52f1a",
+    "description": "",
+    "autosaved": true,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-02-03T07:15:19.175Z",
+        "id": 27,
+        "workflowId": "qYG3MHI5mwIQhCxX",
+        "versionId": "2ea52f1a-2ba0-4ee2-9db4-55243e55d3d5",
+        "event": "activated",
+        "userId": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c"
+      },
+      {
+        "createdAt": "2026-02-03T12:55:28.177Z",
+        "id": 48,
+        "workflowId": "qYG3MHI5mwIQhCxX",
+        "versionId": "2ea52f1a-2ba0-4ee2-9db4-55243e55d3d5",
+        "event": "activated",
+        "userId": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c"
+      }
+    ]
+  }
+}
