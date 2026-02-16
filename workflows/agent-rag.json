@@ -1,0 +1,2531 @@
+{
+  "updatedAt": "2026-02-03T16:32:00.688Z",
+  "createdAt": "2026-02-01T20:34:52.324Z",
+  "id": "5VtYqzJz1SP2IB2g",
+  "name": "🧩 Agent RAG",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## 🚀 Workflow RAG Automatique Multi-Format\n\n**Formats supportés:**\n- 📄 PDF\n- 📝 Word (.docx, .doc)\n- 📊 Excel (.xlsx, .xls)\n- 🎭 PowerPoint (.pptx, .ppt)\n- 📃 Texte (.txt, .md)\n- 📑 Google Docs, Sheets, Slides\n\n**Déclencheurs:**\n1. Automatique: Tous les jours à 2h00\n2. Manuel: Via chat",
+        "height": 800,
+        "width": 944
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -3888,
+        -656
+      ],
+      "id": "e15d3bce-e9d1-42d1-aca9-396f04cad6e3",
+      "name": "📖 Instructions"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 2 * * *"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -3440,
+        -432
+      ],
+      "id": "dcb896c4-5598-40fd-b64b-c7bf81513e3b",
+      "name": "⏰ Déclencheur Quotidien"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "set1",
+              "name": "reindex",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "set2",
+              "name": "forceReindex",
+              "value": false,
+              "type": "boolean"
+            },
+            {
+              "id": "set3",
+              "name": "source",
+              "value": "scheduled",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -3312,
+        -432
+      ],
+      "id": "36d2237a-fcc6-40b3-9c90-ebd2bca88768",
+      "name": "Paramètres Auto"
+    },
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        -3120,
+        -304
+      ],
+      "id": "fc0b577e-d70b-4ae6-a2be-40079ff0125f",
+      "name": "Fusionner Entrées"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "cond1",
+              "leftValue": "={{ $json.reindex || $json.body?.reindex || false }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -2912,
+        -304
+      ],
+      "id": "a2d269ae-1c82-4c63-95c6-06ac9d2ca5f6",
+      "name": "Mode?"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $json.id }}",
+          "mode": "id"
+        },
+        "options": {
+          "googleFileConversion": {
+            "conversion": {
+              "docsToFormat": "text/plain"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -1536,
+        -336
+      ],
+      "id": "af2e5e3c-7bae-4657-8ccc-60dc59143ed1",
+      "name": "⬇️ Télécharger",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "REPLACE_ME",
+          "name": "labsmates"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst results = [];\n\nfor (const item of items) {\n  const mimeType = item.json.mimeType || '';\n  const fileName = item.json.name || '';\n  \n  let shouldExtract = false;\n  let extractType = null;\n  \n  // PDF\n  if (mimeType === 'application/pdf') {\n    shouldExtract = true;\n    extractType = 'pdf';\n  }\n  // Word\n  else if (mimeType.includes('wordprocessingml') || mimeType === 'application/msword' || mimeType === 'application/vnd.google-apps.document') {\n    shouldExtract = true;\n    extractType = 'docx';\n  }\n  // Excel et CSV\n  else if (mimeType.includes('spreadsheetml') || mimeType.includes('ms-excel') || mimeType === 'application/vnd.google-apps.spreadsheet') {\n    shouldExtract = true;\n    extractType = 'xlsx';\n  }\n  // PowerPoint\n  else if (mimeType.includes('presentationml') || mimeType.includes('ms-powerpoint') || mimeType === 'application/vnd.google-apps.presentation') {\n    shouldExtract = true;\n    extractType = 'pptx';\n  }\n  // Texte brut, CSV, Markdown (pas besoin d'extraction)\n  else if (mimeType.includes('text/') || mimeType === 'text/csv' || mimeType === 'text/plain' || mimeType === 'text/markdown') {\n    shouldExtract = false;\n    extractType = 'text';\n  }\n  // Par défaut, on considère comme texte\n  else {\n    console.warn(`Type MIME inconnu pour ${fileName}: ${mimeType} - traité comme texte`);\n    shouldExtract = false;\n    extractType = 'text';\n  }\n  \n  results.push({\n    json: {\n      ...item.json,\n      shouldExtract,\n      extractType\n    },\n    binary: item.binary\n  });\n  \n  console.log(`${fileName}: ${mimeType} -> ${shouldExtract ? 'Extract ' + extractType : 'Texte direct'}`);\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1376,
+        -336
+      ],
+      "id": "9797dfc5-9414-469b-8f5b-4ebc2fdc0d48",
+      "name": "🔀 Détecter Type"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "need-extract",
+              "leftValue": "={{ $json.shouldExtract }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -1216,
+        -336
+      ],
+      "id": "aea05571-fdcc-4c57-bcbb-9a5e42502560",
+      "name": "Extraction?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "is-pdf",
+              "leftValue": "={{ $json.extractType }}",
+              "rightValue": "pdf",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "or"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -1008,
+        -368
+      ],
+      "id": "c9efeffe-3d5d-4473-a505-9268630e74a9",
+      "name": "PDF?"
+    },
+    {
+      "parameters": {
+        "operation": "pdf",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -208,
+        -384
+      ],
+      "id": "1627a104-b2bc-453c-a838-24b57cf53f40",
+      "name": "📄 PDF"
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -64,
+        -352
+      ],
+      "id": "4a77b29e-b417-47fa-ba0e-ebf7c125c670",
+      "name": "📝 DOCX"
+    },
+    {
+      "parameters": {
+        "operation": "xlsx",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        -336,
+        -320
+      ],
+      "id": "668b24c1-48ff-4824-abdf-608ebc540f4a",
+      "name": "📊 XLSX"
+    },
+    {
+      "parameters": {
+        "operation": "text",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.extractFromFile",
+      "typeVersion": 1,
+      "position": [
+        48,
+        -288
+      ],
+      "id": "699be9a1-b3a5-482a-93e9-d691c115727d",
+      "name": "🎭 PPTX"
+    },
+    {
+      "parameters": {
+        "numberInputs": 4
+      },
+      "type": "n8n-nodes-base.merge",
+      "typeVersion": 3,
+      "position": [
+        272,
+        -368
+      ],
+      "id": "0aae8727-8151-4a58-bfa2-e63d82b69e09",
+      "name": "Tout Fusionner"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nreturn items.map(item => {\n  let textContent = '';\n  \n  try {\n    // Essayer de lire depuis le binaire\n    if (item.binary?.data?.data) {\n      const buffer = Buffer.from(item.binary.data.data, 'base64');\n      textContent = buffer.toString('utf-8');\n    }\n    // Sinon essayer depuis binary.data directement\n    else if (item.binary?.data) {\n      textContent = item.binary.data.toString('utf-8');\n    }\n    \n    // Si toujours vide, mettre un message\n    if (!textContent || textContent.trim() === '') {\n      textContent = `[Fichier vide: ${item.json.name}]`;\n      console.log(`⚠️ Fichier vide détecté: ${item.json.name}`);\n    } else {\n      console.log(`✅ Texte lu: ${item.json.name} (${textContent.length} caractères)`);\n    }\n  } catch (error) {\n    console.error(`❌ Erreur lecture ${item.json.name}:`, error.message);\n    textContent = `[Erreur de lecture: ${error.message}]`;\n  }\n  \n  return {\n    json: {\n      ...item.json,\n      data: textContent\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1184,
+        -96
+      ],
+      "id": "87580541-7185-4441-b040-95afedb00a13",
+      "name": "📝 Lire Texte"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nreturn items.map(item => {\n  return {\n    json: {\n      pageContent: item.json.data || '',\n      metadata: {\n        fileId: item.json.id,\n        fileName: item.json.name,\n        mimeType: item.json.mimeType,\n        webViewLink: item.json.webViewLink,\n        modifiedTime: item.json.modifiedTime,\n        indexedAt: new Date().toISOString(),\n        source: 'google_drive'\n      }\n    }\n  };\n});"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        448,
+        -336
+      ],
+      "id": "4687700b-4b26-4796-ae9c-a5d5219812c2",
+      "name": "📝 Formater"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "RAG",
+          "mode": "list"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1,
+      "position": [
+        608,
+        -336
+      ],
+      "id": "4c6479eb-b192-4850-be57-03105ea88ac7",
+      "name": "💾 Qdrant Insert",
+      "credentials": {
+        "qdrantApi": {
+          "id": "REPLACE_ME",
+          "name": "QdrantAPI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "model": "text-embedding-3-small",
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1,
+      "position": [
+        608,
+        288
+      ],
+      "id": "4baa2f90-7561-4548-8a5d-ffe0285b3cc9",
+      "name": "Embeddings",
+      "credentials": {
+        "openAiApi": {
+          "id": "REPLACE_ME",
+          "name": "OpenAi API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chunkOverlap": 200,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+      "typeVersion": 1,
+      "position": [
+        816,
+        32
+      ],
+      "id": "7614e947-3665-4992-a15b-6b873c53e057",
+      "name": "Chunking"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1,
+      "position": [
+        672,
+        -144
+      ],
+      "id": "8cf408ce-eb8d-4372-ac48-5fafbe668c50",
+      "name": "Document Loader"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nreturn [{\n  json: {\n    success: true,\n    message: 'Indexation terminée',\n    documentsIndexed: items.length,\n    timestamp: new Date().toISOString()\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        928,
+        -336
+      ],
+      "id": "e03443a6-f978-4250-8197-c7e848d12ef6",
+      "name": "✅ Succès"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1",
+              "name": "success",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "a2",
+              "name": "message",
+              "value": "Aucun fichier à indexer",
+              "type": "string"
+            },
+            {
+              "id": "a3",
+              "name": "documentsIndexed",
+              "value": 0,
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -1760,
+        -96
+      ],
+      "id": "087323ab-ba6e-4bfb-896d-92512d599fbe",
+      "name": "⚠️ Aucun"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.query || 'default' }}",
+        "options": {
+          "systemMessage": "Tu es un assistant RAG expert. Utilise les documents fournis pour répondre de manière précise et détaillée. Cite toujours tes sources avec les noms de fichiers. Si l'information n'est pas dans les documents, dis-le clairement."
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.6,
+      "position": [
+        -2656,
+        -112
+      ],
+      "id": "9c1bd01f-9ef4-48ce-b99a-35c4e7a27cb1",
+      "name": "🤖 Agent RAG"
+    },
+    {
+      "parameters": {
+        "options": {
+          "maxTokens": 2000,
+          "temperature": 0.2
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1,
+      "position": [
+        -2800,
+        128
+      ],
+      "id": "c4be3553-d77c-4de8-afc7-12edee405370",
+      "name": "Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "REPLACE_ME",
+          "name": "OpenAi API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.query || 'default' }}",
+        "contextWindowLength": 10
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        -2656,
+        128
+      ],
+      "id": "a335f915-93d6-4201-83c6-4a2f24e8034e",
+      "name": "Memory"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Recherche dans les documents indexés",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "RAG",
+          "mode": "list"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.3,
+      "position": [
+        -2528,
+        208
+      ],
+      "id": "57cd04fe-26a1-49a3-a7e9-e782c09d339b",
+      "name": "Qdrant Vector Store",
+      "credentials": {
+        "qdrantApi": {
+          "id": "REPLACE_ME",
+          "name": "QdrantAPI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "is-xlsx",
+              "leftValue": "={{ $json.extractType }}",
+              "rightValue": "pptx",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "looseTypeValidation": true
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -480,
+        -272
+      ],
+      "id": "fb8c80ee-5135-4ec9-a879-ccb437ef0fd7",
+      "name": "PTTX"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "is-xlsx",
+              "leftValue": "={{ $json.extractType }}",
+              "rightValue": "xlsx",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "looseTypeValidation": true
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -672,
+        -304
+      ],
+      "id": "dac75725-c1f4-412a-825d-3da85959161d",
+      "name": "XLSX?"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "is-docx",
+              "leftValue": "={{ $json.extractType }}",
+              "rightValue": "docx",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "looseTypeValidation": true
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -848,
+        -336
+      ],
+      "id": "fcd7f71f-fb13-4fdb-8c04-c2f2b29e3d18",
+      "name": "DOCX?"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nitems.forEach(item => {\n  console.log('Fichier à télécharger:', {\n    name: item.json.name,\n    id: item.json.id,\n    mimeType: item.json.mimeType\n  });\n});\n\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -1760,
+        -336
+      ],
+      "id": "48de34cf-2706-45fb-972e-0a1fa95b5189",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -3552,
+        -288
+      ],
+      "id": "b0e054ec-7ecc-47fd-99e6-9e10fe555810",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "response1",
+              "name": "success",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "response2",
+              "name": "response",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            },
+            {
+              "id": "response3",
+              "name": "agent",
+              "value": "rag",
+              "type": "string"
+            },
+            {
+              "id": "response4",
+              "name": "executedAt",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "response5",
+              "name": "query",
+              "value": "={{ $('When Executed by Another Workflow') }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        -2224,
+        -112
+      ],
+      "id": "fe5fee87-681b-43db-9945-148125185708",
+      "name": "Prepare Response"
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "returnAll": true,
+        "filter": {
+          "driveId": {
+            "__rl": true,
+            "value": "My Drive",
+            "mode": "list"
+          },
+          "folderId": {
+            "__rl": true,
+            "value": "1_HdP9yGl4CeY1rJi7UOY6r1YQ5tXel3f",
+            "mode": "list",
+            "cachedResultName": "RAG",
+            "cachedResultUrl": "https://drive.google.com/drive/folders/1_HdP9yGl4CeY1rJi7UOY6r1YQ5tXel3f"
+          }
+        },
+        "options": {
+          "fields": [
+            "name",
+            "id",
+            "*"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        -2704,
+        -320
+      ],
+      "id": "4fe37511-4b13-4b9d-8cf3-acaca0910a3d",
+      "name": "📂 Lister Dossier Source",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "REPLACE_ME",
+          "name": "labsmates"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst forceReindex = $('Fusionner Entrées').first().json?.forceReindex || false;\n\nconst filesToCheck = items.map(item => ({\n  ...item,\n  json: {\n    ...item.json,\n    needsIndexing: false\n  }\n}));\n\nif (forceReindex) {\n  console.log('Force reindex activé - traitement de tous les fichiers');\n  return filesToCheck.map(item => ({\n    ...item,\n    json: { ...item.json, needsIndexing: true }\n  }));\n}\n\nconst oneDayAgo = new Date();\noneDayAgo.setDate(oneDayAgo.getDate() - 1);\n\nconst recentlyModified = filesToCheck.map(item => {\n  const modifiedTime = new Date(item.json.modifiedTime);\n  const isRecent = modifiedTime > oneDayAgo;\n  \n  if (isRecent) {\n    console.log(`Fichier potentiellement à indexer: ${item.json.name} (modifié le ${modifiedTime.toISOString()})`);\n  }\n  \n  return {\n    ...item,\n    json: {\n      ...item.json,\n      needsIndexing: isRecent\n    }\n  };\n});\n\nreturn recentlyModified;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2496,
+        -320
+      ],
+      "id": "03923bb0-490e-4132-93fe-c761c6b9e17e",
+      "name": "🔍 Marquer Fichiers Modifiés"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\n\nconst filtered = items.filter(item => {\n  const needsIndexing = item.json.needsIndexing;\n  \n  if (!needsIndexing) {\n    return false;\n  }\n  \n  const qdrantPoints = item.json.qdrantResult?.result?.points || [];\n  const existsInQdrant = qdrantPoints.length > 0;\n  \n  if (!existsInQdrant) {\n    console.log(`✅ Nouveau fichier à indexer: ${item.json.name}`);\n    return true;\n  }\n  \n  const qdrantModifiedTime = qdrantPoints[0]?.payload?.metadata?.modifiedTime;\n  const currentModifiedTime = item.json.modifiedTime;\n  \n  if (qdrantModifiedTime && currentModifiedTime > qdrantModifiedTime) {\n    console.log(`♻️ Fichier mis à jour à ré-indexer: ${item.json.name}`);\n    return true;\n  }\n  \n  console.log(`⏭️ Fichier déjà à jour dans Qdrant: ${item.json.name}`);\n  return false;\n});\n\nif (filtered.length === 0) {\n  console.log('Aucun fichier à indexer');\n  return [{ json: { noFiles: true, message: 'Aucun fichier à indexer' }}];\n}\n\nconsole.log(`${filtered.length} fichier(s) à indexer`);\nreturn filtered;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2112,
+        -320
+      ],
+      "id": "8a85649b-a78d-44a8-b73a-547f87e64e76",
+      "name": "🎯 Filtrer Finaux"
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst results = [];\n\nconst qdrantUrl = 'https://qdrant.connectika.fr';\nconst apiKey = '2f36208b5ec5f75da66834c37a679cb38dca7d20536613aded61ecdbeea9d3f0';\n\nfor (const item of items) {\n  try {\n    const body = {\n      filter: {\n        must: [\n          {\n            key: 'metadata.fileId',\n            match: {\n              value: item.json.id\n            }\n          }\n        ]\n      },\n      limit: 1\n    };\n    \n    const response = await fetch(`${qdrantUrl}/collections/RAG/points/scroll`, {\n      method: 'POST',\n      headers: {\n        'Content-Type': 'application/json',\n        ...(apiKey ? { 'api-key': apiKey } : {})\n      },\n      body: JSON.stringify(body)\n    });\n    \n    const qdrantResult = await response.json();\n    \n    results.push({\n      json: {\n        ...item.json,\n        qdrantResult: qdrantResult\n      }\n    });\n    \n    console.log(`Vérifié: ${item.json.name} - Existe: ${qdrantResult.result?.points?.length > 0}`);\n  } catch (error) {\n    console.error(`Erreur pour ${item.json.name}:`, error.message);\n    results.push({\n      json: {\n        ...item.json,\n        qdrantResult: { result: { points: [] } }\n      }\n    });\n  }\n}\n\nreturn results;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -2304,
+        -320
+      ],
+      "id": "dd7bcc61-3be0-4735-82c5-30d0bea22ec7",
+      "name": "🔎 Vérifier dans Qdrant"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 1
+          },
+          "conditions": [
+            {
+              "id": "cond-nofiles",
+              "leftValue": "={{ $json.noFiles }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "notExists"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {
+          "looseTypeValidation": true
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        -1952,
+        -320
+      ],
+      "id": "815694fe-24f2-4cea-9310-9b5dd40d0208",
+      "name": "Fichiers à traiter?"
+    }
+  ],
+  "connections": {
+    "⏰ Déclencheur Quotidien": {
+      "main": [
+        [
+          {
+            "node": "Paramètres Auto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Paramètres Auto": {
+      "main": [
+        [
+          {
+            "node": "Fusionner Entrées",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fusionner Entrées": {
+      "main": [
+        [
+          {
+            "node": "Mode?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mode?": {
+      "main": [
+        [
+          {
+            "node": "📂 Lister Dossier Source",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "🤖 Agent RAG",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "⬇️ Télécharger": {
+      "main": [
+        [
+          {
+            "node": "🔀 Détecter Type",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔀 Détecter Type": {
+      "main": [
+        [
+          {
+            "node": "Extraction?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraction?": {
+      "main": [
+        [
+          {
+            "node": "PDF?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "📝 Lire Texte",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PDF?": {
+      "main": [
+        [
+          {
+            "node": "📄 PDF",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "DOCX?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📄 PDF": {
+      "main": [
+        [
+          {
+            "node": "Tout Fusionner",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📝 DOCX": {
+      "main": [
+        [
+          {
+            "node": "Tout Fusionner",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "📊 XLSX": {
+      "main": [
+        [
+          {
+            "node": "Tout Fusionner",
+            "type": "main",
+            "index": 2
+          }
+        ]
+      ]
+    },
+    "🎭 PPTX": {
+      "main": [
+        [
+          {
+            "node": "Tout Fusionner",
+            "type": "main",
+            "index": 3
+          }
+        ]
+      ]
+    },
+    "Tout Fusionner": {
+      "main": [
+        [
+          {
+            "node": "📝 Formater",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "📝 Formater": {
+      "main": [
+        [
+          {
+            "node": "💾 Qdrant Insert",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "💾 Qdrant Insert": {
+      "main": [
+        [
+          {
+            "node": "✅ Succès",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings": {
+      "ai_embedding": [
+        [
+          {
+            "node": "💾 Qdrant Insert",
+            "type": "ai_embedding",
+            "index": 0
+          },
+          {
+            "node": "Qdrant Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chunking": {
+      "ai_textSplitter": [
+        [
+          {
+            "node": "Document Loader",
+            "type": "ai_textSplitter",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Document Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "💾 Qdrant Insert",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🤖 Agent RAG": {
+      "main": [
+        [
+          {
+            "node": "Prepare Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "🤖 Agent RAG",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "🤖 Agent RAG",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Qdrant Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "🤖 Agent RAG",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "PTTX": {
+      "main": [
+        [
+          {
+            "node": "🎭 PPTX",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "XLSX?": {
+      "main": [
+        [
+          {
+            "node": "📊 XLSX",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "PTTX",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "DOCX?": {
+      "main": [
+        [
+          {
+            "node": "📝 DOCX",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "XLSX?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "⬇️ Télécharger",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "Fusionner Entrées",
+            "type": "main",
+            "index": 1
+          }
+        ]
+      ]
+    },
+    "📂 Lister Dossier Source": {
+      "main": [
+        [
+          {
+            "node": "🔍 Marquer Fichiers Modifiés",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔍 Marquer Fichiers Modifiés": {
+      "main": [
+        [
+          {
+            "node": "🔎 Vérifier dans Qdrant",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🎯 Filtrer Finaux": {
+      "main": [
+        [
+          {
+            "node": "Fichiers à traiter?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "🔎 Vérifier dans Qdrant": {
+      "main": [
+        [
+          {
+            "node": "🎯 Filtrer Finaux",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Fichiers à traiter?": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "⚠️ Aucun",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "timezone": "Europe/Paris",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "executionOrder": "v1"
+  },
+  "staticData": {
+    "node:⏰ Déclencheur Quotidien": {
+      "recurrenceRules": []
+    }
+  },
+  "meta": null,
+  "pinData": null,
+  "activeVersionId": "d723b6d7-1d32-4e9f-94e7-26d62aba2e6f",
+  "versionCounter": 15,
+  "triggerCount": 1,
+  "shared": [
+    {
+      "updatedAt": "2026-02-02T17:19:59.357Z",
+      "createdAt": "2026-02-02T17:19:59.357Z",
+      "role": "workflow:owner",
+      "workflowId": "5VtYqzJz1SP2IB2g",
+      "projectId": "oYt1GPNUBpK2eWHS",
+      "project": {
+        "updatedAt": "2026-02-01T17:02:13.492Z",
+        "createdAt": "2026-02-01T15:39:19.158Z",
+        "id": "oYt1GPNUBpK2eWHS",
+        "name": "Wilfrid Peyrius <willbys@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c",
+        "projectRelations": [
+          {
+            "updatedAt": "2026-02-01T15:39:19.158Z",
+            "createdAt": "2026-02-01T15:39:19.158Z",
+            "userId": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c",
+            "projectId": "oYt1GPNUBpK2eWHS",
+            "user": {
+              "updatedAt": "2026-02-16T19:51:22.561Z",
+              "createdAt": "2026-02-01T15:39:18.127Z",
+              "id": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c",
+              "email": "willbys@gmail.com",
+              "firstName": "Wilfrid",
+              "lastName": "Peyrius",
+              "personalizationAnswers": null,
+              "settings": {
+                "userActivated": true,
+                "easyAIWorkflowOnboarded": true,
+                "firstSuccessfulWorkflowId": "ldbOBqQIXC1SIM3O",
+                "userActivatedAt": 1769981079850
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2026-02-16",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-02-02T17:20:26.836Z",
+    "createdAt": "2026-02-01T20:34:52.335Z",
+    "versionId": "d723b6d7-1d32-4e9f-94e7-26d62aba2e6f",
+    "workflowId": "5VtYqzJz1SP2IB2g",
+    "nodes": [
+      {
+        "parameters": {
+          "content": "## 🚀 Workflow RAG Automatique Multi-Format\n\n**Formats supportés:**\n- 📄 PDF\n- 📝 Word (.docx, .doc)\n- 📊 Excel (.xlsx, .xls)\n- 🎭 PowerPoint (.pptx, .ppt)\n- 📃 Texte (.txt, .md)\n- 📑 Google Docs, Sheets, Slides\n\n**Déclencheurs:**\n1. Automatique: Tous les jours à 2h00\n2. Manuel: Via chat",
+          "height": 800,
+          "width": 944
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -3888,
+          -656
+        ],
+        "id": "e15d3bce-e9d1-42d1-aca9-396f04cad6e3",
+        "name": "📖 Instructions"
+      },
+      {
+        "parameters": {
+          "rule": {
+            "interval": [
+              {
+                "field": "cronExpression",
+                "expression": "0 2 * * *"
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.scheduleTrigger",
+        "typeVersion": 1.2,
+        "position": [
+          -3440,
+          -432
+        ],
+        "id": "dcb896c4-5598-40fd-b64b-c7bf81513e3b",
+        "name": "⏰ Déclencheur Quotidien"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "set1",
+                "name": "reindex",
+                "value": true,
+                "type": "boolean"
+              },
+              {
+                "id": "set2",
+                "name": "forceReindex",
+                "value": false,
+                "type": "boolean"
+              },
+              {
+                "id": "set3",
+                "name": "source",
+                "value": "scheduled",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          -3312,
+          -432
+        ],
+        "id": "36d2237a-fcc6-40b3-9c90-ebd2bca88768",
+        "name": "Paramètres Auto"
+      },
+      {
+        "parameters": {},
+        "type": "n8n-nodes-base.merge",
+        "typeVersion": 3,
+        "position": [
+          -3120,
+          -304
+        ],
+        "id": "fc0b577e-d70b-4ae6-a2be-40079ff0125f",
+        "name": "Fusionner Entrées"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 1
+            },
+            "conditions": [
+              {
+                "id": "cond1",
+                "leftValue": "={{ $json.reindex || $json.body?.reindex || false }}",
+                "rightValue": true,
+                "operator": {
+                  "type": "boolean",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          -2912,
+          -304
+        ],
+        "id": "a2d269ae-1c82-4c63-95c6-06ac9d2ca5f6",
+        "name": "Mode?"
+      },
+      {
+        "parameters": {
+          "operation": "download",
+          "fileId": {
+            "__rl": true,
+            "value": "={{ $json.id }}",
+            "mode": "id"
+          },
+          "options": {
+            "googleFileConversion": {
+              "conversion": {
+                "docsToFormat": "text/plain"
+              }
+            }
+          }
+        },
+        "type": "n8n-nodes-base.googleDrive",
+        "typeVersion": 3,
+        "position": [
+          -1536,
+          -336
+        ],
+        "id": "af2e5e3c-7bae-4657-8ccc-60dc59143ed1",
+        "name": "⬇️ Télécharger",
+        "credentials": {
+          "googleDriveOAuth2Api": {
+            "id": "cee801cb-c9d9-43c3-976e-0c0fd04fff46",
+            "name": "labsmates"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "const items = $input.all();\nconst results = [];\n\nfor (const item of items) {\n  const mimeType = item.json.mimeType || '';\n  const fileName = item.json.name || '';\n  \n  let shouldExtract = false;\n  let extractType = null;\n  \n  // PDF\n  if (mimeType === 'application/pdf') {\n    shouldExtract = true;\n    extractType = 'pdf';\n  }\n  // Word\n  else if (mimeType.includes('wordprocessingml') || mimeType === 'application/msword' || mimeType === 'application/vnd.google-apps.document') {\n    shouldExtract = true;\n    extractType = 'docx';\n  }\n  // Excel et CSV\n  else if (mimeType.includes('spreadsheetml') || mimeType.includes('ms-excel') || mimeType === 'application/vnd.google-apps.spreadsheet') {\n    shouldExtract = true;\n    extractType = 'xlsx';\n  }\n  // PowerPoint\n  else if (mimeType.includes('presentationml') || mimeType.includes('ms-powerpoint') || mimeType === 'application/vnd.google-apps.presentation') {\n    shouldExtract = true;\n    extractType = 'pptx';\n  }\n  // Texte brut, CSV, Markdown (pas besoin d'extraction)\n  else if (mimeType.includes('text/') || mimeType === 'text/csv' || mimeType === 'text/plain' || mimeType === 'text/markdown') {\n    shouldExtract = false;\n    extractType = 'text';\n  }\n  // Par défaut, on considère comme texte\n  else {\n    console.warn(`Type MIME inconnu pour ${fileName}: ${mimeType} - traité comme texte`);\n    shouldExtract = false;\n    extractType = 'text';\n  }\n  \n  results.push({\n    json: {\n      ...item.json,\n      shouldExtract,\n      extractType\n    },\n    binary: item.binary\n  });\n  \n  console.log(`${fileName}: ${mimeType} -> ${shouldExtract ? 'Extract ' + extractType : 'Texte direct'}`);\n}\n\nreturn results;"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -1376,
+          -336
+        ],
+        "id": "9797dfc5-9414-469b-8f5b-4ebc2fdc0d48",
+        "name": "🔀 Détecter Type"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 1
+            },
+            "conditions": [
+              {
+                "id": "need-extract",
+                "leftValue": "={{ $json.shouldExtract }}",
+                "rightValue": true,
+                "operator": {
+                  "type": "boolean",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          -1216,
+          -336
+        ],
+        "id": "aea05571-fdcc-4c57-bcbb-9a5e42502560",
+        "name": "Extraction?"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "strict",
+              "version": 1
+            },
+            "conditions": [
+              {
+                "id": "is-pdf",
+                "leftValue": "={{ $json.extractType }}",
+                "rightValue": "pdf",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "or"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          -1008,
+          -368
+        ],
+        "id": "c9efeffe-3d5d-4473-a505-9268630e74a9",
+        "name": "PDF?"
+      },
+      {
+        "parameters": {
+          "operation": "pdf",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.extractFromFile",
+        "typeVersion": 1,
+        "position": [
+          -208,
+          -384
+        ],
+        "id": "1627a104-b2bc-453c-a838-24b57cf53f40",
+        "name": "📄 PDF"
+      },
+      {
+        "parameters": {
+          "operation": "text",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.extractFromFile",
+        "typeVersion": 1,
+        "position": [
+          -64,
+          -352
+        ],
+        "id": "4a77b29e-b417-47fa-ba0e-ebf7c125c670",
+        "name": "📝 DOCX"
+      },
+      {
+        "parameters": {
+          "operation": "xlsx",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.extractFromFile",
+        "typeVersion": 1,
+        "position": [
+          -336,
+          -320
+        ],
+        "id": "668b24c1-48ff-4824-abdf-608ebc540f4a",
+        "name": "📊 XLSX"
+      },
+      {
+        "parameters": {
+          "operation": "text",
+          "options": {}
+        },
+        "type": "n8n-nodes-base.extractFromFile",
+        "typeVersion": 1,
+        "position": [
+          48,
+          -288
+        ],
+        "id": "699be9a1-b3a5-482a-93e9-d691c115727d",
+        "name": "🎭 PPTX"
+      },
+      {
+        "parameters": {
+          "numberInputs": 4
+        },
+        "type": "n8n-nodes-base.merge",
+        "typeVersion": 3,
+        "position": [
+          272,
+          -368
+        ],
+        "id": "0aae8727-8151-4a58-bfa2-e63d82b69e09",
+        "name": "Tout Fusionner"
+      },
+      {
+        "parameters": {
+          "jsCode": "const items = $input.all();\n\nreturn items.map(item => {\n  let textContent = '';\n  \n  try {\n    // Essayer de lire depuis le binaire\n    if (item.binary?.data?.data) {\n      const buffer = Buffer.from(item.binary.data.data, 'base64');\n      textContent = buffer.toString('utf-8');\n    }\n    // Sinon essayer depuis binary.data directement\n    else if (item.binary?.data) {\n      textContent = item.binary.data.toString('utf-8');\n    }\n    \n    // Si toujours vide, mettre un message\n    if (!textContent || textContent.trim() === '') {\n      textContent = `[Fichier vide: ${item.json.name}]`;\n      console.log(`⚠️ Fichier vide détecté: ${item.json.name}`);\n    } else {\n      console.log(`✅ Texte lu: ${item.json.name} (${textContent.length} caractères)`);\n    }\n  } catch (error) {\n    console.error(`❌ Erreur lecture ${item.json.name}:`, error.message);\n    textContent = `[Erreur de lecture: ${error.message}]`;\n  }\n  \n  return {\n    json: {\n      ...item.json,\n      data: textContent\n    }\n  };\n});"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -1184,
+          -96
+        ],
+        "id": "87580541-7185-4441-b040-95afedb00a13",
+        "name": "📝 Lire Texte"
+      },
+      {
+        "parameters": {
+          "jsCode": "const items = $input.all();\n\nreturn items.map(item => {\n  return {\n    json: {\n      pageContent: item.json.data || '',\n      metadata: {\n        fileId: item.json.id,\n        fileName: item.json.name,\n        mimeType: item.json.mimeType,\n        webViewLink: item.json.webViewLink,\n        modifiedTime: item.json.modifiedTime,\n        indexedAt: new Date().toISOString(),\n        source: 'google_drive'\n      }\n    }\n  };\n});"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          448,
+          -336
+        ],
+        "id": "4687700b-4b26-4796-ae9c-a5d5219812c2",
+        "name": "📝 Formater"
+      },
+      {
+        "parameters": {
+          "mode": "insert",
+          "qdrantCollection": {
+            "__rl": true,
+            "value": "RAG",
+            "mode": "list"
+          },
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+        "typeVersion": 1,
+        "position": [
+          608,
+          -336
+        ],
+        "id": "4c6479eb-b192-4850-be57-03105ea88ac7",
+        "name": "💾 Qdrant Insert",
+        "credentials": {
+          "qdrantApi": {
+            "id": "4bddb866-6b1d-493b-8225-e950640f784b",
+            "name": "QdrantAPI"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "model": "text-embedding-3-small",
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+        "typeVersion": 1,
+        "position": [
+          608,
+          288
+        ],
+        "id": "4baa2f90-7561-4548-8a5d-ffe0285b3cc9",
+        "name": "Embeddings",
+        "credentials": {
+          "openAiApi": {
+            "id": "1dd133dd-1b8a-4f5e-9fb5-980f00e2efa1",
+            "name": "OpenAi API"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "chunkOverlap": 200,
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.textSplitterRecursiveCharacterTextSplitter",
+        "typeVersion": 1,
+        "position": [
+          816,
+          32
+        ],
+        "id": "7614e947-3665-4992-a15b-6b873c53e057",
+        "name": "Chunking"
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+        "typeVersion": 1,
+        "position": [
+          672,
+          -144
+        ],
+        "id": "8cf408ce-eb8d-4372-ac48-5fafbe668c50",
+        "name": "Document Loader"
+      },
+      {
+        "parameters": {
+          "jsCode": "const items = $input.all();\nreturn [{\n  json: {\n    success: true,\n    message: 'Indexation terminée',\n    documentsIndexed: items.length,\n    timestamp: new Date().toISOString()\n  }\n}];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          928,
+          -336
+        ],
+        "id": "e03443a6-f978-4250-8197-c7e848d12ef6",
+        "name": "✅ Succès"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "a1",
+                "name": "success",
+                "value": true,
+                "type": "boolean"
+              },
+              {
+                "id": "a2",
+                "name": "message",
+                "value": "Aucun fichier à indexer",
+                "type": "string"
+              },
+              {
+                "id": "a3",
+                "name": "documentsIndexed",
+                "value": 0,
+                "type": "number"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          -1760,
+          -96
+        ],
+        "id": "087323ab-ba6e-4bfb-896d-92512d599fbe",
+        "name": "⚠️ Aucun"
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ $json.query || 'default' }}",
+          "options": {
+            "systemMessage": "Tu es un assistant RAG expert. Utilise les documents fournis pour répondre de manière précise et détaillée. Cite toujours tes sources avec les noms de fichiers. Si l'information n'est pas dans les documents, dis-le clairement."
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 1.6,
+        "position": [
+          -2656,
+          -112
+        ],
+        "id": "9c1bd01f-9ef4-48ce-b99a-35c4e7a27cb1",
+        "name": "🤖 Agent RAG"
+      },
+      {
+        "parameters": {
+          "options": {
+            "maxTokens": 2000,
+            "temperature": 0.2
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1,
+        "position": [
+          -2800,
+          128
+        ],
+        "id": "c4be3553-d77c-4de8-afc7-12edee405370",
+        "name": "Chat Model",
+        "credentials": {
+          "openAiApi": {
+            "id": "1dd133dd-1b8a-4f5e-9fb5-980f00e2efa1",
+            "name": "OpenAi API"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "sessionIdType": "customKey",
+          "sessionKey": "={{ $json.query || 'default' }}",
+          "contextWindowLength": 10
+        },
+        "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+        "typeVersion": 1.3,
+        "position": [
+          -2656,
+          128
+        ],
+        "id": "a335f915-93d6-4201-83c6-4a2f24e8034e",
+        "name": "Memory"
+      },
+      {
+        "parameters": {
+          "mode": "retrieve-as-tool",
+          "toolDescription": "Recherche dans les documents indexés",
+          "qdrantCollection": {
+            "__rl": true,
+            "value": "RAG",
+            "mode": "list"
+          },
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+        "typeVersion": 1.3,
+        "position": [
+          -2528,
+          208
+        ],
+        "id": "57cd04fe-26a1-49a3-a7e9-e782c09d339b",
+        "name": "Qdrant Vector Store",
+        "credentials": {
+          "qdrantApi": {
+            "id": "4bddb866-6b1d-493b-8225-e950640f784b",
+            "name": "QdrantAPI"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "loose",
+              "version": 1
+            },
+            "conditions": [
+              {
+                "id": "is-xlsx",
+                "leftValue": "={{ $json.extractType }}",
+                "rightValue": "pptx",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {
+            "looseTypeValidation": true
+          }
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          -480,
+          -272
+        ],
+        "id": "fb8c80ee-5135-4ec9-a879-ccb437ef0fd7",
+        "name": "PTTX"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "loose",
+              "version": 1
+            },
+            "conditions": [
+              {
+                "id": "is-xlsx",
+                "leftValue": "={{ $json.extractType }}",
+                "rightValue": "xlsx",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {
+            "looseTypeValidation": true
+          }
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          -672,
+          -304
+        ],
+        "id": "dac75725-c1f4-412a-825d-3da85959161d",
+        "name": "XLSX?"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "loose",
+              "version": 1
+            },
+            "conditions": [
+              {
+                "id": "is-docx",
+                "leftValue": "={{ $json.extractType }}",
+                "rightValue": "docx",
+                "operator": {
+                  "type": "string",
+                  "operation": "equals"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {
+            "looseTypeValidation": true
+          }
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          -848,
+          -336
+        ],
+        "id": "fcd7f71f-fb13-4fdb-8c04-c2f2b29e3d18",
+        "name": "DOCX?"
+      },
+      {
+        "parameters": {
+          "jsCode": "const items = $input.all();\n\nitems.forEach(item => {\n  console.log('Fichier à télécharger:', {\n    name: item.json.name,\n    id: item.json.id,\n    mimeType: item.json.mimeType\n  });\n});\n\nreturn items;"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -1760,
+          -336
+        ],
+        "id": "48de34cf-2706-45fb-972e-0a1fa95b5189",
+        "name": "Code in JavaScript"
+      },
+      {
+        "parameters": {
+          "inputSource": "passthrough"
+        },
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.1,
+        "position": [
+          -3552,
+          -288
+        ],
+        "id": "b0e054ec-7ecc-47fd-99e6-9e10fe555810",
+        "name": "When Executed by Another Workflow"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "response1",
+                "name": "success",
+                "value": true,
+                "type": "boolean"
+              },
+              {
+                "id": "response2",
+                "name": "response",
+                "value": "={{ $json.output }}",
+                "type": "string"
+              },
+              {
+                "id": "response3",
+                "name": "agent",
+                "value": "rag",
+                "type": "string"
+              },
+              {
+                "id": "response4",
+                "name": "executedAt",
+                "value": "={{ $now.toISO() }}",
+                "type": "string"
+              },
+              {
+                "id": "response5",
+                "name": "query",
+                "value": "={{ $('When Executed by Another Workflow') }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          -2224,
+          -112
+        ],
+        "id": "fe5fee87-681b-43db-9945-148125185708",
+        "name": "Prepare Response"
+      },
+      {
+        "parameters": {
+          "resource": "fileFolder",
+          "returnAll": true,
+          "filter": {
+            "driveId": {
+              "__rl": true,
+              "value": "My Drive",
+              "mode": "list"
+            },
+            "folderId": {
+              "__rl": true,
+              "value": "1_HdP9yGl4CeY1rJi7UOY6r1YQ5tXel3f",
+              "mode": "list",
+              "cachedResultName": "RAG",
+              "cachedResultUrl": "https://drive.google.com/drive/folders/1_HdP9yGl4CeY1rJi7UOY6r1YQ5tXel3f"
+            }
+          },
+          "options": {
+            "fields": [
+              "name",
+              "id",
+              "*"
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.googleDrive",
+        "typeVersion": 3,
+        "position": [
+          -2704,
+          -320
+        ],
+        "id": "4fe37511-4b13-4b9d-8cf3-acaca0910a3d",
+        "name": "📂 Lister Dossier Source",
+        "credentials": {
+          "googleDriveOAuth2Api": {
+            "id": "cee801cb-c9d9-43c3-976e-0c0fd04fff46",
+            "name": "labsmates"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "const items = $input.all();\nconst forceReindex = $('Fusionner Entrées').first().json?.forceReindex || false;\n\nconst filesToCheck = items.map(item => ({\n  ...item,\n  json: {\n    ...item.json,\n    needsIndexing: false\n  }\n}));\n\nif (forceReindex) {\n  console.log('Force reindex activé - traitement de tous les fichiers');\n  return filesToCheck.map(item => ({\n    ...item,\n    json: { ...item.json, needsIndexing: true }\n  }));\n}\n\nconst oneDayAgo = new Date();\noneDayAgo.setDate(oneDayAgo.getDate() - 1);\n\nconst recentlyModified = filesToCheck.map(item => {\n  const modifiedTime = new Date(item.json.modifiedTime);\n  const isRecent = modifiedTime > oneDayAgo;\n  \n  if (isRecent) {\n    console.log(`Fichier potentiellement à indexer: ${item.json.name} (modifié le ${modifiedTime.toISOString()})`);\n  }\n  \n  return {\n    ...item,\n    json: {\n      ...item.json,\n      needsIndexing: isRecent\n    }\n  };\n});\n\nreturn recentlyModified;"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -2496,
+          -320
+        ],
+        "id": "03923bb0-490e-4132-93fe-c761c6b9e17e",
+        "name": "🔍 Marquer Fichiers Modifiés"
+      },
+      {
+        "parameters": {
+          "jsCode": "const items = $input.all();\n\nconst filtered = items.filter(item => {\n  const needsIndexing = item.json.needsIndexing;\n  \n  if (!needsIndexing) {\n    return false;\n  }\n  \n  const qdrantPoints = item.json.qdrantResult?.result?.points || [];\n  const existsInQdrant = qdrantPoints.length > 0;\n  \n  if (!existsInQdrant) {\n    console.log(`✅ Nouveau fichier à indexer: ${item.json.name}`);\n    return true;\n  }\n  \n  const qdrantModifiedTime = qdrantPoints[0]?.payload?.metadata?.modifiedTime;\n  const currentModifiedTime = item.json.modifiedTime;\n  \n  if (qdrantModifiedTime && currentModifiedTime > qdrantModifiedTime) {\n    console.log(`♻️ Fichier mis à jour à ré-indexer: ${item.json.name}`);\n    return true;\n  }\n  \n  console.log(`⏭️ Fichier déjà à jour dans Qdrant: ${item.json.name}`);\n  return false;\n});\n\nif (filtered.length === 0) {\n  console.log('Aucun fichier à indexer');\n  return [{ json: { noFiles: true, message: 'Aucun fichier à indexer' }}];\n}\n\nconsole.log(`${filtered.length} fichier(s) à indexer`);\nreturn filtered;"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -2112,
+          -320
+        ],
+        "id": "8a85649b-a78d-44a8-b73a-547f87e64e76",
+        "name": "🎯 Filtrer Finaux"
+      },
+      {
+        "parameters": {
+          "jsCode": "const items = $input.all();\nconst results = [];\n\nconst qdrantUrl = 'https://qdrant.connectika.fr';\nconst apiKey = '2f36208b5ec5f75da66834c37a679cb38dca7d20536613aded61ecdbeea9d3f0';\n\nfor (const item of items) {\n  try {\n    const body = {\n      filter: {\n        must: [\n          {\n            key: 'metadata.fileId',\n            match: {\n              value: item.json.id\n            }\n          }\n        ]\n      },\n      limit: 1\n    };\n    \n    const response = await fetch(`${qdrantUrl}/collections/RAG/points/scroll`, {\n      method: 'POST',\n      headers: {\n        'Content-Type': 'application/json',\n        ...(apiKey ? { 'api-key': apiKey } : {})\n      },\n      body: JSON.stringify(body)\n    });\n    \n    const qdrantResult = await response.json();\n    \n    results.push({\n      json: {\n        ...item.json,\n        qdrantResult: qdrantResult\n      }\n    });\n    \n    console.log(`Vérifié: ${item.json.name} - Existe: ${qdrantResult.result?.points?.length > 0}`);\n  } catch (error) {\n    console.error(`Erreur pour ${item.json.name}:`, error.message);\n    results.push({\n      json: {\n        ...item.json,\n        qdrantResult: { result: { points: [] } }\n      }\n    });\n  }\n}\n\nreturn results;"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          -2304,
+          -320
+        ],
+        "id": "dd7bcc61-3be0-4735-82c5-30d0bea22ec7",
+        "name": "🔎 Vérifier dans Qdrant"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "caseSensitive": true,
+              "leftValue": "",
+              "typeValidation": "loose",
+              "version": 1
+            },
+            "conditions": [
+              {
+                "id": "cond-nofiles",
+                "leftValue": "={{ $json.noFiles }}",
+                "rightValue": "",
+                "operator": {
+                  "type": "boolean",
+                  "operation": "notExists"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {
+            "looseTypeValidation": true
+          }
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2,
+        "position": [
+          -1952,
+          -320
+        ],
+        "id": "815694fe-24f2-4cea-9310-9b5dd40d0208",
+        "name": "Fichiers à traiter?"
+      }
+    ],
+    "connections": {
+      "⏰ Déclencheur Quotidien": {
+        "main": [
+          [
+            {
+              "node": "Paramètres Auto",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Paramètres Auto": {
+        "main": [
+          [
+            {
+              "node": "Fusionner Entrées",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fusionner Entrées": {
+        "main": [
+          [
+            {
+              "node": "Mode?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Mode?": {
+        "main": [
+          [
+            {
+              "node": "📂 Lister Dossier Source",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "🤖 Agent RAG",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "⬇️ Télécharger": {
+        "main": [
+          [
+            {
+              "node": "🔀 Détecter Type",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "🔀 Détecter Type": {
+        "main": [
+          [
+            {
+              "node": "Extraction?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Extraction?": {
+        "main": [
+          [
+            {
+              "node": "PDF?",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "📝 Lire Texte",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "PDF?": {
+        "main": [
+          [
+            {
+              "node": "📄 PDF",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "DOCX?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "📄 PDF": {
+        "main": [
+          [
+            {
+              "node": "Tout Fusionner",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "📝 DOCX": {
+        "main": [
+          [
+            {
+              "node": "Tout Fusionner",
+              "type": "main",
+              "index": 1
+            }
+          ]
+        ]
+      },
+      "📊 XLSX": {
+        "main": [
+          [
+            {
+              "node": "Tout Fusionner",
+              "type": "main",
+              "index": 2
+            }
+          ]
+        ]
+      },
+      "🎭 PPTX": {
+        "main": [
+          [
+            {
+              "node": "Tout Fusionner",
+              "type": "main",
+              "index": 3
+            }
+          ]
+        ]
+      },
+      "Tout Fusionner": {
+        "main": [
+          [
+            {
+              "node": "📝 Formater",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "📝 Formater": {
+        "main": [
+          [
+            {
+              "node": "💾 Qdrant Insert",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "💾 Qdrant Insert": {
+        "main": [
+          [
+            {
+              "node": "✅ Succès",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Embeddings": {
+        "ai_embedding": [
+          [
+            {
+              "node": "💾 Qdrant Insert",
+              "type": "ai_embedding",
+              "index": 0
+            },
+            {
+              "node": "Qdrant Vector Store",
+              "type": "ai_embedding",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Chunking": {
+        "ai_textSplitter": [
+          [
+            {
+              "node": "Document Loader",
+              "type": "ai_textSplitter",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Document Loader": {
+        "ai_document": [
+          [
+            {
+              "node": "💾 Qdrant Insert",
+              "type": "ai_document",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "🤖 Agent RAG": {
+        "main": [
+          [
+            {
+              "node": "Prepare Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "🤖 Agent RAG",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Memory": {
+        "ai_memory": [
+          [
+            {
+              "node": "🤖 Agent RAG",
+              "type": "ai_memory",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Qdrant Vector Store": {
+        "ai_tool": [
+          [
+            {
+              "node": "🤖 Agent RAG",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "PTTX": {
+        "main": [
+          [
+            {
+              "node": "🎭 PPTX",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "XLSX?": {
+        "main": [
+          [
+            {
+              "node": "📊 XLSX",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "PTTX",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "DOCX?": {
+        "main": [
+          [
+            {
+              "node": "📝 DOCX",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "XLSX?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Code in JavaScript": {
+        "main": [
+          [
+            {
+              "node": "⬇️ Télécharger",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "When Executed by Another Workflow": {
+        "main": [
+          [
+            {
+              "node": "Fusionner Entrées",
+              "type": "main",
+              "index": 1
+            }
+          ]
+        ]
+      },
+      "📂 Lister Dossier Source": {
+        "main": [
+          [
+            {
+              "node": "🔍 Marquer Fichiers Modifiés",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "🔍 Marquer Fichiers Modifiés": {
+        "main": [
+          [
+            {
+              "node": "🔎 Vérifier dans Qdrant",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "🎯 Filtrer Finaux": {
+        "main": [
+          [
+            {
+              "node": "Fichiers à traiter?",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "🔎 Vérifier dans Qdrant": {
+        "main": [
+          [
+            {
+              "node": "🎯 Filtrer Finaux",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Fichiers à traiter?": {
+        "main": [
+          [
+            {
+              "node": "Code in JavaScript",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "⚠️ Aucun",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Wilfrid Peyrius",
+    "name": "DayOne",
+    "description": "",
+    "autosaved": false,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-02-02T17:20:26.833Z",
+        "id": 15,
+        "workflowId": "5VtYqzJz1SP2IB2g",
+        "versionId": "d723b6d7-1d32-4e9f-94e7-26d62aba2e6f",
+        "event": "activated",
+        "userId": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c"
+      },
+      {
+        "createdAt": "2026-02-03T16:32:00.820Z",
+        "id": 56,
+        "workflowId": "5VtYqzJz1SP2IB2g",
+        "versionId": "d723b6d7-1d32-4e9f-94e7-26d62aba2e6f",
+        "event": "activated",
+        "userId": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c"
+      }
+    ]
+  }
+}
