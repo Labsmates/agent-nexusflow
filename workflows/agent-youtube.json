@@ -1,0 +1,753 @@
+{
+  "updatedAt": "2026-02-03T12:54:40.415Z",
+  "createdAt": "2026-02-01T20:33:28.068Z",
+  "id": "ILdwgmDHZOzLOpKK",
+  "name": "🎬📺▶️ Youtube Agent",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -64,
+        32
+      ],
+      "id": "75b43a87-2624-4391-ae6c-138b07980fef",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "response1",
+              "name": "success",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "response2",
+              "name": "response",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            },
+            {
+              "id": "response3",
+              "name": "agent",
+              "value": "youtube",
+              "type": "string"
+            },
+            {
+              "id": "response4",
+              "name": "executedAt",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "response5",
+              "name": "query",
+              "value": "={{ $('When Executed by Another Workflow').item.json.query }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        608,
+        32
+      ],
+      "id": "4128c99a-d424-41d3-8246-c6a887e67c83",
+      "name": "Prepare Response"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1NHieXuU5-kaiCsIKw0Sza7eqYR-EULwvzHD5P0hmvUI",
+          "mode": "list",
+          "cachedResultName": "Video Ideas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1NHieXuU5-kaiCsIKw0Sza7eqYR-EULwvzHD5P0hmvUI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Ideas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1NHieXuU5-kaiCsIKw0Sza7eqYR-EULwvzHD5P0hmvUI/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.6,
+      "position": [
+        784,
+        224
+      ],
+      "id": "8f0e94bc-367d-4407-9f42-cd40429b4fa9",
+      "name": "Get Ideas",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "REPLACE_ME",
+          "name": "labsmates"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1NHieXuU5-kaiCsIKw0Sza7eqYR-EULwvzHD5P0hmvUI",
+          "mode": "list",
+          "cachedResultName": "Video Ideas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1NHieXuU5-kaiCsIKw0Sza7eqYR-EULwvzHD5P0hmvUI/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Ideas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1NHieXuU5-kaiCsIKw0Sza7eqYR-EULwvzHD5P0hmvUI/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Idea": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Idea', ``, 'string') }}",
+            "Description": "Idea title"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Idea",
+              "displayName": "Idea",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "Description",
+              "displayName": "Description",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.6,
+      "position": [
+        912,
+        224
+      ],
+      "id": "196cee23-c694-4d36-b24e-331dece64ba6",
+      "name": "Add Idea",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "REPLACE_ME",
+          "name": "labsmates"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "video",
+        "filters": {
+          "q": "={{ $json.query }}",
+          "regionCode": "FR",
+          "videoType": "any"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.youTubeTool",
+      "typeVersion": 1,
+      "position": [
+        416,
+        224
+      ],
+      "id": "f6e6261d-1afe-429d-9d84-8d1961b19a41",
+      "name": "Get many videos in YouTube",
+      "credentials": {
+        "youTubeOAuth2Api": {
+          "id": "REPLACE_ME",
+          "name": "YouTube account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "video",
+        "operation": "get",
+        "videoId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Video_ID', ``, 'string') }}",
+        "part": [
+          "*",
+          "localizations",
+          "snippet"
+        ],
+        "options": {}
+      },
+      "type": "n8n-nodes-base.youTubeTool",
+      "typeVersion": 1,
+      "position": [
+        592,
+        224
+      ],
+      "id": "f2745535-25a9-4445-81bd-c2dcce2150c7",
+      "name": "Get a video in YouTube",
+      "notesInFlow": false,
+      "credentials": {
+        "youTubeOAuth2Api": {
+          "id": "REPLACE_ME",
+          "name": "YouTube account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.query }}",
+        "options": {
+          "systemMessage": "=Tu es l'assistant YouTube de Wilfrid, spécialisé dans la recherche de vidéos performantes et la gestion d'idées de contenu.\n\nDEMANDE UTILISATEUR : {{ $json.query }}\n\n## TES OUTILS DISPONIBLES\n\n1. **Get many videos in YouTube** et **Get a video in YouTube**: Rechercher des vidéos YouTube sur un sujet spécifique\n2. **Get Ideas** : Consulter les idées de vidéos sauvegardées dans le Google Sheet\n3. **Add Idea** : Ajouter une nouvelle idée dans le Google Sheet (colonnes: Idea, Description)\n\n## TES MISSIONS\n\n**Quand l'utilisateur demande des recherches YouTube :**\n- Utilise \"Get many videos in YouTube\" pour trouver des vidéos\n_ Complete avec \"Get a video in YouTube\"\n- Analyse les titres, vues, et engagement\n- Fournis des insights sur les tendances\n- Suggère des angles de contenu\n\n**Quand l'utilisateur veut gérer des idées :**\n- Utilise \"Get Ideas\" pour lister les idées existantes\n- Utilise \"Add Idea\" pour sauvegarder de nouvelles idées avec titre et description claire\n\n## RÈGLES IMPORTANTES\n\n- Réponds TOUJOURS en français\n- Transmets la demande de l'utilisateur EXACTEMENT comme formulée aux outils\n- Sois concis et actionnable dans tes réponses\n- Confirme chaque action effectuée\n- Si une recherche ne donne rien, propose des alternatives\n\n## CONTEXTE\n\nDate et heure : {{ $now }}\nUtilisateur : Wilfrid Peyrius\n\nTraite maintenant la demande de l'utilisateur avec les outils appropriés.\n\n** S l'utilisateur te demande de trouver des videos qui parle d'un sujet bien particulier, alors trouves-les**\n\n**Priorise les videos en **FRANCAIS** \n**Renvoie Toujours le nombre exacte des videos demandées**\n**Si l'utilsateur ne donne pas le nombre, alors renvoie **5 videos** les plus pertinentes**"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        208,
+        32
+      ],
+      "id": "59e0b273-18d0-4e33-a5f9-56fa377bb5d8",
+      "name": "AI Agent1"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        80,
+        240
+      ],
+      "id": "6e858193-2fa7-47f1-869f-c2c2769e8f1e",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "REPLACE_ME",
+          "name": "OpenRouter API"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Ideas": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Add Idea": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get many videos in YouTube": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get a video in YouTube": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent1": {
+      "main": [
+        [
+          {
+            "node": "Prepare Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent1",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "timezone": "Europe/Paris",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false,
+    "timeSavedMode": "fixed",
+    "executionOrder": "v1"
+  },
+  "staticData": null,
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "pinData": {},
+  "activeVersionId": "9e72dd10-b753-4628-81c7-2445c363553c",
+  "versionCounter": 24,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-02-02T17:23:31.760Z",
+      "createdAt": "2026-02-02T17:23:31.760Z",
+      "role": "workflow:owner",
+      "workflowId": "ILdwgmDHZOzLOpKK",
+      "projectId": "oYt1GPNUBpK2eWHS",
+      "project": {
+        "updatedAt": "2026-02-01T17:02:13.492Z",
+        "createdAt": "2026-02-01T15:39:19.158Z",
+        "id": "oYt1GPNUBpK2eWHS",
+        "name": "Wilfrid Peyrius <willbys@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c",
+        "projectRelations": [
+          {
+            "updatedAt": "2026-02-01T15:39:19.158Z",
+            "createdAt": "2026-02-01T15:39:19.158Z",
+            "userId": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c",
+            "projectId": "oYt1GPNUBpK2eWHS",
+            "user": {
+              "updatedAt": "2026-02-16T19:51:22.561Z",
+              "createdAt": "2026-02-01T15:39:18.127Z",
+              "id": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c",
+              "email": "willbys@gmail.com",
+              "firstName": "Wilfrid",
+              "lastName": "Peyrius",
+              "personalizationAnswers": null,
+              "settings": {
+                "userActivated": true,
+                "easyAIWorkflowOnboarded": true,
+                "firstSuccessfulWorkflowId": "ldbOBqQIXC1SIM3O",
+                "userActivatedAt": 1769981079850
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2026-02-16",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-02-03T12:53:11.129Z",
+    "createdAt": "2026-02-03T12:53:06.124Z",
+    "versionId": "9e72dd10-b753-4628-81c7-2445c363553c",
+    "workflowId": "ILdwgmDHZOzLOpKK",
+    "nodes": [
+      {
+        "parameters": {
+          "inputSource": "passthrough"
+        },
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.1,
+        "position": [
+          -64,
+          32
+        ],
+        "id": "75b43a87-2624-4391-ae6c-138b07980fef",
+        "name": "When Executed by Another Workflow"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "response1",
+                "name": "success",
+                "value": true,
+                "type": "boolean"
+              },
+              {
+                "id": "response2",
+                "name": "response",
+                "value": "={{ $json.output }}",
+                "type": "string"
+              },
+              {
+                "id": "response3",
+                "name": "agent",
+                "value": "youtube",
+                "type": "string"
+              },
+              {
+                "id": "response4",
+                "name": "executedAt",
+                "value": "={{ $now.toISO() }}",
+                "type": "string"
+              },
+              {
+                "id": "response5",
+                "name": "query",
+                "value": "={{ $('When Executed by Another Workflow').item.json.query }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          608,
+          32
+        ],
+        "id": "4128c99a-d424-41d3-8246-c6a887e67c83",
+        "name": "Prepare Response"
+      },
+      {
+        "parameters": {
+          "documentId": {
+            "__rl": true,
+            "value": "1NHieXuU5-kaiCsIKw0Sza7eqYR-EULwvzHD5P0hmvUI",
+            "mode": "list",
+            "cachedResultName": "Video Ideas",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1NHieXuU5-kaiCsIKw0Sza7eqYR-EULwvzHD5P0hmvUI/edit?usp=drivesdk"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": "gid=0",
+            "mode": "list",
+            "cachedResultName": "Ideas",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1NHieXuU5-kaiCsIKw0Sza7eqYR-EULwvzHD5P0hmvUI/edit#gid=0"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleSheetsTool",
+        "typeVersion": 4.6,
+        "position": [
+          784,
+          224
+        ],
+        "id": "8f0e94bc-367d-4407-9f42-cd40429b4fa9",
+        "name": "Get Ideas",
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "ab54feb0-5ff5-4cdb-b299-be8d8773bddb",
+            "name": "labsmates"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "append",
+          "documentId": {
+            "__rl": true,
+            "value": "1NHieXuU5-kaiCsIKw0Sza7eqYR-EULwvzHD5P0hmvUI",
+            "mode": "list",
+            "cachedResultName": "Video Ideas",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1NHieXuU5-kaiCsIKw0Sza7eqYR-EULwvzHD5P0hmvUI/edit?usp=drivesdk"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": "gid=0",
+            "mode": "list",
+            "cachedResultName": "Ideas",
+            "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1NHieXuU5-kaiCsIKw0Sza7eqYR-EULwvzHD5P0hmvUI/edit#gid=0"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "Idea": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Idea', ``, 'string') }}",
+              "Description": "Idea title"
+            },
+            "matchingColumns": [],
+            "schema": [
+              {
+                "id": "Idea",
+                "displayName": "Idea",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              },
+              {
+                "id": "Description",
+                "displayName": "Description",
+                "required": false,
+                "defaultMatch": false,
+                "display": true,
+                "type": "string",
+                "canBeUsedToMatch": true
+              }
+            ],
+            "attemptToConvertTypes": false,
+            "convertFieldsToString": false
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleSheetsTool",
+        "typeVersion": 4.6,
+        "position": [
+          912,
+          224
+        ],
+        "id": "196cee23-c694-4d36-b24e-331dece64ba6",
+        "name": "Add Idea",
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "ab54feb0-5ff5-4cdb-b299-be8d8773bddb",
+            "name": "labsmates"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "resource": "video",
+          "filters": {
+            "q": "={{ $json.query }}",
+            "regionCode": "FR",
+            "videoType": "any"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.youTubeTool",
+        "typeVersion": 1,
+        "position": [
+          416,
+          224
+        ],
+        "id": "f6e6261d-1afe-429d-9d84-8d1961b19a41",
+        "name": "Get many videos in YouTube",
+        "credentials": {
+          "youTubeOAuth2Api": {
+            "id": "d63921be-2853-4df8-93f7-6938470ec392",
+            "name": "YouTube account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "resource": "video",
+          "operation": "get",
+          "videoId": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Video_ID', ``, 'string') }}",
+          "part": [
+            "*",
+            "localizations",
+            "snippet"
+          ],
+          "options": {}
+        },
+        "type": "n8n-nodes-base.youTubeTool",
+        "typeVersion": 1,
+        "position": [
+          592,
+          224
+        ],
+        "id": "f2745535-25a9-4445-81bd-c2dcce2150c7",
+        "name": "Get a video in YouTube",
+        "notesInFlow": false,
+        "credentials": {
+          "youTubeOAuth2Api": {
+            "id": "d63921be-2853-4df8-93f7-6938470ec392",
+            "name": "YouTube account"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ $json.query }}",
+          "options": {
+            "systemMessage": "=Tu es l'assistant YouTube de Wilfrid, spécialisé dans la recherche de vidéos performantes et la gestion d'idées de contenu.\n\nDEMANDE UTILISATEUR : {{ $json.query }}\n\n## TES OUTILS DISPONIBLES\n\n1. **Get many videos in YouTube** et **Get a video in YouTube**: Rechercher des vidéos YouTube sur un sujet spécifique\n2. **Get Ideas** : Consulter les idées de vidéos sauvegardées dans le Google Sheet\n3. **Add Idea** : Ajouter une nouvelle idée dans le Google Sheet (colonnes: Idea, Description)\n\n## TES MISSIONS\n\n**Quand l'utilisateur demande des recherches YouTube :**\n- Utilise \"Get many videos in YouTube\" pour trouver des vidéos\n_ Complete avec \"Get a video in YouTube\"\n- Analyse les titres, vues, et engagement\n- Fournis des insights sur les tendances\n- Suggère des angles de contenu\n\n**Quand l'utilisateur veut gérer des idées :**\n- Utilise \"Get Ideas\" pour lister les idées existantes\n- Utilise \"Add Idea\" pour sauvegarder de nouvelles idées avec titre et description claire\n\n## RÈGLES IMPORTANTES\n\n- Réponds TOUJOURS en français\n- Transmets la demande de l'utilisateur EXACTEMENT comme formulée aux outils\n- Sois concis et actionnable dans tes réponses\n- Confirme chaque action effectuée\n- Si une recherche ne donne rien, propose des alternatives\n\n## CONTEXTE\n\nDate et heure : {{ $now }}\nUtilisateur : Wilfrid Peyrius\n\nTraite maintenant la demande de l'utilisateur avec les outils appropriés.\n\n** S l'utilisateur te demande de trouver des videos qui parle d'un sujet bien particulier, alors trouves-les**\n\n**Priorise les videos en **FRANCAIS** \n**Renvoie Toujours le nombre exacte des videos demandées**\n**Si l'utilsateur ne donne pas le nombre, alors renvoie **5 videos** les plus pertinentes**"
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 3,
+        "position": [
+          208,
+          32
+        ],
+        "id": "59e0b273-18d0-4e33-a5f9-56fa377bb5d8",
+        "name": "AI Agent1"
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+        "typeVersion": 1,
+        "position": [
+          80,
+          240
+        ],
+        "id": "6e858193-2fa7-47f1-869f-c2c2769e8f1e",
+        "name": "OpenRouter Chat Model",
+        "credentials": {
+          "openRouterApi": {
+            "id": "7a43f38b-93c1-481e-bd33-d82b1a9d05e2",
+            "name": "OpenRouter API"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "When Executed by Another Workflow": {
+        "main": [
+          [
+            {
+              "node": "AI Agent1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get Ideas": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent1",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Add Idea": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent1",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get many videos in YouTube": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent1",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Get a video in YouTube": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent1",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AI Agent1": {
+        "main": [
+          [
+            {
+              "node": "Prepare Response",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenRouter Chat Model": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AI Agent1",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      }
+    },
+    "authors": "Wilfrid Peyrius",
+    "name": "Version 9e72dd10",
+    "description": "",
+    "autosaved": true,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-02-03T12:53:11.124Z",
+        "id": 46,
+        "workflowId": "ILdwgmDHZOzLOpKK",
+        "versionId": "9e72dd10-b753-4628-81c7-2445c363553c",
+        "event": "activated",
+        "userId": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c"
+      },
+      {
+        "createdAt": "2026-02-03T12:54:40.491Z",
+        "id": 47,
+        "workflowId": "ILdwgmDHZOzLOpKK",
+        "versionId": "9e72dd10-b753-4628-81c7-2445c363553c",
+        "event": "activated",
+        "userId": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c"
+      }
+    ]
+  }
+}
