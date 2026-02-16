@@ -1,0 +1,2320 @@
+{
+  "updatedAt": "2026-02-08T09:22:14.760Z",
+  "createdAt": "2026-02-01T20:35:05.160Z",
+  "id": "VAnO7RbXIAGLPMhE",
+  "name": "MisterDJ Pro ⭐⭐⭐⭐Master",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "content": "## MisterDJ - Workflow Amélioré\n\n✅ Validation automatique des playlists\n✅ Comptage précis des titres\n✅ Extraction intelligente du genre\n✅ Messages d'erreur personnalisés\n✅ Format de fichier amélioré",
+        "height": 820,
+        "width": 1856,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -128,
+        48
+      ],
+      "id": "649a1a24-cd32-4ed9-8a89-5b6acb583c6e",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "resource": "fileFolder",
+        "filter": {
+          "folderId": {
+            "__rl": true,
+            "value": "12fuA9hSYFr5TqR4nErp9QQzzCc2q3aLg",
+            "mode": "list",
+            "cachedResultName": "PLAYLIST",
+            "cachedResultUrl": "https://drive.google.com/drive/folders/12fuA9hSYFr5TqR4nErp9QQzzCc2q3aLg"
+          }
+        },
+        "options": {
+          "fields": [
+            "id",
+            "md5Checksum"
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        48,
+        -640
+      ],
+      "id": "53905858-5e6c-45eb-a593-ad906f861435",
+      "name": "Get File Info",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "REPLACE_ME",
+          "name": "labsmates"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "return [{ json: { \n  fileId: $input.first().json.id,\n  checksum: $input.first().json.md5Checksum \n}}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        256,
+        -640
+      ],
+      "id": "6746f1b5-20e6-434a-a341-6bbbe8a34bc9",
+      "name": "Store Info"
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://qdrant.connectika.fr/collections/REKORDBOX/points/scroll",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "qdrantApi",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "bodyParameters": {
+          "parameters": [
+            {}
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        464,
+        -640
+      ],
+      "id": "c8760917-a9de-4cc4-9b53-81c17a6acfa5",
+      "name": "Load Checksum",
+      "credentials": {
+        "qdrantApi": {
+          "id": "REPLACE_ME",
+          "name": "QdrantAPI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const current = $('Store Info').first().json.checksum;\nconst stored = $input.first().json?.result?.points?.[0]?.payload?.checksum;\n\nreturn [{ json: { needsUpdate: current !== stored } }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        672,
+        -640
+      ],
+      "id": "1622f49b-3f79-4251-b72c-2314759ea827",
+      "name": "Compare"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "boolean": [
+            {
+              "value1": "={{ $json.needsUpdate }}",
+              "operation": "notEqual",
+              "value2": true
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 1,
+      "position": [
+        880,
+        -640
+      ],
+      "id": "a923f284-707d-4857-b21d-b47a78958040",
+      "name": "If Modified"
+    },
+    {
+      "parameters": {
+        "operation": "download",
+        "fileId": {
+          "__rl": true,
+          "value": "={{ $('Store Info').first().json.fileId }}",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        1296,
+        -656
+      ],
+      "id": "541eb665-ee86-4bcc-bddf-8790b2d9c47d",
+      "name": "Download",
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "REPLACE_ME",
+          "name": "labsmates"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.spreadsheetFile",
+      "typeVersion": 2,
+      "position": [
+        64,
+        -432
+      ],
+      "id": "f618d2fe-b464-48dd-94ed-259886643831",
+      "name": "Extract Data"
+    },
+    {
+      "parameters": {
+        "jsCode": "// AUCUNE MÉTADONNÉE - juste le texte !\nconst items = [];\n\nfor (const item of $input.all()) {\n  const row = item.json;\n  let text = '';\n  \n  for (const [key, value] of Object.entries(row)) {\n    if (value && value !== '') {\n      text += `${key}: ${value}. `;\n    }\n  }\n  \n  if (text.trim()) {\n    items.push({\n      json: {\n        data: { text: text.trim() }\n        // PAS de metadata du tout !\n      }\n    });\n  }\n}\n\nreturn items;"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        272,
+        -432
+      ],
+      "id": "ff6d82bb-c407-48a3-a3eb-9437c2840ad8",
+      "name": "Format"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "REKORDBOX",
+          "mode": "list",
+          "cachedResultName": "REKORDBOX"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.3,
+      "position": [
+        480,
+        -432
+      ],
+      "id": "67df779f-3592-4eee-a2ee-19cebe35b186",
+      "name": "Insert Content",
+      "credentials": {
+        "qdrantApi": {
+          "id": "REPLACE_ME",
+          "name": "QdrantAPI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// UN SEUL document avec le checksum pour comparaison future\nreturn [{\n  json: {\n    data: { text: 'checksum' },\n    checksum: $('Store Info').first().json.checksum\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        784,
+        -432
+      ],
+      "id": "8fd07989-c902-4d8c-af5a-1656ca079ab4",
+      "name": "Store Checksum"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "REKORDBOX",
+          "mode": "list",
+          "cachedResultName": "REKORDBOX"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.3,
+      "position": [
+        960,
+        -432
+      ],
+      "id": "e3d2de90-b1aa-418e-a344-d1f547495fc3",
+      "name": "Insert Checksum",
+      "credentials": {
+        "qdrantApi": {
+          "id": "REPLACE_ME",
+          "name": "QdrantAPI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        896,
+        -224
+      ],
+      "id": "5062a4e1-2f55-4178-954a-e46c1e33fcfe",
+      "name": "Embeddings OpenAI2",
+      "credentials": {
+        "openAiApi": {
+          "id": "REPLACE_ME",
+          "name": "OpenAi API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        624,
+        -224
+      ],
+      "id": "4b27c3e1-2a0f-4357-94af-0d18bd40a089",
+      "name": "Data Loader"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        1072,
+        -240
+      ],
+      "id": "e4e31893-b38e-4b7b-b727-5bd62981ff2c",
+      "name": "Data Loader2"
+    },
+    {
+      "parameters": {
+        "content": "Base de donnée RAG",
+        "height": 864,
+        "width": 1840,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        -128,
+        -848
+      ],
+      "id": "bd3fdbc4-09f3-4761-b8c1-20b5a93875e5",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        480,
+        -224
+      ],
+      "id": "efbe21ed-600f-487a-8761-2d6361eee2d0",
+      "name": "Embeddings OpenAI4",
+      "credentials": {
+        "openAiApi": {
+          "id": "REPLACE_ME",
+          "name": "OpenAi API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "updateCollection",
+        "collectionName": {
+          "__rl": true,
+          "value": "COLLECTION",
+          "mode": "list",
+          "cachedResultName": "COLLECTION"
+        },
+        "requestOptions": {}
+      },
+      "type": "n8n-nodes-qdrant.qdrant",
+      "typeVersion": 1,
+      "position": [
+        1104,
+        -656
+      ],
+      "id": "772d75b3-57cb-4694-bc87-8dae723d11bf",
+      "name": "Update Collection1",
+      "credentials": {
+        "qdrantRestApi": {
+          "id": "REPLACE_ME",
+          "name": "Qdrant APIKEY"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "inputSource": "passthrough"
+      },
+      "type": "n8n-nodes-base.executeWorkflowTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        -32,
+        256
+      ],
+      "id": "06d86968-4afb-4961-abda-7c73fc5338f3",
+      "name": "When Executed by Another Workflow"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "response1",
+              "name": "success",
+              "value": true,
+              "type": "boolean"
+            },
+            {
+              "id": "response2",
+              "name": "response",
+              "value": "={{ $('AI Agent2').item.json.output }}",
+              "type": "string"
+            },
+            {
+              "id": "response3",
+              "name": "agent",
+              "value": "dj",
+              "type": "string"
+            },
+            {
+              "id": "response4",
+              "name": "executedAt",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "response5",
+              "name": "query",
+              "value": "={{ $('When Executed by Another Workflow').item.json.query }}",
+              "type": "string"
+            },
+            {
+              "id": "response6",
+              "name": "filename",
+              "value": "={{ $('Create Text File2').item.json.filename }}",
+              "type": "string"
+            },
+            {
+              "id": "response7",
+              "name": "trackCount",
+              "value": "={{ $('Create Text File2').item.json.trackCount }}",
+              "type": "number"
+            },
+            {
+              "id": "response8",
+              "name": "genre",
+              "value": "={{ $('Create Text File2').item.json.genre }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1456,
+        240
+      ],
+      "id": "25f9630d-c781-4bc5-bce8-3e9c22bc4b29",
+      "name": "Prepare Response1"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "error1",
+              "name": "success",
+              "value": false,
+              "type": "boolean"
+            },
+            {
+              "id": "error2",
+              "name": "response",
+              "value": "={{ $('Playlist Counter2').item.json.validationMessage }}",
+              "type": "string"
+            },
+            {
+              "id": "error3",
+              "name": "agent",
+              "value": "rag",
+              "type": "string"
+            },
+            {
+              "id": "error4",
+              "name": "executedAt",
+              "value": "={{ $now.toISO() }}",
+              "type": "string"
+            },
+            {
+              "id": "error5",
+              "name": "query",
+              "value": "={{ $('When Executed by Another Workflow').item.json.query }}",
+              "type": "string"
+            },
+            {
+              "id": "error6",
+              "name": "trackCount",
+              "value": "={{ $('Playlist Counter2').item.json.trackCount }}",
+              "type": "number"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1184,
+        400
+      ],
+      "id": "644b9a6d-9fa0-4824-948d-69077ff7ba9a",
+      "name": "Prepare Error Response1"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.query }}",
+        "options": {
+          "systemMessage": "=# IDENTITÉ & RÔLE\nTu es Mister DJ, l'expert ultime en playlists DJ professionnelles.\n\n# ⚠️ RÈGLE ABSOLUE : TOUJOURS 20 TITRES\n**TU NE PEUX PAS renvoyer moins de 20 morceaux. JAMAIS.**\n\nSi tu n'as pas assez de morceaux :\n1. Utilise SerpAPI pour chercher plus de titres\n2. Élargis la recherche aux genres proches\n3. COMPLÈTE à 20 titres OBLIGATOIREMENT\n\n---\n\n## 📋 FORMAT DE SORTIE OBLIGATOIRE\n\n**CHAQUE ligne DOIT contenir :**\n`Numéro. Titre – Artiste – BPM – Tonalité – Genre – Durée`\n\n**Exemple :**\n```\n1. One More Time – Daft Punk – 123 – 9A – French House – 05:20\n2. Music Sounds Better With You – Stardust – 122 – 9A – French House – 06:48\n```\n\n❌ **INTERDIT** : Lignes incomplètes\n✅ **OBLIGATOIRE** : Les 6 champs sur CHAQUE ligne\n\n---\n\n## 🔍 PROCESSUS DE SÉLECTION\n\n**ÉTAPE 1 : Qdrant (base principale)**\n- Interroge Qdrant avec le genre demandé\n- Récupère le maximum de morceaux possible\n\n**ÉTAPE 2 : Si < 20 morceaux → Compléter IMMÉDIATEMENT**\n- Utilise SerpAPI : \"[genre] DJ tracks BPM\"\n- Cherche dans les genres proches si nécessaire\n- **COMPLÈTE jusqu'à avoir EXACTEMENT 20 titres**\n\n**ÉTAPE 3 : Formatage**\n- Format strict pour les 20 titres\n- Vérification finale du compte\n\n---\n\n## 🚨 GENRES PROCHES (si besoin de compléter)\n\n- **Afro House** → Afrobeat, Deep House, Tribal House\n- **Tech House** → House, Progressive House, Deep House\n- **Techno** → Minimal Techno, Tech House\n- **Trance** → Progressive Trance, Uplifting Trance\n\n---\n\n## 🎤 TON & PERSONNALITÉ\n\n### Introduction :\n\"🎧 Yo ! C'est Mister DJ dans la place ! Prépare-toi pour une playlist de feu 🔥 !\"\n\n### Après la playlist :\n- House : \"Ces tracks vont faire vibrer le dancefloor ! 🕺💃\"\n- Techno : \"Ça va cogner fort ! 🔊⚡\"\n- Afrobeat/Afro House : \"Vibes africaines garanties ! 🌍🔥\"\n\n---\n\n## ⚠️ RAPPEL CRITIQUE\n\n**TU DOIS ABSOLUMENT générer 20 titres.**\nSi tu n'y arrives pas avec Qdrant, utilise SerpAPI.\nSi tu n'y arrives toujours pas, élargis aux genres proches.\n\n**JAMAIS moins de 20 titres.**\n\n---\n\n## 📝 REQUÊTE UTILISATEUR\n{{ $json.query }}",
+          "maxIterations": 20
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.1,
+      "position": [
+        320,
+        256
+      ],
+      "id": "07d503df-fe30-4a9c-8c4c-f10a4df27b19",
+      "name": "AI Agent2"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4o"
+        },
+        "options": {
+          "temperature": 0.1
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        16,
+        528
+      ],
+      "id": "1eff0b1c-ed33-4192-8b6d-f494d9c2d93f",
+      "name": "OpenAI Chat Model2",
+      "credentials": {
+        "openAiApi": {
+          "id": "REPLACE_ME",
+          "name": "OpenAi API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $json.query }}",
+        "contextWindowLength": 15
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        176,
+        528
+      ],
+      "id": "e5578c63-765a-4a89-b181-aaf2483e3754",
+      "name": "Simple Memory2"
+    },
+    {
+      "parameters": {
+        "operation": "appendOrUpdate",
+        "documentId": {
+          "__rl": true,
+          "value": "1BuPOUsmxlKf3I0qZs9Vdp4OR9r9munbafkwdX8IjUB0",
+          "mode": "list"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 2009032635,
+          "mode": "list"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "#": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('___using_to_match_', ``, 'string') }}",
+            "Titre du morceau": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Titre_du_morceau', ``, 'string') }}",
+            "Artiste": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Artiste', ``, 'string') }}",
+            "BPM": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('BPM', ``, 'string') }}",
+            "Tonalité": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Tonalit_', ``, 'string') }}",
+            "Genre": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Genre', ``, 'string') }}",
+            "Durée": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Dur_e', ``, 'string') }}",
+            "Classement": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Classement', ``, 'string') }}"
+          },
+          "matchingColumns": [
+            "#"
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.6,
+      "position": [
+        320,
+        528
+      ],
+      "id": "3efc5fea-c15c-4d98-899e-e6925836747a",
+      "name": "Append or update row in sheet in Google Sheets2",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "REPLACE_ME",
+          "name": "labsmates"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "validation_track_count",
+              "leftValue": "={{ $json.trackCount }}",
+              "rightValue": 20,
+              "operator": {
+                "type": "number",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "validation_has_content",
+              "leftValue": "={{ $json.output.length }}",
+              "rightValue": 100,
+              "operator": {
+                "type": "number",
+                "operation": "gt"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        848,
+        256
+      ],
+      "id": "897509d4-0c97-4c2e-bd37-4332a14cc39c",
+      "name": "Validate Playlist2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Récupérer les données depuis l'input\nconst items = $input.all();\nconst aiOutput = items[0].json.output;\nconst userRequest = items[0].json.userRequest;\n\n// Fonction pour extraire le genre musical\nfunction extractMusicGenre(text) {\n  const genres = [\n    {keyword: \"tech house\", name: \"Tech-House\"},\n    {keyword: \"deep house\", name: \"Deep-House\"},\n    {keyword: \"afro house\", name: \"Afro-House\"},\n    {keyword: \"progressive house\", name: \"Progressive-House\"},\n    {keyword: \"house\", name: \"House\"},\n    {keyword: \"techno\", name: \"Techno\"},\n    {keyword: \"trance\", name: \"Trance\"},\n    {keyword: \"afrobeat\", name: \"Afrobeat\"}\n  ];\n\n  const lower = text.toLowerCase();\n  \n  for (const genre of genres) {\n    if (lower.includes(genre.keyword)) {\n      return `Playlist-${genre.name}`;\n    }\n  }\n\n  return \"Playlist-Mix\";\n}\n\nconst cleanFileName = extractMusicGenre(userRequest);\nconst filename = `${cleanFileName}.txt`;\n\n// Extraire les lignes numérotées\nconst lines = aiOutput.split('\\n');\nconst trackLines = lines.filter(line => /^\\d+\\./.test(line));\nconst cleanTracks = trackLines.map(line => {\n  return line.replace(/^\\d+\\.\\s*/, '').trim();\n});\n\nconst content = cleanTracks.join('\\n');\n\n// Créer le header\nconst now = new Date();\nconst dateStr = now.toLocaleDateString('fr-FR') + ' ' + now.toLocaleTimeString('fr-FR');\nconst header = `🎵 PLAYLIST DJ - ${cleanFileName.replace('Playlist-', '')}\\n`\n  + `📅 Généré le : ${dateStr}\\n`\n  + `🎧 Nombre de titres : ${cleanTracks.length}\\n`\n  + `${'='.repeat(60)}\\n\\n`;\n\nconst finalContent = header + content;\nconst finalBuffer = Buffer.from(finalContent, 'utf8');\n\nreturn {\n  json: {\n    filename: filename,\n    trackCount: cleanTracks.length,\n    genre: cleanFileName.replace('Playlist-', '')\n  },\n  binary: {\n    data: {\n      data: finalBuffer.toString('base64'),\n      mimeType: 'text/plain',\n      fileName: filename,\n      fileSize: finalBuffer.length\n    }\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        1216,
+        240
+      ],
+      "id": "cd78ac90-59b9-4a4a-8e18-9ecb767a8312",
+      "name": "Create Text File2"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Récupérer la sortie de l'AI Agent\nconst aiOutput = $input.item.json.output;\n\n// Compter le nombre de lignes qui commencent par un numéro\nconst lines = aiOutput.split('\\n');\nconst trackLines = lines.filter(line => line.match(/^\\d+\\./));\nconst trackCount = trackLines.length;\n\nreturn {\n  json: {\n    output: aiOutput,\n    trackCount: trackCount,\n    isValid: trackCount === 20,\n    validationMessage: trackCount === 20 \n      ? '✅ Playlist valide avec 20 titres' \n      : `⚠️ Nombre incorrect de titres : ${trackCount}/20`\n  }\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        640,
+        256
+      ],
+      "id": "f62445a2-e450-43f0-afe1-fa76d19fcf32",
+      "name": "Playlist Counter2"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "assignment2",
+              "name": "output",
+              "value": "={{ $('AI Agent2').item.json.output }}",
+              "type": "string"
+            },
+            {
+              "id": "assignment3",
+              "name": "userRequest",
+              "value": "={{ $('When Executed by Another Workflow').item.json.query }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1024,
+        240
+      ],
+      "id": "4a9edc8c-4193-4a75-8c98-34e2757b288f",
+      "name": "Prepare File Content2"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.toolSerpApi",
+      "typeVersion": 1,
+      "position": [
+        448,
+        528
+      ],
+      "id": "82661b78-a43f-4b98-b526-b4429e99f717",
+      "name": "SerpAPI2",
+      "credentials": {
+        "serpApi": {
+          "id": "REPLACE_ME",
+          "name": "SerpAPI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "url": "https://shazam.p.rapidapi.com/charts/track",
+        "authentication": "genericCredentialType",
+        "genericAuthType": "httpHeaderAuth",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "locale",
+              "value": "fr-FR"
+            },
+            {
+              "name": "pageSize",
+              "value": "50"
+            }
+          ]
+        },
+        "options": {
+          "response": {
+            "response": {
+              "responseFormat": "json"
+            }
+          }
+        }
+      },
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.2,
+      "position": [
+        592,
+        528
+      ],
+      "id": "f74f9b68-3012-48c1-9ada-def2a37bad93",
+      "name": "Shazam Top Charts2",
+      "credentials": {
+        "httpHeaderAuth": {
+          "id": "REPLACE_ME",
+          "name": "Shazam"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Base de données REKORDBOX contenant des morceaux DJ avec leurs métadonnées complètes : BPM (tempo), tonalité Camelot (harmonie), genre musical, durée. Recherche par genre pour obtenir des morceaux DJ professionnels avec toutes les informations techniques nécessaires au mixage.",
+        "qdrantCollection": {
+          "__rl": true,
+          "value": "REKORDBOX",
+          "mode": "list"
+        },
+        "topK": 50,
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+      "typeVersion": 1.3,
+      "position": [
+        736,
+        528
+      ],
+      "id": "9a1a6f72-a2a7-4815-8868-9969aa52d467",
+      "name": "Qdrant Vector Store2",
+      "credentials": {
+        "qdrantApi": {
+          "id": "REPLACE_ME",
+          "name": "QdrantAPI"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        704,
+        704
+      ],
+      "id": "0678d308-3684-4b77-86cb-00b1d58e0ae0",
+      "name": "Embeddings OpenAI3",
+      "credentials": {
+        "openAiApi": {
+          "id": "REPLACE_ME",
+          "name": "OpenAi API"
+        }
+      }
+    }
+  ],
+  "connections": {
+    "Get File Info": {
+      "main": [
+        [
+          {
+            "node": "Store Info",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Info": {
+      "main": [
+        [
+          {
+            "node": "Load Checksum",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Load Checksum": {
+      "main": [
+        [
+          {
+            "node": "Compare",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Compare": {
+      "main": [
+        [
+          {
+            "node": "If Modified",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If Modified": {
+      "main": [
+        [
+          {
+            "node": "Update Collection1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Download": {
+      "main": [
+        [
+          {
+            "node": "Extract Data",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Data": {
+      "main": [
+        [
+          {
+            "node": "Format",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format": {
+      "main": [
+        [
+          {
+            "node": "Insert Content",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Insert Content": {
+      "main": [
+        [
+          {
+            "node": "Store Checksum",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Store Checksum": {
+      "main": [
+        [
+          {
+            "node": "Insert Checksum",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI2": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Insert Checksum",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Insert Content",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Data Loader2": {
+      "ai_document": [
+        [
+          {
+            "node": "Insert Checksum",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI4": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Insert Content",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Collection1": {
+      "main": [
+        [
+          {
+            "node": "Download",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "When Executed by Another Workflow": {
+      "main": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent2": {
+      "main": [
+        [
+          {
+            "node": "Playlist Counter2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model2": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory2": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append or update row in sheet in Google Sheets2": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Validate Playlist2": {
+      "main": [
+        [
+          {
+            "node": "Prepare File Content2",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Prepare Error Response1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Text File2": {
+      "main": [
+        [
+          {
+            "node": "Prepare Response1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Playlist Counter2": {
+      "main": [
+        [
+          {
+            "node": "Validate Playlist2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare File Content2": {
+      "main": [
+        [
+          {
+            "node": "Create Text File2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "SerpAPI2": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Shazam Top Charts2": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Qdrant Vector Store2": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent2",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI3": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Qdrant Vector Store2",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Response1": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "settings": {
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "staticData": null,
+  "meta": null,
+  "pinData": {},
+  "activeVersionId": "96ba2019-c15d-4870-9d12-e663edfd6610",
+  "versionCounter": 15,
+  "triggerCount": 0,
+  "shared": [
+    {
+      "updatedAt": "2026-02-02T17:20:59.105Z",
+      "createdAt": "2026-02-02T17:20:59.105Z",
+      "role": "workflow:owner",
+      "workflowId": "VAnO7RbXIAGLPMhE",
+      "projectId": "oYt1GPNUBpK2eWHS",
+      "project": {
+        "updatedAt": "2026-02-01T17:02:13.492Z",
+        "createdAt": "2026-02-01T15:39:19.158Z",
+        "id": "oYt1GPNUBpK2eWHS",
+        "name": "Wilfrid Peyrius <willbys@gmail.com>",
+        "type": "personal",
+        "icon": null,
+        "description": null,
+        "creatorId": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c",
+        "projectRelations": [
+          {
+            "updatedAt": "2026-02-01T15:39:19.158Z",
+            "createdAt": "2026-02-01T15:39:19.158Z",
+            "userId": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c",
+            "projectId": "oYt1GPNUBpK2eWHS",
+            "user": {
+              "updatedAt": "2026-02-16T19:51:22.561Z",
+              "createdAt": "2026-02-01T15:39:18.127Z",
+              "id": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c",
+              "email": "willbys@gmail.com",
+              "firstName": "Wilfrid",
+              "lastName": "Peyrius",
+              "personalizationAnswers": null,
+              "settings": {
+                "userActivated": true,
+                "easyAIWorkflowOnboarded": true,
+                "firstSuccessfulWorkflowId": "ldbOBqQIXC1SIM3O",
+                "userActivatedAt": 1769981079850
+              },
+              "disabled": false,
+              "mfaEnabled": false,
+              "lastActiveAt": "2026-02-16",
+              "isPending": false
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "tags": [],
+  "activeVersion": {
+    "updatedAt": "2026-02-08T09:22:20.190Z",
+    "createdAt": "2026-02-08T09:22:14.765Z",
+    "versionId": "96ba2019-c15d-4870-9d12-e663edfd6610",
+    "workflowId": "VAnO7RbXIAGLPMhE",
+    "nodes": [
+      {
+        "parameters": {
+          "content": "## MisterDJ - Workflow Amélioré\n\n✅ Validation automatique des playlists\n✅ Comptage précis des titres\n✅ Extraction intelligente du genre\n✅ Messages d'erreur personnalisés\n✅ Format de fichier amélioré",
+          "height": 820,
+          "width": 1856,
+          "color": 5
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -128,
+          48
+        ],
+        "id": "649a1a24-cd32-4ed9-8a89-5b6acb583c6e",
+        "name": "Sticky Note1"
+      },
+      {
+        "parameters": {
+          "resource": "fileFolder",
+          "filter": {
+            "folderId": {
+              "__rl": true,
+              "value": "12fuA9hSYFr5TqR4nErp9QQzzCc2q3aLg",
+              "mode": "list",
+              "cachedResultName": "PLAYLIST",
+              "cachedResultUrl": "https://drive.google.com/drive/folders/12fuA9hSYFr5TqR4nErp9QQzzCc2q3aLg"
+            }
+          },
+          "options": {
+            "fields": [
+              "id",
+              "md5Checksum"
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.googleDrive",
+        "typeVersion": 3,
+        "position": [
+          48,
+          -640
+        ],
+        "id": "53905858-5e6c-45eb-a593-ad906f861435",
+        "name": "Get File Info",
+        "credentials": {
+          "googleDriveOAuth2Api": {
+            "id": "cee801cb-c9d9-43c3-976e-0c0fd04fff46",
+            "name": "labsmates"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "return [{ json: { \n  fileId: $input.first().json.id,\n  checksum: $input.first().json.md5Checksum \n}}];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          256,
+          -640
+        ],
+        "id": "6746f1b5-20e6-434a-a341-6bbbe8a34bc9",
+        "name": "Store Info"
+      },
+      {
+        "parameters": {
+          "method": "POST",
+          "url": "https://qdrant.connectika.fr/collections/REKORDBOX/points/scroll",
+          "authentication": "predefinedCredentialType",
+          "nodeCredentialType": "qdrantApi",
+          "sendHeaders": true,
+          "headerParameters": {
+            "parameters": [
+              {
+                "name": "Content-Type",
+                "value": "application/json"
+              }
+            ]
+          },
+          "sendBody": true,
+          "bodyParameters": {
+            "parameters": [
+              {}
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.httpRequest",
+        "typeVersion": 4.2,
+        "position": [
+          464,
+          -640
+        ],
+        "id": "c8760917-a9de-4cc4-9b53-81c17a6acfa5",
+        "name": "Load Checksum",
+        "credentials": {
+          "qdrantApi": {
+            "id": "4bddb866-6b1d-493b-8225-e950640f784b",
+            "name": "QdrantAPI"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "const current = $('Store Info').first().json.checksum;\nconst stored = $input.first().json?.result?.points?.[0]?.payload?.checksum;\n\nreturn [{ json: { needsUpdate: current !== stored } }];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          672,
+          -640
+        ],
+        "id": "1622f49b-3f79-4251-b72c-2314759ea827",
+        "name": "Compare"
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "boolean": [
+              {
+                "value1": "={{ $json.needsUpdate }}",
+                "operation": "notEqual",
+                "value2": true
+              }
+            ]
+          }
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 1,
+        "position": [
+          880,
+          -640
+        ],
+        "id": "a923f284-707d-4857-b21d-b47a78958040",
+        "name": "If Modified"
+      },
+      {
+        "parameters": {
+          "operation": "download",
+          "fileId": {
+            "__rl": true,
+            "value": "={{ $('Store Info').first().json.fileId }}",
+            "mode": "id"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleDrive",
+        "typeVersion": 3,
+        "position": [
+          1296,
+          -656
+        ],
+        "id": "541eb665-ee86-4bcc-bddf-8790b2d9c47d",
+        "name": "Download",
+        "credentials": {
+          "googleDriveOAuth2Api": {
+            "id": "cee801cb-c9d9-43c3-976e-0c0fd04fff46",
+            "name": "labsmates"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "n8n-nodes-base.spreadsheetFile",
+        "typeVersion": 2,
+        "position": [
+          64,
+          -432
+        ],
+        "id": "f618d2fe-b464-48dd-94ed-259886643831",
+        "name": "Extract Data"
+      },
+      {
+        "parameters": {
+          "jsCode": "// AUCUNE MÉTADONNÉE - juste le texte !\nconst items = [];\n\nfor (const item of $input.all()) {\n  const row = item.json;\n  let text = '';\n  \n  for (const [key, value] of Object.entries(row)) {\n    if (value && value !== '') {\n      text += `${key}: ${value}. `;\n    }\n  }\n  \n  if (text.trim()) {\n    items.push({\n      json: {\n        data: { text: text.trim() }\n        // PAS de metadata du tout !\n      }\n    });\n  }\n}\n\nreturn items;"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          272,
+          -432
+        ],
+        "id": "ff6d82bb-c407-48a3-a3eb-9437c2840ad8",
+        "name": "Format"
+      },
+      {
+        "parameters": {
+          "mode": "insert",
+          "qdrantCollection": {
+            "__rl": true,
+            "value": "REKORDBOX",
+            "mode": "list",
+            "cachedResultName": "REKORDBOX"
+          },
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+        "typeVersion": 1.3,
+        "position": [
+          480,
+          -432
+        ],
+        "id": "67df779f-3592-4eee-a2ee-19cebe35b186",
+        "name": "Insert Content",
+        "credentials": {
+          "qdrantApi": {
+            "id": "4bddb866-6b1d-493b-8225-e950640f784b",
+            "name": "QdrantAPI"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "jsCode": "// UN SEUL document avec le checksum pour comparaison future\nreturn [{\n  json: {\n    data: { text: 'checksum' },\n    checksum: $('Store Info').first().json.checksum\n  }\n}];"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          784,
+          -432
+        ],
+        "id": "8fd07989-c902-4d8c-af5a-1656ca079ab4",
+        "name": "Store Checksum"
+      },
+      {
+        "parameters": {
+          "mode": "insert",
+          "qdrantCollection": {
+            "__rl": true,
+            "value": "REKORDBOX",
+            "mode": "list",
+            "cachedResultName": "REKORDBOX"
+          },
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+        "typeVersion": 1.3,
+        "position": [
+          960,
+          -432
+        ],
+        "id": "e3d2de90-b1aa-418e-a344-d1f547495fc3",
+        "name": "Insert Checksum",
+        "credentials": {
+          "qdrantApi": {
+            "id": "4bddb866-6b1d-493b-8225-e950640f784b",
+            "name": "QdrantAPI"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+        "typeVersion": 1.2,
+        "position": [
+          896,
+          -224
+        ],
+        "id": "5062a4e1-2f55-4178-954a-e46c1e33fcfe",
+        "name": "Embeddings OpenAI2",
+        "credentials": {
+          "openAiApi": {
+            "id": "1dd133dd-1b8a-4f5e-9fb5-980f00e2efa1",
+            "name": "OpenAi API"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+        "typeVersion": 1.1,
+        "position": [
+          624,
+          -224
+        ],
+        "id": "4b27c3e1-2a0f-4357-94af-0d18bd40a089",
+        "name": "Data Loader"
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+        "typeVersion": 1.1,
+        "position": [
+          1072,
+          -240
+        ],
+        "id": "e4e31893-b38e-4b7b-b727-5bd62981ff2c",
+        "name": "Data Loader2"
+      },
+      {
+        "parameters": {
+          "content": "Base de donnée RAG",
+          "height": 864,
+          "width": 1840,
+          "color": 4
+        },
+        "type": "n8n-nodes-base.stickyNote",
+        "typeVersion": 1,
+        "position": [
+          -128,
+          -848
+        ],
+        "id": "bd3fdbc4-09f3-4761-b8c1-20b5a93875e5",
+        "name": "Sticky Note2"
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+        "typeVersion": 1.2,
+        "position": [
+          480,
+          -224
+        ],
+        "id": "efbe21ed-600f-487a-8761-2d6361eee2d0",
+        "name": "Embeddings OpenAI4",
+        "credentials": {
+          "openAiApi": {
+            "id": "1dd133dd-1b8a-4f5e-9fb5-980f00e2efa1",
+            "name": "OpenAi API"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "operation": "updateCollection",
+          "collectionName": {
+            "__rl": true,
+            "value": "COLLECTION",
+            "mode": "list",
+            "cachedResultName": "COLLECTION"
+          },
+          "requestOptions": {}
+        },
+        "type": "n8n-nodes-qdrant.qdrant",
+        "typeVersion": 1,
+        "position": [
+          1104,
+          -656
+        ],
+        "id": "772d75b3-57cb-4694-bc87-8dae723d11bf",
+        "name": "Update Collection1",
+        "credentials": {
+          "qdrantRestApi": {
+            "id": "c01eeaff-c156-433e-9ee9-e1aa1fa3fd5f",
+            "name": "Qdrant APIKEY"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "inputSource": "passthrough"
+        },
+        "type": "n8n-nodes-base.executeWorkflowTrigger",
+        "typeVersion": 1.1,
+        "position": [
+          -32,
+          256
+        ],
+        "id": "06d86968-4afb-4961-abda-7c73fc5338f3",
+        "name": "When Executed by Another Workflow"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "response1",
+                "name": "success",
+                "value": true,
+                "type": "boolean"
+              },
+              {
+                "id": "response2",
+                "name": "response",
+                "value": "={{ $('AI Agent2').item.json.output }}",
+                "type": "string"
+              },
+              {
+                "id": "response3",
+                "name": "agent",
+                "value": "dj",
+                "type": "string"
+              },
+              {
+                "id": "response4",
+                "name": "executedAt",
+                "value": "={{ $now.toISO() }}",
+                "type": "string"
+              },
+              {
+                "id": "response5",
+                "name": "query",
+                "value": "={{ $('When Executed by Another Workflow').item.json.query }}",
+                "type": "string"
+              },
+              {
+                "id": "response6",
+                "name": "filename",
+                "value": "={{ $('Create Text File2').item.json.filename }}",
+                "type": "string"
+              },
+              {
+                "id": "response7",
+                "name": "trackCount",
+                "value": "={{ $('Create Text File2').item.json.trackCount }}",
+                "type": "number"
+              },
+              {
+                "id": "response8",
+                "name": "genre",
+                "value": "={{ $('Create Text File2').item.json.genre }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          1456,
+          240
+        ],
+        "id": "25f9630d-c781-4bc5-bce8-3e9c22bc4b29",
+        "name": "Prepare Response1"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "error1",
+                "name": "success",
+                "value": false,
+                "type": "boolean"
+              },
+              {
+                "id": "error2",
+                "name": "response",
+                "value": "={{ $('Playlist Counter2').item.json.validationMessage }}",
+                "type": "string"
+              },
+              {
+                "id": "error3",
+                "name": "agent",
+                "value": "rag",
+                "type": "string"
+              },
+              {
+                "id": "error4",
+                "name": "executedAt",
+                "value": "={{ $now.toISO() }}",
+                "type": "string"
+              },
+              {
+                "id": "error5",
+                "name": "query",
+                "value": "={{ $('When Executed by Another Workflow').item.json.query }}",
+                "type": "string"
+              },
+              {
+                "id": "error6",
+                "name": "trackCount",
+                "value": "={{ $('Playlist Counter2').item.json.trackCount }}",
+                "type": "number"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          1184,
+          400
+        ],
+        "id": "644b9a6d-9fa0-4824-948d-69077ff7ba9a",
+        "name": "Prepare Error Response1"
+      },
+      {
+        "parameters": {
+          "promptType": "define",
+          "text": "={{ $json.query }}",
+          "options": {
+            "systemMessage": "=# IDENTITÉ & RÔLE\nTu es Mister DJ, l'expert ultime en playlists DJ professionnelles.\n\n# ⚠️ RÈGLE ABSOLUE : TOUJOURS 20 TITRES\n**TU NE PEUX PAS renvoyer moins de 20 morceaux. JAMAIS.**\n\nSi tu n'as pas assez de morceaux :\n1. Utilise SerpAPI pour chercher plus de titres\n2. Élargis la recherche aux genres proches\n3. COMPLÈTE à 20 titres OBLIGATOIREMENT\n\n---\n\n## 📋 FORMAT DE SORTIE OBLIGATOIRE\n\n**CHAQUE ligne DOIT contenir :**\n`Numéro. Titre – Artiste – BPM – Tonalité – Genre – Durée`\n\n**Exemple :**\n```\n1. One More Time – Daft Punk – 123 – 9A – French House – 05:20\n2. Music Sounds Better With You – Stardust – 122 – 9A – French House – 06:48\n```\n\n❌ **INTERDIT** : Lignes incomplètes\n✅ **OBLIGATOIRE** : Les 6 champs sur CHAQUE ligne\n\n---\n\n## 🔍 PROCESSUS DE SÉLECTION\n\n**ÉTAPE 1 : Qdrant (base principale)**\n- Interroge Qdrant avec le genre demandé\n- Récupère le maximum de morceaux possible\n\n**ÉTAPE 2 : Si < 20 morceaux → Compléter IMMÉDIATEMENT**\n- Utilise SerpAPI : \"[genre] DJ tracks BPM\"\n- Cherche dans les genres proches si nécessaire\n- **COMPLÈTE jusqu'à avoir EXACTEMENT 20 titres**\n\n**ÉTAPE 3 : Formatage**\n- Format strict pour les 20 titres\n- Vérification finale du compte\n\n---\n\n## 🚨 GENRES PROCHES (si besoin de compléter)\n\n- **Afro House** → Afrobeat, Deep House, Tribal House\n- **Tech House** → House, Progressive House, Deep House\n- **Techno** → Minimal Techno, Tech House\n- **Trance** → Progressive Trance, Uplifting Trance\n\n---\n\n## 🎤 TON & PERSONNALITÉ\n\n### Introduction :\n\"🎧 Yo ! C'est Mister DJ dans la place ! Prépare-toi pour une playlist de feu 🔥 !\"\n\n### Après la playlist :\n- House : \"Ces tracks vont faire vibrer le dancefloor ! 🕺💃\"\n- Techno : \"Ça va cogner fort ! 🔊⚡\"\n- Afrobeat/Afro House : \"Vibes africaines garanties ! 🌍🔥\"\n\n---\n\n## ⚠️ RAPPEL CRITIQUE\n\n**TU DOIS ABSOLUMENT générer 20 titres.**\nSi tu n'y arrives pas avec Qdrant, utilise SerpAPI.\nSi tu n'y arrives toujours pas, élargis aux genres proches.\n\n**JAMAIS moins de 20 titres.**\n\n---\n\n## 📝 REQUÊTE UTILISATEUR\n{{ $json.query }}",
+            "maxIterations": 20
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.agent",
+        "typeVersion": 2.1,
+        "position": [
+          320,
+          256
+        ],
+        "id": "07d503df-fe30-4a9c-8c4c-f10a4df27b19",
+        "name": "AI Agent2"
+      },
+      {
+        "parameters": {
+          "model": {
+            "__rl": true,
+            "mode": "list",
+            "value": "gpt-4o"
+          },
+          "options": {
+            "temperature": 0.1
+          }
+        },
+        "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+        "typeVersion": 1.2,
+        "position": [
+          16,
+          528
+        ],
+        "id": "1eff0b1c-ed33-4192-8b6d-f494d9c2d93f",
+        "name": "OpenAI Chat Model2",
+        "credentials": {
+          "openAiApi": {
+            "id": "1dd133dd-1b8a-4f5e-9fb5-980f00e2efa1",
+            "name": "OpenAi API"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "sessionIdType": "customKey",
+          "sessionKey": "={{ $json.query }}",
+          "contextWindowLength": 15
+        },
+        "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+        "typeVersion": 1.3,
+        "position": [
+          176,
+          528
+        ],
+        "id": "e5578c63-765a-4a89-b181-aaf2483e3754",
+        "name": "Simple Memory2"
+      },
+      {
+        "parameters": {
+          "operation": "appendOrUpdate",
+          "documentId": {
+            "__rl": true,
+            "value": "1BuPOUsmxlKf3I0qZs9Vdp4OR9r9munbafkwdX8IjUB0",
+            "mode": "list"
+          },
+          "sheetName": {
+            "__rl": true,
+            "value": 2009032635,
+            "mode": "list"
+          },
+          "columns": {
+            "mappingMode": "defineBelow",
+            "value": {
+              "#": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('___using_to_match_', ``, 'string') }}",
+              "Titre du morceau": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Titre_du_morceau', ``, 'string') }}",
+              "Artiste": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Artiste', ``, 'string') }}",
+              "BPM": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('BPM', ``, 'string') }}",
+              "Tonalité": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Tonalit_', ``, 'string') }}",
+              "Genre": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Genre', ``, 'string') }}",
+              "Durée": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Dur_e', ``, 'string') }}",
+              "Classement": "={{ /*n8n-auto-generated-fromAI-override*/ $fromAI('Classement', ``, 'string') }}"
+            },
+            "matchingColumns": [
+              "#"
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.googleSheetsTool",
+        "typeVersion": 4.6,
+        "position": [
+          320,
+          528
+        ],
+        "id": "3efc5fea-c15c-4d98-899e-e6925836747a",
+        "name": "Append or update row in sheet in Google Sheets2",
+        "credentials": {
+          "googleSheetsOAuth2Api": {
+            "id": "ab54feb0-5ff5-4cdb-b299-be8d8773bddb",
+            "name": "labsmates"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "conditions": {
+            "options": {
+              "version": 2
+            },
+            "conditions": [
+              {
+                "id": "validation_track_count",
+                "leftValue": "={{ $json.trackCount }}",
+                "rightValue": 20,
+                "operator": {
+                  "type": "number",
+                  "operation": "equals"
+                }
+              },
+              {
+                "id": "validation_has_content",
+                "leftValue": "={{ $json.output.length }}",
+                "rightValue": 100,
+                "operator": {
+                  "type": "number",
+                  "operation": "gt"
+                }
+              }
+            ],
+            "combinator": "and"
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.if",
+        "typeVersion": 2.2,
+        "position": [
+          848,
+          256
+        ],
+        "id": "897509d4-0c97-4c2e-bd37-4332a14cc39c",
+        "name": "Validate Playlist2"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Récupérer les données depuis l'input\nconst items = $input.all();\nconst aiOutput = items[0].json.output;\nconst userRequest = items[0].json.userRequest;\n\n// Fonction pour extraire le genre musical\nfunction extractMusicGenre(text) {\n  const genres = [\n    {keyword: \"tech house\", name: \"Tech-House\"},\n    {keyword: \"deep house\", name: \"Deep-House\"},\n    {keyword: \"afro house\", name: \"Afro-House\"},\n    {keyword: \"progressive house\", name: \"Progressive-House\"},\n    {keyword: \"house\", name: \"House\"},\n    {keyword: \"techno\", name: \"Techno\"},\n    {keyword: \"trance\", name: \"Trance\"},\n    {keyword: \"afrobeat\", name: \"Afrobeat\"}\n  ];\n\n  const lower = text.toLowerCase();\n  \n  for (const genre of genres) {\n    if (lower.includes(genre.keyword)) {\n      return `Playlist-${genre.name}`;\n    }\n  }\n\n  return \"Playlist-Mix\";\n}\n\nconst cleanFileName = extractMusicGenre(userRequest);\nconst filename = `${cleanFileName}.txt`;\n\n// Extraire les lignes numérotées\nconst lines = aiOutput.split('\\n');\nconst trackLines = lines.filter(line => /^\\d+\\./.test(line));\nconst cleanTracks = trackLines.map(line => {\n  return line.replace(/^\\d+\\.\\s*/, '').trim();\n});\n\nconst content = cleanTracks.join('\\n');\n\n// Créer le header\nconst now = new Date();\nconst dateStr = now.toLocaleDateString('fr-FR') + ' ' + now.toLocaleTimeString('fr-FR');\nconst header = `🎵 PLAYLIST DJ - ${cleanFileName.replace('Playlist-', '')}\\n`\n  + `📅 Généré le : ${dateStr}\\n`\n  + `🎧 Nombre de titres : ${cleanTracks.length}\\n`\n  + `${'='.repeat(60)}\\n\\n`;\n\nconst finalContent = header + content;\nconst finalBuffer = Buffer.from(finalContent, 'utf8');\n\nreturn {\n  json: {\n    filename: filename,\n    trackCount: cleanTracks.length,\n    genre: cleanFileName.replace('Playlist-', '')\n  },\n  binary: {\n    data: {\n      data: finalBuffer.toString('base64'),\n      mimeType: 'text/plain',\n      fileName: filename,\n      fileSize: finalBuffer.length\n    }\n  }\n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          1216,
+          240
+        ],
+        "id": "cd78ac90-59b9-4a4a-8e18-9ecb767a8312",
+        "name": "Create Text File2"
+      },
+      {
+        "parameters": {
+          "jsCode": "// Récupérer la sortie de l'AI Agent\nconst aiOutput = $input.item.json.output;\n\n// Compter le nombre de lignes qui commencent par un numéro\nconst lines = aiOutput.split('\\n');\nconst trackLines = lines.filter(line => line.match(/^\\d+\\./));\nconst trackCount = trackLines.length;\n\nreturn {\n  json: {\n    output: aiOutput,\n    trackCount: trackCount,\n    isValid: trackCount === 20,\n    validationMessage: trackCount === 20 \n      ? '✅ Playlist valide avec 20 titres' \n      : `⚠️ Nombre incorrect de titres : ${trackCount}/20`\n  }\n};"
+        },
+        "type": "n8n-nodes-base.code",
+        "typeVersion": 2,
+        "position": [
+          640,
+          256
+        ],
+        "id": "f62445a2-e450-43f0-afe1-fa76d19fcf32",
+        "name": "Playlist Counter2"
+      },
+      {
+        "parameters": {
+          "assignments": {
+            "assignments": [
+              {
+                "id": "assignment2",
+                "name": "output",
+                "value": "={{ $('AI Agent2').item.json.output }}",
+                "type": "string"
+              },
+              {
+                "id": "assignment3",
+                "name": "userRequest",
+                "value": "={{ $('When Executed by Another Workflow').item.json.query }}",
+                "type": "string"
+              }
+            ]
+          },
+          "options": {}
+        },
+        "type": "n8n-nodes-base.set",
+        "typeVersion": 3.4,
+        "position": [
+          1024,
+          240
+        ],
+        "id": "4a9edc8c-4193-4a75-8c98-34e2757b288f",
+        "name": "Prepare File Content2"
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.toolSerpApi",
+        "typeVersion": 1,
+        "position": [
+          448,
+          528
+        ],
+        "id": "82661b78-a43f-4b98-b526-b4429e99f717",
+        "name": "SerpAPI2",
+        "credentials": {
+          "serpApi": {
+            "id": "f1b2d3c2-c632-4bc6-8bed-06e4e039c98c",
+            "name": "SerpAPI"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "url": "https://shazam.p.rapidapi.com/charts/track",
+          "authentication": "genericCredentialType",
+          "genericAuthType": "httpHeaderAuth",
+          "sendQuery": true,
+          "queryParameters": {
+            "parameters": [
+              {
+                "name": "locale",
+                "value": "fr-FR"
+              },
+              {
+                "name": "pageSize",
+                "value": "50"
+              }
+            ]
+          },
+          "options": {
+            "response": {
+              "response": {
+                "responseFormat": "json"
+              }
+            }
+          }
+        },
+        "type": "n8n-nodes-base.httpRequestTool",
+        "typeVersion": 4.2,
+        "position": [
+          592,
+          528
+        ],
+        "id": "f74f9b68-3012-48c1-9ada-def2a37bad93",
+        "name": "Shazam Top Charts2",
+        "credentials": {
+          "httpHeaderAuth": {
+            "id": "f56064d0-4cd8-4bb0-a707-e601b6cbb331",
+            "name": "Shazam"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "mode": "retrieve-as-tool",
+          "toolDescription": "Base de données REKORDBOX contenant des morceaux DJ avec leurs métadonnées complètes : BPM (tempo), tonalité Camelot (harmonie), genre musical, durée. Recherche par genre pour obtenir des morceaux DJ professionnels avec toutes les informations techniques nécessaires au mixage.",
+          "qdrantCollection": {
+            "__rl": true,
+            "value": "REKORDBOX",
+            "mode": "list"
+          },
+          "topK": 50,
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.vectorStoreQdrant",
+        "typeVersion": 1.3,
+        "position": [
+          736,
+          528
+        ],
+        "id": "9a1a6f72-a2a7-4815-8868-9969aa52d467",
+        "name": "Qdrant Vector Store2",
+        "credentials": {
+          "qdrantApi": {
+            "id": "4bddb866-6b1d-493b-8225-e950640f784b",
+            "name": "QdrantAPI"
+          }
+        }
+      },
+      {
+        "parameters": {
+          "options": {}
+        },
+        "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+        "typeVersion": 1.2,
+        "position": [
+          704,
+          704
+        ],
+        "id": "0678d308-3684-4b77-86cb-00b1d58e0ae0",
+        "name": "Embeddings OpenAI3",
+        "credentials": {
+          "openAiApi": {
+            "id": "1dd133dd-1b8a-4f5e-9fb5-980f00e2efa1",
+            "name": "OpenAi API"
+          }
+        }
+      }
+    ],
+    "connections": {
+      "Get File Info": {
+        "main": [
+          [
+            {
+              "node": "Store Info",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Store Info": {
+        "main": [
+          [
+            {
+              "node": "Load Checksum",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Load Checksum": {
+        "main": [
+          [
+            {
+              "node": "Compare",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Compare": {
+        "main": [
+          [
+            {
+              "node": "If Modified",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "If Modified": {
+        "main": [
+          [
+            {
+              "node": "Update Collection1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Download": {
+        "main": [
+          [
+            {
+              "node": "Extract Data",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Extract Data": {
+        "main": [
+          [
+            {
+              "node": "Format",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Format": {
+        "main": [
+          [
+            {
+              "node": "Insert Content",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Insert Content": {
+        "main": [
+          [
+            {
+              "node": "Store Checksum",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Store Checksum": {
+        "main": [
+          [
+            {
+              "node": "Insert Checksum",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Embeddings OpenAI2": {
+        "ai_embedding": [
+          [
+            {
+              "node": "Insert Checksum",
+              "type": "ai_embedding",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Data Loader": {
+        "ai_document": [
+          [
+            {
+              "node": "Insert Content",
+              "type": "ai_document",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Data Loader2": {
+        "ai_document": [
+          [
+            {
+              "node": "Insert Checksum",
+              "type": "ai_document",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Embeddings OpenAI4": {
+        "ai_embedding": [
+          [
+            {
+              "node": "Insert Content",
+              "type": "ai_embedding",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Update Collection1": {
+        "main": [
+          [
+            {
+              "node": "Download",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "When Executed by Another Workflow": {
+        "main": [
+          [
+            {
+              "node": "AI Agent2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "AI Agent2": {
+        "main": [
+          [
+            {
+              "node": "Playlist Counter2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "OpenAI Chat Model2": {
+        "ai_languageModel": [
+          [
+            {
+              "node": "AI Agent2",
+              "type": "ai_languageModel",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Simple Memory2": {
+        "ai_memory": [
+          [
+            {
+              "node": "AI Agent2",
+              "type": "ai_memory",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Append or update row in sheet in Google Sheets2": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent2",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Validate Playlist2": {
+        "main": [
+          [
+            {
+              "node": "Prepare File Content2",
+              "type": "main",
+              "index": 0
+            }
+          ],
+          [
+            {
+              "node": "Prepare Error Response1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Create Text File2": {
+        "main": [
+          [
+            {
+              "node": "Prepare Response1",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Playlist Counter2": {
+        "main": [
+          [
+            {
+              "node": "Validate Playlist2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare File Content2": {
+        "main": [
+          [
+            {
+              "node": "Create Text File2",
+              "type": "main",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "SerpAPI2": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent2",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Shazam Top Charts2": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent2",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Qdrant Vector Store2": {
+        "ai_tool": [
+          [
+            {
+              "node": "AI Agent2",
+              "type": "ai_tool",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Embeddings OpenAI3": {
+        "ai_embedding": [
+          [
+            {
+              "node": "Qdrant Vector Store2",
+              "type": "ai_embedding",
+              "index": 0
+            }
+          ]
+        ]
+      },
+      "Prepare Response1": {
+        "main": [
+          []
+        ]
+      }
+    },
+    "authors": "Wilfrid Peyrius",
+    "name": "Version 96ba2019",
+    "description": "",
+    "autosaved": true,
+    "workflowPublishHistory": [
+      {
+        "createdAt": "2026-02-08T09:22:20.186Z",
+        "id": 137,
+        "workflowId": "VAnO7RbXIAGLPMhE",
+        "versionId": "96ba2019-c15d-4870-9d12-e663edfd6610",
+        "event": "activated",
+        "userId": "e753d562-3c8e-46ea-9e0d-ba3ff444f62c"
+      }
+    ]
+  }
+}
