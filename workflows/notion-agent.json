@@ -1,0 +1,803 @@
+{
+  "updatedAt": "2026-02-19T19:15:44.429Z",
+  "createdAt": "2026-02-16T20:42:56.436Z",
+  "name": "Notion AI Manager - Agent Complet (OpenRouter)",
+  "description": null,
+  "active": true,
+  "isArchived": false,
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.user_message }}",
+        "options": {
+          "systemMessage": "Tu es un assistant expert en gestion Notion, accessible via Telegram. Tu gères l'intégralité de l'espace de travail Notion de l'utilisateur.\n\nCONTEXTE: L'utilisateur communique avec toi via Telegram. Les messages peuvent être:\n- Texte: commandes et questions directes\n- Audio: messages vocaux transcrits automatiquement par ElevenLabs\n- Photo: images avec légende extraite\nAdapte tes réponses au format Telegram (concis, bien structuré, avec emojis modérés).\n\nPAGE RACINE DE L'ESPACE DE TRAVAIL: YOUR_NOTION_ROOT_PAGE_ID\n\nTes capacités:\n1. Rechercher des pages et bases de données dans Notion\n2. Lire le contenu et les propriétés des pages\n3. Créer de nouvelles pages avec du contenu riche et structuré\n4. Modifier les propriétés et le contenu des pages existantes\n5. Créer des bases de données avec des propriétés personnalisées\n6. Interroger des bases de données pour retrouver des entrées\n\nIMPORTANT - Format JSON Notion API pour créer une page:\n{\"parent\":{\"page_id\":\"YOUR_NOTION_ROOT_PAGE_ID\"},\"icon\":{\"type\":\"emoji\",\"emoji\":\"📄\"},\"properties\":{\"title\":[{\"text\":{\"content\":\"Titre\"}}]},\"children\":[{\"object\":\"block\",\"type\":\"paragraph\",\"paragraph\":{\"rich_text\":[{\"text\":{\"content\":\"Contenu\"}}]}}]}\n\nTypes de blocs disponibles: heading_1, heading_2, heading_3, paragraph, bulleted_list_item, numbered_list_item, to_do, toggle, code, quote, callout, divider, image, bookmark, table\n\nFormat pour écrire du contenu (append blocks):\n{\"children\":[{\"object\":\"block\",\"type\":\"heading_2\",\"heading_2\":{\"rich_text\":[{\"text\":{\"content\":\"Titre\"}}]}},{\"object\":\"block\",\"type\":\"paragraph\",\"paragraph\":{\"rich_text\":[{\"text\":{\"content\":\"Texte\"}}]}},{\"object\":\"block\",\"type\":\"bulleted_list_item\",\"bulleted_list_item\":{\"rich_text\":[{\"text\":{\"content\":\"Point\"}}]}},{\"object\":\"block\",\"type\":\"to_do\",\"to_do\":{\"rich_text\":[{\"text\":{\"content\":\"Tâche\"}}],\"checked\":false}},{\"object\":\"block\",\"type\":\"callout\",\"callout\":{\"rich_text\":[{\"text\":{\"content\":\"Info\"}}],\"icon\":{\"type\":\"emoji\",\"emoji\":\"💡\"}}},{\"object\":\"block\",\"type\":\"divider\",\"divider\":{}}]}\n\nFormat pour créer une base de données:\n{\"parent\":{\"page_id\":\"YOUR_NOTION_ROOT_PAGE_ID\"},\"icon\":{\"type\":\"emoji\",\"emoji\":\"🗃️\"},\"title\":[{\"text\":{\"content\":\"Nom\"}}],\"properties\":{\"Name\":{\"title\":{}},\"Status\":{\"select\":{\"options\":[{\"name\":\"À faire\",\"color\":\"red\"},{\"name\":\"En cours\",\"color\":\"yellow\"},{\"name\":\"Terminé\",\"color\":\"green\"}]}},\"Date\":{\"date\":{}},\"Tags\":{\"multi_select\":{\"options\":[]}}}}\n\nFormat pour modifier une page (update properties):\n{\"properties\":{\"title\":[{\"text\":{\"content\":\"Nouveau titre\"}}]},\"icon\":{\"type\":\"emoji\",\"emoji\":\"🔄\"}}\n\nFormat pour interroger une base de données:\n{\"filter\":{\"property\":\"Status\",\"select\":{\"equals\":\"En cours\"}},\"sorts\":[{\"property\":\"Date\",\"direction\":\"descending\"}],\"page_size\":20}\n\nTypes de propriétés de base de données: title, rich_text, number, select, multi_select, date, checkbox, url, email, phone_number, people, files, status\n\nRègles:\n- Réponds TOUJOURS en français\n- Utilise la page racine YOUR_NOTION_ROOT_PAGE_ID comme parent par défaut\n- Après chaque création, confirme avec l'ID de la ressource créée\n- Sois proactif et propose des améliorations\n- Utilise des emojis pertinents comme icônes\n- Pour du contenu long, structure avec heading, listes, callouts, dividers\n- Quand on te demande de rédiger, crée du contenu riche et détaillé\n- Pour les bases de données, propose des propriétés adaptées au cas d'usage\n- Commence toujours par Search Notion pour comprendre l'espace existant\n- Garde tes réponses concises pour Telegram (pas de pavés trop longs)"
+        }
+      },
+      "id": "ai-agent",
+      "name": "Notion AI Manager",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3.1,
+      "position": [
+        608,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "options": {
+          "maxTokens": 4096,
+          "temperature": 0.3
+        }
+      },
+      "id": "openrouter-1",
+      "name": "OpenRouter Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        -128,
+        704
+      ],
+      "credentials": {
+        "openRouterApi": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "OpenRouter API"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Process Input').first().json.chat_id }}",
+        "contextWindowLength": 20
+      },
+      "id": "memory-1",
+      "name": "Window Buffer Memory",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        48,
+        704
+      ]
+    },
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {
+          "download": true
+        }
+      },
+      "id": "telegram-trigger",
+      "name": "Telegram Trigger",
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -640,
+        400
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "AgentP79"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst results = [];\n\nfor (const item of items) {\n  const message = item.json.message;\n  const chat_id = String(message.chat.id);\n  let user_message = '';\n  let message_type = 'text';\n\n  if (message.voice || message.audio) {\n    message_type = 'audio';\n    user_message = '';\n  } else if (message.photo) {\n    message_type = 'photo';\n    user_message = message.caption || 'Image envoyée sans légende. Que souhaites-tu en faire?';\n  } else if (message.text) {\n    message_type = 'text';\n    user_message = message.text;\n  } else {\n    user_message = 'Message non reconnu.';\n  }\n\n  const result = {\n    json: { user_message, chat_id, message_type }\n  };\n\n  // Conserver les données binaires (audio Telegram)\n  if (item.binary && Object.keys(item.binary).length > 0) {\n    result.binary = item.binary;\n  }\n\n  results.push(result);\n}\n\nreturn results;"
+      },
+      "id": "process-input",
+      "name": "Process Input",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        -368,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "cond-audio",
+              "leftValue": "={{ $json.message_type }}",
+              "rightValue": "audio",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "is-audio",
+      "name": "Is Audio?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        -176,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "speech",
+        "operation": "speechToText",
+        "additionalOptions": {},
+        "requestOptions": {}
+      },
+      "id": "elevenlabs-stt",
+      "name": "ElevenLabs STT",
+      "type": "@elevenlabs/n8n-nodes-elevenlabs.elevenLabs",
+      "typeVersion": 1,
+      "position": [
+        48,
+        384
+      ],
+      "credentials": {
+        "elevenLabsApi": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "ElevenLabs API KEY"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst processInput = $('Process Input').first().json;\nconst results = [];\n\nfor (const item of items) {\n  const transcription = item.json.text || item.json.transcription || JSON.stringify(item.json);\n  results.push({\n    json: {\n      user_message: transcription,\n      chat_id: processInput.chat_id,\n      message_type: 'audio'\n    }\n  });\n}\n\nreturn results;"
+      },
+      "id": "format-stt",
+      "name": "Format STT",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        256,
+        384
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const items = $input.all();\nconst processInput = $('Process Input').first().json;\nconst results = [];\n\nfor (const item of items) {\n  const output = item.json.output || item.json.text || '';\n  results.push({\n    json: {\n      text: output,\n      chat_id: processInput.chat_id,\n      message_type: processInput.message_type\n    }\n  });\n}\n\nreturn results;"
+      },
+      "id": "prepare-response",
+      "name": "Prepare Response",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "chatId": "={{ $json.chat_id }}",
+        "text": "={{ $json.text }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "id": "send-text",
+      "name": "Send Text Response",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1200,
+        400
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "AgentP79"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "version": 2,
+            "leftValue": "",
+            "caseSensitive": true,
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "cond-was-audio",
+              "leftValue": "={{ $('Prepare Response').first().json.message_type }}",
+              "rightValue": "audio",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "was-audio",
+      "name": "Was Audio?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1456,
+        400
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "speech",
+        "voice": {
+          "__rl": true,
+          "value": "necQJzI1X0vLpdnJteap",
+          "mode": "list",
+          "cachedResultName": "Mr. Laurent - Warm, friendly & reassuring"
+        },
+        "text": "={{ $('Prepare Response').first().json.text }}",
+        "additionalOptions": {},
+        "requestOptions": {}
+      },
+      "id": "elevenlabs-tts",
+      "name": "ElevenLabs TTS",
+      "type": "@elevenlabs/n8n-nodes-elevenlabs.elevenLabs",
+      "typeVersion": 1,
+      "position": [
+        1712,
+        384
+      ],
+      "credentials": {
+        "elevenLabsApi": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "ElevenLabs API KEY"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "sendAudio",
+        "chatId": "={{ $('Prepare Response').first().json.chat_id }}",
+        "additionalFields": {}
+      },
+      "id": "send-audio",
+      "name": "Send Audio Response",
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        1936,
+        384
+      ],
+      "credentials": {
+        "telegramApi": {
+          "id": "YOUR_CREDENTIAL_ID",
+          "name": "AgentP79"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "toolDescription": "Search across all Notion pages and databases in the workspace by keyword. Use this tool FIRST to find existing pages, databases, or any content by name. Returns matching results with their IDs and titles.",
+        "method": "POST",
+        "url": "https://api.notion.com/v1/search",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_NOTION_API_TOKEN"
+            },
+            {
+              "name": "Notion-Version",
+              "value": "2022-06-28"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ query: $fromAI('search_query', 'The keyword to search for in Notion pages and databases', 'string'), page_size: 20 }) }}",
+        "options": {},
+        "optimizeResponse": true
+      },
+      "id": "search-notion-http",
+      "name": "Search Notion",
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        224,
+        704
+      ]
+    },
+    {
+      "parameters": {
+        "toolDescription": "Get the properties and metadata of a specific Notion page by its ID. Use this to read page titles, icons, covers, and all property values.",
+        "url": "=https://api.notion.com/v1/pages/{{ $fromAI('page_id', 'The UUID of the Notion page to retrieve', 'string') }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_NOTION_API_TOKEN"
+            },
+            {
+              "name": "Notion-Version",
+              "value": "2022-06-28"
+            }
+          ]
+        },
+        "options": {},
+        "optimizeResponse": true
+      },
+      "id": "get-page-http",
+      "name": "Get Page",
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        368,
+        704
+      ]
+    },
+    {
+      "parameters": {
+        "toolDescription": "Retrieve all content blocks (paragraphs, headings, lists, etc.) of a Notion page. Use this to read the actual written content of a page, not just its properties.",
+        "url": "=https://api.notion.com/v1/blocks/{{ $fromAI('block_id', 'The UUID of the Notion page or block whose children to read', 'string') }}/children?page_size=100",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_NOTION_API_TOKEN"
+            },
+            {
+              "name": "Notion-Version",
+              "value": "2022-06-28"
+            }
+          ]
+        },
+        "options": {},
+        "optimizeResponse": true
+      },
+      "id": "read-content-http",
+      "name": "Read Page Content",
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        832,
+        704
+      ]
+    },
+    {
+      "parameters": {
+        "toolDescription": "Create a new empty page in Notion with a title and icon. Returns the page ID. IMPORTANT: After creating the page, use Append Content tool to add the actual content blocks (headings, paragraphs, lists, etc).",
+        "method": "POST",
+        "url": "https://api.notion.com/v1/pages",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_NOTION_API_TOKEN"
+            },
+            {
+              "name": "Notion-Version",
+              "value": "2022-06-28"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ parent: { page_id: $fromAI('parent_page_id', 'The parent page UUID. Default: YOUR_NOTION_ROOT_PAGE_ID', 'string') }, icon: { type: 'emoji', emoji: $fromAI('icon_emoji', 'Emoji for page icon like 📄 🤖 📊 🔧. Always provide a valid emoji, never empty string', 'string') || '📄' }, properties: { title: [{ text: { content: $fromAI('page_title', 'Title of the new page', 'string') } }] } }) }}",
+        "options": {},
+        "optimizeResponse": true
+      },
+      "id": "create-page-v3",
+      "name": "Create Page",
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        1008,
+        704
+      ]
+    },
+    {
+      "parameters": {
+        "toolDescription": "Append content blocks to a Notion page. Use this AFTER Create Page to add the actual content. Provide the page_id and a valid JSON array string of Notion blocks for children_json.",
+        "method": "PATCH",
+        "url": "=https://api.notion.com/v1/blocks/{{ $fromAI('block_id', 'The UUID of the page to append content to', 'string') }}/children",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_NOTION_API_TOKEN"
+            },
+            {
+              "name": "Notion-Version",
+              "value": "2022-06-28"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ $fromAI('request_body', 'Complete JSON body with a children array of Notion block objects. Include heading, paragraph, list, callout, code, quote, divider blocks as needed.', 'string') }}",
+        "options": {},
+        "optimizeResponse": true
+      },
+      "id": "append-v3",
+      "name": "Append Content",
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        656,
+        704
+      ]
+    },
+    {
+      "parameters": {
+        "toolDescription": "Update a Notion page title, icon, or archive it. Provide simple field values.",
+        "method": "PATCH",
+        "url": "=https://api.notion.com/v1/pages/{{ $fromAI('page_id', 'The UUID of the Notion page to update', 'string') }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_NOTION_API_TOKEN"
+            },
+            {
+              "name": "Notion-Version",
+              "value": "2022-06-28"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ properties: { title: [{ text: { content: $fromAI('new_title', 'New page title. Leave empty string if not changing title', 'string') } }] }, ...($fromAI('new_icon', 'New emoji icon like 📄 🤖 📊. Leave empty string to keep current icon unchanged', 'string') ? { icon: { type: 'emoji', emoji: $fromAI('new_icon', 'New emoji icon like 📄 🤖 📊. Leave empty string to keep current icon unchanged', 'string') } } : {}) }) }}",
+        "options": {},
+        "optimizeResponse": true
+      },
+      "id": "update-page-v3",
+      "name": "Update Page",
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        496,
+        704
+      ]
+    },
+    {
+      "parameters": {
+        "toolDescription": "Create a Notion database. Provide the complete database JSON configuration as a string for database_json parameter.",
+        "method": "POST",
+        "url": "https://api.notion.com/v1/databases",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_NOTION_API_TOKEN"
+            },
+            {
+              "name": "Notion-Version",
+              "value": "2022-06-28"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ $fromAI('request_body', 'Complete JSON body for creating a Notion database with parent, title, icon, and properties schema. Default parent_page_id: YOUR_NOTION_ROOT_PAGE_ID', 'string') }}",
+        "options": {},
+        "optimizeResponse": true
+      },
+      "id": "create-db-v3",
+      "name": "Create Database",
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        1184,
+        704
+      ]
+    },
+    {
+      "parameters": {
+        "toolDescription": "Query a Notion database to find entries. Provide database_id and query_json string with filter and sorts.",
+        "method": "POST",
+        "url": "=https://api.notion.com/v1/databases/{{ $fromAI('database_id', 'The UUID of the database to query', 'string') }}/query",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "Authorization",
+              "value": "Bearer YOUR_NOTION_API_TOKEN"
+            },
+            {
+              "name": "Notion-Version",
+              "value": "2022-06-28"
+            },
+            {
+              "name": "Content-Type",
+              "value": "application/json"
+            }
+          ]
+        },
+        "sendBody": true,
+        "contentType": "raw",
+        "rawContentType": "application/json",
+        "body": "={{ $fromAI('request_body', 'Complete JSON body for querying a Notion database. Use {\"page_size\":20} for all entries or add filter/sorts', 'string') }}",
+        "options": {},
+        "optimizeResponse": true
+      },
+      "id": "query-db-v3",
+      "name": "Query Database",
+      "type": "n8n-nodes-base.httpRequestTool",
+      "typeVersion": 4.4,
+      "position": [
+        1360,
+        704
+      ]
+    }
+  ],
+  "connections": {
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Notion AI Manager",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Window Buffer Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "Notion AI Manager",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Process Input",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Process Input": {
+      "main": [
+        [
+          {
+            "node": "Is Audio?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is Audio?": {
+      "main": [
+        [
+          {
+            "node": "ElevenLabs STT",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Notion AI Manager",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ElevenLabs STT": {
+      "main": [
+        [
+          {
+            "node": "Format STT",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Format STT": {
+      "main": [
+        [
+          {
+            "node": "Notion AI Manager",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Notion AI Manager": {
+      "main": [
+        [
+          {
+            "node": "Prepare Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Prepare Response": {
+      "main": [
+        [
+          {
+            "node": "Send Text Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send Text Response": {
+      "main": [
+        [
+          {
+            "node": "Was Audio?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Was Audio?": {
+      "main": [
+        [
+          {
+            "node": "ElevenLabs TTS",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "ElevenLabs TTS": {
+      "main": [
+        [
+          {
+            "node": "Send Audio Response",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Search Notion": {
+      "ai_tool": [
+        [
+          {
+            "node": "Notion AI Manager",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get Page": {
+      "ai_tool": [
+        [
+          {
+            "node": "Notion AI Manager",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Read Page Content": {
+      "ai_tool": [
+        [
+          {
+            "node": "Notion AI Manager",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Page": {
+      "ai_tool": [
+        [
+          {
+            "node": "Notion AI Manager",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Update Page": {
+      "ai_tool": [
+        [
+          {
+            "node": "Notion AI Manager",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Append Content": {
+      "ai_tool": [
+        [
+          {
+            "node": "Notion AI Manager",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Create Database": {
+      "ai_tool": [
+        [
+          {
+            "node": "Notion AI Manager",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Query Database": {
+      "ai_tool": [
+        [
+          {
+            "node": "Notion AI Manager",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionCounter": 157,
+  "triggerCount": 1,
+  "tags": []
+}
